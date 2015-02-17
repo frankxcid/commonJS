@@ -514,6 +514,9 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         getFilterString();
         rppCount = 0;
         pagination[1] = { start: 0, end: 0 };
+        for (n = 1; n < allColDefinitions.length; n++) {
+            allColDefinitions[n].initSummary();
+        }
         for (i = 0; i < dataResults.length; i++) {
             oneRowData = dataResults[i];
             if (displayRow(oneRowData)) {
