@@ -1,0 +1,224 @@
+﻿
+.dvSetupDisplayGrid
+{
+    font-size: .7em;
+    clear:both;
+    margin:2px auto;
+    background-color:transparent;
+}
+.dvSetupDisplayGrid a
+{
+    color:#6699CC;
+}
+.dvSetupDisplayGrid a:hover
+{
+    color:#C0C0C0;
+}
+.dvSetupDisplayGrid input[type="button"], .dvSetupDisplayGrid input[type="submit"]
+{
+    border-style: solid inset inset solid;
+    border-width: 1px 2px 2px 1px;
+    border-color: black #C0C0C0 #C0C0C0 black;
+    font-size: 1em;
+    font-weight:bold;
+    width:100%;
+    margin:0;
+    padding:0 3px;
+}
+.tbGrid
+{
+    border-collapse:collapse;
+    margin:0 3%;
+    background-color:white;
+}
+.tbGrid td
+{
+    border: 2px solid #003366;
+}
+
+.tbGrid input[type="text"]
+{
+    width:97%;
+    font-size:.9em;
+    padding:0;
+}
+tbGrid input[type="text"][numeric="decimal"], tbGrid input[type="text"][numeric="integer"], tbGrid input[type="text"][numeric="money"]
+{
+    text-align:right;
+}
+.dvTitleHeadline
+{
+   background-color:white;
+    font-size: 2.5em;
+    font-weight: bold;
+    padding-right: 5px;
+}
+.dvTitleHeadline a
+{
+    font-weight: normal;
+    font-size:.7em;
+}
+.dvTitleSubHeadline
+{
+    background-color: black;
+    color:white;
+    font-size:1.5em;
+    padding:3px 0;
+}
+.trHeader input
+{    
+    height: 2.2em;
+}
+.trHeader td
+{
+    padding:0;
+    margin:0;
+}
+.trHeader input[type=button]
+{
+    width:100%;
+}
+.trFilter td
+{
+    padding:0;
+    margin:0;
+}
+.trFilter select
+{
+    font-size: .9em;
+    width:100%;
+    height:17px;
+}
+.tdTitleBar
+{
+    margin:0;
+    padding:0;
+}
+.tdTitleBar div
+{
+    background-color:white;
+}
+.trRow1
+{
+    background-color:#E0E0E0;
+}
+.trRow2
+{
+    background-color:white;
+}
+.datarow td, .trRow1 td, .trRow2 td
+{
+    margin:0;
+    padding:2px 4px;
+    font-size:1.25em;
+}
+.datarow a, .trRow1 a, .trRow2 a
+{
+    font-size:.9em;
+}
+.datarow .buttonColumn, .trRow1 .buttonColumn, .trRow2 .buttonColumn
+{
+    padding:0;
+    margin:0;
+}
+.datacell
+{
+    text-align:left;
+}
+.datacell ul
+{
+    margin:0 0 0 12px;
+    padding:0;
+}
+.datacell li
+{
+    margin:0;
+    padding:0;
+}
+.datacellnumber
+{
+    text-align:right;
+}
+.datacellcontrol
+{
+    text-align:center;
+}
+.datarow span, .trRow1 span, .trRow2 span
+{    
+    font-weight:normal;
+    background-color:white;
+}
+.buttonColumn input[type="button"], .buttonColumn input[type="submit"]
+{
+    float:left;
+    font-size:1em;
+    height:25px;
+}
+.trSummary td
+{
+    border-style: double solid solid solid;
+    border-width: 4px 2px 2px 2px;
+    border-color: #003366;
+    background-color: #E0E0E0;
+    text-align: right;
+    font-size: 1em;
+    font-weight: bold;
+    padding: 0;
+    margin: 0;
+}
+.dvNavDiv input[type="button"], .dvNavDiv input[type="submit"]
+{
+    width:115px;
+    float:left;
+    margin:0 3px 0 0;
+}
+.dvNavDiv
+{
+    height:22px;
+}
+.dvNavDiv div
+{
+    font-weight:bold;
+    font-size:1.5em;
+    float:left;
+    margin:0 0 0 10px;
+    padding:0;
+    text-align:right;
+}
+.dvNavDiv input[type="text"]
+{
+    float:left;
+    margin:0;
+}
+/*Print window styles*/
+.tbPrint
+{
+    border-collapse:collapse;
+}
+.tbPrint td
+{
+    margin:0;
+    padding:2px;
+    border:solid 1px black;
+}
+.tbPrint th
+{
+    margin:0;
+    padding:2px;
+    border-color:black;
+    border-width:1px 1px 2px 1px;
+    border-style:solid;
+}
+#dvWaiting
+{
+    text-align:center;
+    margin-top:200px;
+}
+#dvWaiting h2
+{
+    color:#5171AE;
+}
+.hideDiv
+{
+    overflow:hidden;
+}
