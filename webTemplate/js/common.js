@@ -598,7 +598,7 @@ COMMON.checkInteger = function (fieldType, id) {
     ///<param name="id" type="String">The id of the control</param>
     ///<returns type="Boolean">True if there is an error</returns>
     "use strict";
-    return COMMON.checkNumeric(fieldType, id, /[1234567890]/g, false);
+    return COMMON.checkNumeric(fieldType, id, /[-1234567890]/g, false);
 };
 COMMON.checkDecimal = function (fieldType, id) {
     ///<summary>checks that input value is integers and decimal point only</summary>
@@ -606,7 +606,7 @@ COMMON.checkDecimal = function (fieldType, id) {
     ///<param name="id" type="String">The id of the control</param>
     ///<returns type="Boolean">True if there is an error</returns>
     "use strict";
-    return COMMON.checkNumeric(fieldType, id, /[1234567890.]/g, false);
+    return COMMON.checkNumeric(fieldType, id, /[-1234567890.]/g, false);
 };
 COMMON.checkMoney = function (fieldType, id) {
     ///<summary>Checks that input value is integers, decimal point and up to 4 decimal places</summary>
@@ -614,7 +614,7 @@ COMMON.checkMoney = function (fieldType, id) {
     ///<param name="id" type="String">The id of the control</param>
     ///<returns type="Boolean">True if there is an error</returns>
     "use strict";
-    return COMMON.checkNumeric(fieldType, id, /[1234567890.$]/g, true);
+    return COMMON.checkNumeric(fieldType, id, /[-1234567890.$]/g, true);
 };
 COMMON.checkLenghtMax = function (fieldType, id) {
     ///<summary>Checks that input lenght is less than or equal to the value of the maxlen attribute</summary>
