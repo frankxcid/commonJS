@@ -35,7 +35,7 @@ MENU.ZOneMenuChoice = function (text, href, onclickFunction, tooltip, target) {
             iHTML = document.createElement("div");
             if (typeof text === "string" || typeof text === "number") {
                 obj1 = COMMON.getBasicElement("span", null, text);
-                obj1.style.marginRight = "3px";
+                //obj1.style.marginRight = "3px";
                 iHTML.appendChild(obj1);
             } else {
                 iHTML.appendChild(text);

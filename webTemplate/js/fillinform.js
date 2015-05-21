@@ -1,7 +1,7 @@
 ﻿/*jslint browser: true, plusplus: true */
-/*global AJAXPOST, COMMON, fxCalendar*/
+/*global XMLQuery, COMMON, fxCalendar*/
 /// <reference path="common.js" />
-//ver 1.2 1/16/2015
+//ver 1.0 10/31/2014
 var FILLIN = {};
 ///<var>an array containing form objects for a page
 FILLIN.allForms = [];
@@ -23,40 +23,43 @@ FILLIN.zsetButtons = function (divId, setEnabled, formIndex) {
     ///<summary>NOT FOR EXTERNAL USE...Sets all button in the parent object to disabled to prevent any action then on the current dialog. Applies blur. Not to be used on forms</summary>
     ///<param name="divId" type="String">The element id of the dialog container object</param>
     ///<param name="setEnabled" type="Boolean">If true, re-enables all buttons</param>
+    ///<param name="formIndex" type="Int">The index of the form in FILLIN.allForms</param>
     "use strict";
-    var allBtns, parentObj, i, obj1, oLeft, oTop;
+    var parentObj;
     parentObj = document.getElementById(divId);
-    allBtns = parentObj.getElementsByTagName("input");
-    if (allBtns.length > 0) {
-        for (i = 0; i < allBtns.length; i++) {
-            if (allBtns[i].type === "button" || allBtns[i].type === "submit") {
-                allBtns[i].disabled = !setEnabled;
-            }
-        }
-    }
-    allBtns = parentObj.getElementsByTagName("select");
-    if (allBtns.length > 0) {
-        for (i = 0; i < allBtns.length; i++) {
-            allBtns[i].disabled = !setEnabled;
-        }
-    }
-    if (!setEnabled) {
-        oTop = parentObj.offsetTop;
-        oLeft = parentObj.offsetLeft;
-        if (parentObj.style.position && parentObj.style.position === "absolute") {
-            oTop = 0;
-            oLeft = 0;
-        }
-        obj1 = COMMON.getBasicElement("div", FILLIN.coverallDivIdPrefix + String(formIndex), null, "dvCDcoverall");
-        obj1.style.top = String(oTop) + "px";
-        obj1.style.left = String(oLeft) + "px";
-        obj1.style.width = String(parentObj.offsetWidth) + "px";
-        obj1.style.height = String(parentObj.scrollHeight) + "px";
-        parentObj.appendChild(obj1);
-    } else {
-        obj1 = document.getElementById(FILLIN.coverallDivIdPrefix + String(formIndex));//this may not exist if calling FILLIN.reset() where the object was already removed
-        if (obj1) { parentObj.removeChild(obj1); }
-    }
+    COMMON.blockInput(parentObj.id, setEnabled, null, FILLIN.coverallDivIdPrefix + String(formIndex), "39");
+    //var allBtns, parentObj, i, obj1, oLeft, oTop;
+    //parentObj = document.getElementById(divId);
+    //allBtns = parentObj.getElementsByTagName("input");
+    //if (allBtns.length > 0) {
+    //    for (i = 0; i < allBtns.length; i++) {
+    //        if (allBtns[i].type === "button" || allBtns[i].type === "submit") {
+    //            allBtns[i].disabled = !setEnabled;
+    //        }
+    //    }
+    //}
+    //allBtns = parentObj.getElementsByTagName("select");
+    //if (allBtns.length > 0) {
+    //    for (i = 0; i < allBtns.length; i++) {
+    //        allBtns[i].disabled = !setEnabled;
+    //    }
+    //}
+    //if (!setEnabled) {
+    //    oTop = parentObj.offsetTop;
+    //    oLeft = parentObj.offsetLeft;
+    //    if (parentObj.style.position && parentObj.style.position === "absolute") {
+    //        oTop = 0;
+    //        oLeft = 0;
+    //    }
+    //    obj1 = COMMON.getBasicElement("div", FILLIN.coverallDivIdPrefix + String(formIndex), null, "dvCDcoverall");
+    //    obj1.style.top = String(oTop) + "px";
+    //    obj1.style.left = String(oLeft) + "px";
+    //    obj1.style.width = String(parentObj.offsetWidth) + "px";
+    //    obj1.style.height = String(parentObj.scrollHeight) + "px";
+    //    parentObj.appendChild(obj1);
+    //} else {
+    //    parentObj.removeChild(document.getElementById(FILLIN.coverallDivIdPrefix + String(formIndex)));
+    //}
 };
 FILLIN.zbuttonClicked = function (formIndex, btnObj) {
     ///<summary>NOT FOR EXTERNAL USE...Run on any buttons onclick event, closes the form if it is a dialog, runs the continuing function and removes the form from memory</summary>
@@ -80,7 +83,7 @@ FILLIN.zfieldChanged = function (formIndex) {
 };
 FILLIN.zaddForm = function (formObj) {
     ///<summary>NOT FOR EXTERNAL USE...Adds a form to FILLIN.allForms and ensures that indexes are not reused</summary>
-    ///<param name="formObj" type="FILLIN.ZForm Object">The Form object to add</param>
+    ///<param name="formObj" type="FILLIN.Form Object">The Form object to add</param>
     ///<returns type="Int">The index of the form in FILLIN.allForms</returns>
     "use strict";
     var formIndex;
@@ -93,7 +96,7 @@ FILLIN.zaddForm = function (formObj) {
     FILLIN.maxFormIndex = formIndex + 1;
     return formIndex;
 };
-FILLIN.ZForm = function (headLine, parentDivId, width, message) {
+FILLIN.Form = function (headLine, parentDivId, width, message) {
     ///<summary>NOT FOR EXTERNAL USE...Creates the form object</summary>
     ///<param name="headLine" type="String">The text in the Title Bar</param>
     ///<param name="parentDivId" type="String">The id of the parent element where this form will be displayed</param>
@@ -125,28 +128,29 @@ FILLIN.ZForm = function (headLine, parentDivId, width, message) {
         }
 
     };
-    //***************Major change to the pattern of value returned object
-    //{hasChanged: Boolean, values: ordered_Array_Of_Values, ObjId1: Value1, ObjId2: Value2, ...}
-    getFieldValues = function () {
-        var contentBaseObj, obj, allDescendants, fieldType, value, i, valueArray;
+    //gets the value from fields object pattern: {fieldIndexOfField1: {id: idOfField1, value: valuefromfield1, hasChanged: Boolean},fieldIndexOfField2: {id: idOfField2, value: valueFromField2, hasChanged: Boolean},...}
+    getFieldValues = function (setIdAsIndex) {
+        var contentBaseObj, obj, allDescendants, fieldType, fieldIndex, value, i, hasFields;
+        hasFields = false;
         contentBaseObj = document.getElementById(contentBaseObjId);
         fieldsValueObj = { "hasChanged": that.pendingChanges };
         allDescendants = contentBaseObj.getElementsByTagName("*");
-        valueArray = [];
         if (allDescendants.length > 0) {
             for (i = 0; i < allDescendants.length; i++) {
                 obj = allDescendants[i];
                 if (obj.hasAttribute("fieldtype")) {
                     fieldType = COMMON.fieldTypes[obj.getAttribute("fieldtype")];
                     if (fieldType && fieldType.isField) {
+                        hasFields = true;
                         value = fieldType.getValueFunction(obj.id);
-                        fieldsValueObj[obj.id] = value;
-                        valueArray.push(value);
+                        fieldIndex = obj.getAttribute("fieldindex");
+                        if (!fieldIndex) { fieldIndex = obj.id; }
+                        fieldsValueObj[(setIdAsIndex ? obj.id : fieldIndex)] = { "id": obj.id, "value": value, "hasChanged": that.pendingChanges };
                     }
                 }
             }
         }
-        fieldsValueObj.values = valueArray;
+        if (!hasFields) { fieldsValueObj = null; }
     };
     //arrays
     this.allControls = [];
@@ -171,7 +175,7 @@ FILLIN.ZForm = function (headLine, parentDivId, width, message) {
     };
     //displays the form
     this.display = function () {
-        var parentDivObj, baseDivObj, obj1, obj2, i, leftPosition, topPosition, hasEditableField, firstEditableField, oneButton;
+        var parentDivObj, baseDivObj, obj1, obj2, i, leftPosition, topPosition, hasEditableField, firstEditableField;
         init();
         hasEditableField = false;
         if (!that.isForm) { FILLIN.zsetButtons(parentDivId, false, that.formIndex); }
@@ -183,7 +187,7 @@ FILLIN.ZForm = function (headLine, parentDivId, width, message) {
         //add headline
         if (headLine === undefined || headLine === null) { headLine = "&nbsp;"; }
         obj1 = COMMON.getBasicElement("div", null, headLine, titleObjClassName);
-        obj2 = COMMON.getLink(null, "X", null, "FILLIN.zbuttonClicked(" + that.formIndex + ", this);");
+        obj2 = COMMON.getLink(null, "X", null, "FILLIN.allForms[" + that.formIndex + "].continueClose(true, 0);");
         obj2.className = "toolClose";
         if (that.allButtons.length <= 1 && !that.isForm) {
             obj1.appendChild(obj2);
@@ -225,10 +229,7 @@ FILLIN.ZForm = function (headLine, parentDivId, width, message) {
             obj2 = document.createElement("div");
             obj2.className = FILLIN.buttondivClassName;
             for (i = 0; i < that.allButtons.length; i++) {
-                oneButton = that.allButtons[i];
-                if (!oneButton.freePlace) {
-                    obj2.appendChild(that.allButtons[i].getObject(that.allButtons.length === 1, that.isForm));
-                }
+                obj2.appendChild(that.allButtons[i].getObject(that.allButtons.length === 1, that.isForm));
             }
             obj1.appendChild(obj2);
         }
@@ -243,8 +244,8 @@ FILLIN.ZForm = function (headLine, parentDivId, width, message) {
             baseDivObj.style.left = String(leftPosition) + "px";
             topPosition = parentDivObj.offsetTop;
             if (parentDivObj.style.position && parentDivObj.style.position === "absolute") { topPosition = 0; }
-            topPosition = (parentDivObj.offsetHeight * 0.1 + topPosition);
-            baseDivObj.style.top = String(that.manualOffset || topPosition) + "px";
+            topPosition = that.manualOffset || (parentDivObj.offsetHeight * 0.1 + topPosition);
+            baseDivObj.style.top = String(topPosition) + "px";
         }
         //set focus to first field if the form has fields
         if (hasEditableField) {
@@ -252,17 +253,15 @@ FILLIN.ZForm = function (headLine, parentDivId, width, message) {
         }
     };
     //returns field values
-    //Returns   (Lit. Object)object pattern: {hasChanged: Boolean, values: ordered_Array_Of_Values, ObjId1: Value1, ObjId2: Value2, ...}
-    this.getValues = function () {
-        getFieldValues();
+    //Returns   (Lit. Object)object pattern: {fieldIndexOfField1: {id: idOfField1, value: valuefromfield1, hasChanged: Boolean},fieldIndexOfField2: {id: idOfField2, value: valueFromField2, hasChanged: Boolean},...}
+    this.getValues = function (setIdAsIndex) {
+        getFieldValues(setIdAsIndex);
         return fieldsValueObj;
     };
     //validates form
     //Returns   (Boolean)   true if form fields pass common validation and optional validation if present
     this.validateForm = function () {
         var commonValidation;
-        //get the field Values
-        getFieldValues();
         commonValidation = COMMON.validateForm(baseObjId);
         if (!commonValidation) {
             that.errorMessage("There are errors in one or more fields shown highlighted in red. Hover your mouse pointer over a red field to see the specific error.");
@@ -280,30 +279,21 @@ FILLIN.ZForm = function (headLine, parentDivId, width, message) {
     //  suppressMessage (Boolean)       (Optional) if true will clear error message in the form, otherwise, will display "Data Saved"
     this.saveData = function (queryid, params, hasNoResults, suppressMessage) {
         if (!that.pendingChanges) { return; }
-        AJAXPOST.callQuery(queryid, params, hasNoResults);
+        XMLQuery.callQuery(queryid, params, hasNoResults);
         that.pendingChanges = false;
         that.errorMessage(suppressMessage ? "" : "Data Saved");
-    };
-    //Removes children from form and the form from the parent
-    this.clearElements = function () {
-        var parentObj, baseObj;
-        baseObj = document.getElementById(baseObjId);
-        if (!baseObj) { return; }
-        parentObj = baseObj.parentElement;
-        while (baseObj.firstChild) {
-            baseObj.removeChild(baseObj.firstChild);
-        }
-        parentObj.removeChild(baseObj);
-        FILLIN.zsetButtons(parentObj.id, true, that.formIndex);
     };
     //Called by this.close to continue from a dialog
     //Parameters:
     //  dialogResult        (Boolean)       Determine if user pick yes to continue closing or continue the action of the button
     //  btnIndex            (String)        The index of the button from allButtons array
     this.continueClose = function (dialogResult, btnIndex) {
-        var contDialogResult;
+        var contDialogResult, parentObj, baseObj;
         if (!dialogResult) { return; }
-        //Validation also retrieves values
+        parentObj = document.getElementById(baseObjId).parentElement;
+        //get the field Values
+        getFieldValues(true);
+        //Validation
         if (that.allButtons[btnIndex] && that.allButtons[btnIndex].doValidation === true) {
             if (!that.validateForm()) {
                 return;
@@ -313,15 +303,21 @@ FILLIN.ZForm = function (headLine, parentDivId, width, message) {
         if (fieldsValueObj === null || COMMON.objectIsEmpty(fieldsValueObj)) {
             fieldsValueObj = that.optionalData;
         }
-        //call continuing function, if form is a dialog it will still exists while the continuing function is running.  Will anything keep the rest of the function from running?
-        if (that.continuingFunction !== undefined && that.continuingFunction !== null) {
-            contDialogResult = (that.allButtons[btnIndex] ? that.allButtons[btnIndex].dialogResult : false);
-            that.continuingFunction(contDialogResult, fieldsValueObj, that.optionalData);
-        }
         //remove the form when it is a dialog
         if (!that.isForm) {
-            that.clearElements();
+            baseObj = document.getElementById(baseObjId);
+            while (baseObj.firstChild) {
+                baseObj.removeChild(baseObj.firstChild);
+            }
+            parentObj.removeChild(baseObj);
+
+            FILLIN.zsetButtons(parentObj.id, true, that.formIndex);
             that.removeMe = true;
+        }
+        //call continuing function
+        if (that.allButtons[btnIndex] && that.continuingFunction !== undefined && that.continuingFunction !== null) {
+            contDialogResult = that.allButtons[btnIndex].dialogResult;
+            that.continuingFunction(contDialogResult, fieldsValueObj, that.optionalData);
         }
     };
     //Called by the onclick action of a button in the form
@@ -329,16 +325,11 @@ FILLIN.ZForm = function (headLine, parentDivId, width, message) {
     //  btnObj      (Element:Button)    The button element that was clicked
     this.close = function (btnObj) {
         var btnIndex;
-        if (btnObj.hasAttribute("buttonIndex")) {
-            btnIndex = parseInt(btnObj.getAttribute("buttonIndex"), 10);
-            //do confirmation if pending changes
-            if (that.allButtons[btnIndex].doConfirm && that.pendingChanges) {
-                FILLIN.yesNoDialog(baseObjId, "Confirm", "There are changes pending. Do you to continue and discard changes?", "50%", FILLIN.allForms[that.formIndex].continueClose, String(btnIndex));
-                return;
-            }
-        } else {
-            //for single button dialogs
-            btnIndex = -1;
+        btnIndex = parseInt(btnObj.getAttribute("buttonIndex"), 10);
+        //do confirmation if pending changes
+        if (that.allButtons[btnIndex].doConfirm && that.pendingChanges) {
+            FILLIN.yesNoDialog(baseObjId, "Confirm", "There are changes pending. Do you to continue and discard changes?", "50%", FILLIN.allForms[that.formIndex].continueClose, String(btnIndex));
+            return;
         }
         that.continueClose(true, btnIndex);
     };
@@ -389,7 +380,10 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
         //if (that.height === "auto") {
         //    objOut.style.height = "45px";
         //}
-        if (that.newLine || that.fieldIndex === 0) { objOut.style.clear = "both"; }
+        if (that.newLine || that.fieldIndex === 0) {
+            objOut.style.clear = "both";
+            objOut.style.marginLeft = "5px";
+        }
         if (label !== undefined && label !== null && label !== "") {
             obj1 = document.createElement("h5");
             obj1.innerHTML = (required ? "*" : "") + label;
@@ -411,11 +405,10 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
                 }
             }
             objOut.appendChild(that.preconfiguredContainer);
-            if (that.width !== undefined && that.width !== null) { objOut.style.width = that.width; }
             return objOut;
         }
         attrib = { "fieldindex": String(that.fieldIndex) };
-        if (fieldType === COMMON.fieldTypes.txa) {
+        if (fieldType === COMMON.fieldTypes.txa && !that.width) {
             objOut.style.width = "95%";
         }
         switch (fieldType.id) {
@@ -437,10 +430,6 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
             attrib.onchange = fieldChangeScript;
             obj1 = COMMON.getNumberField(id, value, required, null, numberValidation, that.numFieldData.min, that.numFieldData.max, that.numFieldData.step, that.placeholder, attrib);
             break;
-        case "dfu":
-            attrib.onchange = fieldChangeScript;
-            obj1 = COMMON.getFileUpload(id, null, attrib);
-            break;
         default:
             if (fieldType.isField) {
                 attrib.onchange = fieldChangeScript;
@@ -449,20 +438,18 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
             if (fieldType === COMMON.fieldTypes.txa) {
                 attrib.style = "";
                 if (that.height !== undefined && that.height !== null && that.height !== "") { attrib.style += "height:" + that.height + ";"; }
-                if (that.width !== undefined && that.width !== null && that.width !== "") {
-                    attrib.style += "width:" + that.width + ";";
-                    objOut.style.width = that.width;
-                }
+                if (that.width !== undefined && that.width !== null && that.width !== "") { attrib.style += "width:" + that.width + ";"; }
             }
             obj1 = COMMON.getFieldObject(fieldType.id, id, value, required, numberValidation, that.placeholder, maxLen, null, attrib);
             //if (fieldType !== COMMON.fieldTypes.txa) { obj1.style.height = that.height; }
             break;
         }
-        that.id = obj1.id;
-        if (that.width !== undefined && that.width !== null && that.width !== "") {
-            obj1.style.width = that.width;
-            objOut.style.width = that.width;
+        if (fieldType === COMMON.fieldTypes.spa && that.width) {
+            //fixes width on inline span
+            obj1.style.cssFloat = "left";
         }
+        if (fieldType !== COMMON.fieldTypes.txa) { that.id = obj1.id; }
+        if (that.width !== undefined && that.width !== null && that.width !== "") { obj1.style.width = that.width; }
         objOut.appendChild(obj1);
         return objOut;
     };
@@ -483,17 +470,15 @@ FILLIN.ZButtonDefinition = function (formIndex, id, value, dialogResult, placeLe
     this.doValidation = doValidation || false; //clicking on this button will do validation on fields if true
     this.buttonIndex = null; //the index of this button in the allbuttons array
     this.doConfirm = doConfirm || false; //when button is clicked, such as a cancel or exit, if there are pending changes will confirm with user if they should discard changes and continue or cancel the execution of the "close" function
-    this.freePlace = false; //if true, the button is released to be placed in any location
-    this.className = ""; //the class name of the button
     //gets the button object
     //Parameters:
     //  singleButton        (Boolean)       If true will center button
     //Returns       (Element)
     this.getObject = function (singleButton, isForm) {
         var obj;
-        obj = COMMON.getButton(id, value, "FILLIN.zbuttonClicked(" + formIndex + ", this);", null, (that.className === "" ? null : that.className));
+        obj = COMMON.getButton(id, value, "FILLIN.zbuttonClicked(" + formIndex + ", this);");
         obj.setAttribute("buttonIndex", String(that.buttonIndex));
-        if ((!singleButton || isForm) && (!that.freePlace)) { obj.style.cssFloat = (that.placeLeft ? "left" : "right"); }
+        if (!singleButton || isForm) { obj.style.cssFloat = (that.placeLeft ? "left" : "right"); }
         return obj;
     };
 };
@@ -514,14 +499,6 @@ FILLIN.zaddControl = function (formIndex, thisControl) {
 FILLIN.reset = function () {
     ///<summary>Resets needed variables of this object. Use this when displaying a new page</summary>
     "use strict";
-    var i;
-    if (FILLIN.allForms && FILLIN.allForms.length > 0) {
-        for (i = 0; i < FILLIN.maxFormIndex; i++) {
-            if (FILLIN.allForms[i]) {
-                FILLIN.allForms[i].clearElements();
-            }
-        }
-    }
     FILLIN.allForms = [];
     //FILLIN.maxFormIndex = 0;
 };
@@ -530,15 +507,6 @@ FILLIN.validateForm = function (formIndex) {
     ///<returns type="Boolean">Returns true if all fields are valid</returns>
     "use strict";
     return FILLIN.allForms[formIndex].validateForm();
-};
-FILLIN.offsetTop = function (formIndex, topOffset) {
-    ///<summary>overrides the automatic position of a dialog box (normally 10% of parent height)</summary>
-    ///<param name="formIndex" type="Number">The Index of the for in FILLIN.allForms</param>
-    ///<param name="topOffset" type="String">Any valid css value for Top</param>
-    "use strict";
-    var thisForm;
-    thisForm = FILLIN.allForms[formIndex];
-    thisForm.manualOffset = topOffset;
 };
 FILLIN.suppressPendingChangesMessage = function (formIndex) {
     ///<summary>Will not display 'Pending Changes' message when a control on the form is changed</summary>
@@ -556,26 +524,27 @@ FILLIN.saveData = function (formIndex, queryId, params, hasNoResults, suppressMe
     "use strict";
     FILLIN.allForms[formIndex].saveData(queryId, params, hasNoResults, suppressMessage);
 };
-FILLIN.getFieldValues = function (formIndex) {
+FILLIN.getFieldValues = function (formIndex, setIdAsIndex) {
     ///<summary>Gets the values of the form. Recommended use for non-dialog forms that do not close</summary>
     ///<param name="formIndex" type="Int">the index of the form in FILLIN.allForms</param>
-    ///<returns type="Lit. Object">object pattern: {hasChanged: Boolean, values: ordered_Array_Of_Values, ObjId1: Value1, ObjId2: Value2, ...}</returns>
+    ///<param name="setIdAsIndex" type="Boolean">(Optional) If true then the object returned will have the object Id as the property index otherwise, it will be the index of the order the controls were added to the form</param>
+    ///<returns type="Lit. Object">object pattern: {fieldIndexOfFieldOrObjId1: {id: idOfField1, value: valuefromfield1, hasChanged: Boolean},fieldIndexOfFieldOrObjId2: {id: idOfField2, value: valueFromField2, hasChanged: Boolean},...}</returns>
     "use strict";
-    return FILLIN.allForms[formIndex].getValues();
+    return FILLIN.allForms[formIndex].getValues(setIdAsIndex);
 };
 FILLIN.createDialog = function (parentDivId, headline, message, continuingfunction, optionalData, width, optionalValidationFunction) {
     ///<summary>Creates a Dialog</summary>
     ///<param name="parentDivId" type="String">The id of the parent element where this dialog will be displayed</param>
     ///<param name="headline" type="String">(Optional) The text in the Title Bar</param>
     ///<param name="message" type="String|Element">(Optional) message at the top of the form main area. if String adds a div with string as content. If object, appends as child</param>
-    ///<param name="continuingfunction" type="function">(Optional) a function that will be used when a user clicks a button in the dialog. the function should be assigned to a variable and have the pattern: function (dialogResult, dataValuesFromForm, optionalData) where dialogResult is the value assigned in the button Definition, dataValuesFromForm is an object that contains the values from the controls. if there are no values (such as dataValuesFromForm is empty) then optionalData will be the value in order to accomodate continuing functions with only 2 arguments when the Dialog is known not to have values, and optionalData is the value of optionalData from the FILLIN.ZForm object. dataValuesFromForm pattern:  {fieldIndexOfField1: {id: idOfField1, value: valuefromfield1},fieldIndexOfField2: {id: idOfField2, value: valueFromField2},...}</param>
+    ///<param name="continuingfunction" type="function">(Optional) a function that will be used when a user clicks a button in the dialog. the function should be assigned to a variable and have the pattern: function (dialogResult, dataValuesFromForm, optionalData) where dialogResult is the value assigned in the button Definition, dataValuesFromForm is an object that contains the values from the controls. if there are no values (such as dataValuesFromForm is empty) then optionalData will be the value in order to accomodate continuing functions with only 2 arguments when the Dialog is known not to have values, and optionalData is the value of optionalData from the FILLIN.Form object. dataValuesFromForm pattern:  {fieldIndexOfField1: {id: idOfField1, value: valuefromfield1},fieldIndexOfField2: {id: idOfField2, value: valueFromField2},...}</param>
     ///<param name="optionalData" type="object">(Optional) Ignored if continuingfunction is not specified. Any data of any type the will be passed to the continuing function</param>
     ///<param name="width" type="String">Any valid css width value</param>
-    ///<param name="optionalValidationFunction" type="function">(Optional) after user clicks a button (if the doValidation property for that button is true) this function will be run. function pattern: function (dataValuesFromForm, formIndex){Returns Boolean} where dataValuesFromForm is the value of the form fields. formIndex is the index of the form the function returns true if the data is valid control will not be sent to the continuing funtion. send messages to the dialog's error div by using FILLIN.errorMessage function. dataValuesFromForm pattern: {hasChanged: Boolean, values: ordered_Array_Of_Values, ObjId1: Value1, ObjId2: Value2, ...}</param>
+    ///<param name="optionalValidationFunction" type="function">(Optional) after user clicks a button (if the doValidation property for that button is true) this function will be run. function pattern: function (dataValuesFromForm, formIndex){Returns Boolean} where dataValuesFromForm is the value of the form fields. formIndex is the index of the form the function returns true if the data is valid control will not be sent to the continuing funtion. send messages to the dialog's error div by using FILLIN.errorMessage function. dataValuesFromForm pattern:  {fieldIndexOfField1: {id: idOfField1, value: valuefromfield1},fieldIndexOfField2: {id: idOfField2, value: valueFromField2},...}</param>
     ///<returns type="Int">The index of the dialog in FILLIN.allForms</returns>
     "use strict";
     var thisDialog;
-    thisDialog = new FILLIN.ZForm(headline, parentDivId, width, message);
+    thisDialog = new FILLIN.Form(headline, parentDivId, width, message);
     thisDialog.continuingFunction = continuingfunction;
     thisDialog.optionalData = optionalData;
     thisDialog.optionalValidationFunction = optionalValidationFunction;
@@ -600,7 +569,7 @@ FILLIN.errorMessage = function (formIndex, message) {
     "use strict";
     FILLIN.allForms[formIndex].errorMessage(message);
 };
-FILLIN.addSpan = function (formIndex, id, value, title, width, newLine, changeToDiv) {
+FILLIN.addSpan = function (formIndex, id, value, title, width, newLine) {
     ///<summary>Adds a span tag (Label?) to the form</summary>:
     ///<param name="formIndex" type="Int">the index of the form in FILLIN.allForms</param>
     ///<param name="id" type="String">The element's id</param>
@@ -608,10 +577,9 @@ FILLIN.addSpan = function (formIndex, id, value, title, width, newLine, changeTo
     ///<param name="title" type="String">The text to be displayed in field's label</param>
     ///<param name="width" type="String">(Optional) Any valid css width value.  if provided will set the css width of this field</param>
     ///<param name="newLine" type="Boolean">(Optional) if true, this field will start a new row on the form. </param>
-    ///<param name="changeToDiv" type="Boolean">(Optional) if true, will be a div instead of span</param>
     "use strict";
     var fieldIndex;
-    fieldIndex = FILLIN.zaddControl(formIndex, new FILLIN.ZOneControl((changeToDiv ? "div" : "spa"), formIndex, id, value, title, false, null, null, newLine));
+    fieldIndex = FILLIN.zaddControl(formIndex, new FILLIN.ZOneControl("spa", formIndex, id, value, title, false, null, null, newLine));
     FILLIN.allForms[formIndex].allControls[fieldIndex].width = width;
 };
 FILLIN.addNumberBox = function (formIndex, id, value, title, isRequired, COMMONvalType, min, max, step, width, newline, placeholder) {
@@ -637,7 +605,7 @@ FILLIN.addNumberBox = function (formIndex, id, value, title, isRequired, COMMONv
     FILLIN.allForms[formIndex].allControls[fieldIndex].placeholder = placeholder;
     FILLIN.allForms[formIndex].allControls[fieldIndex].width = width;
 };
-FILLIN.addTextBox = function (formIndex, id, value, title, isRequired, COMMONvalType, maxLength, width, newLine, placeHolder) {
+FILLIN.addTextBox = function (formIndex, id, value, title, isRequired, COMMONvalType, maxLength, width, newLine, placeHolder, password) {
     ///<summary>Adds a text box field to the form</summary>
     ///<param name="formIndex" type="Int">the index of the form in FILLIN.allForms</param>
     ///<param name="id" type="String">The element's id</param>
@@ -648,12 +616,12 @@ FILLIN.addTextBox = function (formIndex, id, value, title, isRequired, COMMONval
     ///<param name="maxLength" type="Int">(Optional) if provided will check that the number of charaters =< this value</param>
     ///<param name="width" type="String">(Optional) Any valid css width value.  if provided will set the css width of this field</param>
     ///<param name="newLine" type="Boolean">(Optional) if true, this field will start a new row on the form. </param>
-    ///<param name="placeholder" type="String">(Optional) Adds a visible text on fields when field is empty HTML5</param>
+    ///<param name="placeHolder" type="String">(Optional) Adds a visible text on fields when field is empty HTML5</param>
+    ///<param name="password" type="Boolean">(Optional) set textbox type to password</param>
     "use strict";
     var fieldIndex;
-    fieldIndex = FILLIN.zaddControl(formIndex, new FILLIN.ZOneControl("txt", formIndex, id, value, title, isRequired, COMMONvalType, maxLength, newLine));
+    fieldIndex = FILLIN.zaddControl(formIndex, new FILLIN.ZOneControl((password === true ? "pas" : "txt"), formIndex, id, value, title, isRequired, COMMONvalType, maxLength, newLine));
     FILLIN.allForms[formIndex].allControls[fieldIndex].width = width;
-    if ((placeHolder === undefined || placeHolder === null) && title !== undefined && title !== null) { placeHolder = title; }
     FILLIN.allForms[formIndex].allControls[fieldIndex].placeholder = placeHolder;
 };
 FILLIN.addTextArea = function (formIndex, id, value, title, isRequired, COMMONvalType, maxLength, width, height, newLine, placeHolder) {
@@ -674,7 +642,6 @@ FILLIN.addTextArea = function (formIndex, id, value, title, isRequired, COMMONva
     fieldIndex = FILLIN.zaddControl(formIndex, new FILLIN.ZOneControl("txa", formIndex, id, value, title, isRequired, COMMONvalType, maxLength, newLine));
     FILLIN.allForms[formIndex].allControls[fieldIndex].width = width;
     FILLIN.allForms[formIndex].allControls[fieldIndex].height = height;
-    if ((placeHolder === undefined || placeHolder === null) && title !== undefined && title !== null) { placeHolder = title; }
     FILLIN.allForms[formIndex].allControls[fieldIndex].placeholder = placeHolder;
 };
 FILLIN.addDDL = function (formIndex, id, value, title, isRequired, queryIdOrArray, params, width, newLine, fieldChangeScript) {
@@ -698,7 +665,7 @@ FILLIN.addDDL = function (formIndex, id, value, title, isRequired, queryIdOrArra
     thisControl.width = width;
     if (typeof queryIdOrArray === "string") {
         thisControl.queryid = queryIdOrArray;
-        thisControl.params = params;
+        thisControl.params = (params ? params.slice() : null);
     } else {
         thisControl.listItem = queryIdOrArray;
     }
@@ -763,31 +730,18 @@ FILLIN.addCalendar = function (formIndex, id, value, title, isRequired, newLine,
     thisControl.fieldChangeScript = onchangeScript;
     FILLIN.zaddControl(formIndex, thisControl);
 };
-FILLIN.addFileUpload = function (formIndex, id, title, newLine) {
-    ///<summary>Adds a file upload input</summary>
-    ///<param name="formIndex" type="Int">the index of the form in FILLIN.allForms</param>
-    ///<param name="id" type="String">The element's id</param>
-    ///<param name="newLine" type="Boolean">(Optional) if true, this field will start a new row on the form.  </param>
-    "use strict";
-    var thisControl;
-    thisControl = new FILLIN.ZOneControl("dfu", formIndex, id, null, title);
-    thisControl.newLine = newLine;
-    FILLIN.zaddControl(formIndex, thisControl);
-};
-FILLIN.addGenericControl = function (formIndex, preconfiguredControl, title, width, newLine) {
+FILLIN.addGenericControl = function (formIndex, preconfiguredControl, title, newLine) {
     ///<summary>Adds a container for other elements provided in the preconfiguredControl parameter</summary>
     ///<param name="formIndex" type="Int">the index of the form in FILLIN.allForms</param>
     ///<param name="preconfiguredControl" type="Element">An HTML container container preconfigured controls</param>
     ///<param name="title" type="String">The text to be displayed in field's label</param>
-    ///<param name="width" type="String">(Optional) Any valid css width value.  if provided will set the css width of this field</param>
     ///<param name="newLine" type="Boolean">(Optional) if true, this field will start a new row on the form.  </param>
     "use strict";
-    var thisControl, fieldIndex;
+    var thisControl;
     thisControl = new FILLIN.ZOneControl("gen", formIndex, null, null, title);
     thisControl.preconfiguredContainer = preconfiguredControl;
     thisControl.newLine = newLine;
-    fieldIndex = FILLIN.zaddControl(formIndex, thisControl);
-    FILLIN.allForms[formIndex].allControls[fieldIndex].width = width;
+    FILLIN.zaddControl(formIndex, thisControl);
 };
 FILLIN.addButton = function (formIndex, dialogResultOrData, id, value, placeLeft, doValidation, doConfirm) {
     ///<summary>Adds a button control to the form</summary>
@@ -804,24 +758,6 @@ FILLIN.addButton = function (formIndex, dialogResultOrData, id, value, placeLeft
     thisButton.buttonIndex = FILLIN.allForms[formIndex].allButtons.length;
     thisButton.doValidation = doValidation;
     FILLIN.allForms[formIndex].allButtons.push(thisButton);
-};
-FILLIN.getFreeButton = function (formIndex, dialogResultOrData, id, value, doValidation, doConfirm, className) {
-    ///<summary>Retrieves a button to be free placed anywhere in the form but will function like any button calling the continuing function</summary>
-    ///<param name="formIndex" type="Int">the index of the form in FILLIN.allForms</param>
-    ///<param name="dialogResultOrData" type="Object">any value that will be provided to the continuing function when this button is clicked. This is in additional to any value provided in the forms optionalValue parameter</param>
-    ///<param name="id" type="String">The element's id</param>
-    ///<param name="value" type="String">The initial value of the field</param>
-    ///<param name="doValidation" type="Boolean">If true will do form validation and the optionalValidation function provided to the form.  If a false is returned by either validation, the form will not give control to the continuingfunction</param>
-    ///<param name="doConfirm" type="Boolean">If true will check if any changes are pending and will prompt user, hint: leave false or omit on buttons that return true</param>
-    "use strict";
-    var thisButton;
-    thisButton = new FILLIN.ZButtonDefinition(formIndex, id, value, dialogResultOrData, false, doValidation, doConfirm);
-    thisButton.buttonIndex = FILLIN.allForms[formIndex].allButtons.length;
-    thisButton.doValidation = doValidation;
-    thisButton.freePlace = true;
-    thisButton.className = (!className ? "" : className);
-    FILLIN.allForms[formIndex].allButtons.push(thisButton);
-    return thisButton.getObject();
 };
 FILLIN.yesNoDialog = function (parentDivId, headLine, message, width, continuingFunction, optionalData) {
     ///<summary>Creates and displays a dialog type form with yes and no buttons where yes returns true as the dialogResult to the continuing function</summary>
@@ -859,7 +795,7 @@ FILLIN.createForm = function (parentDivId, headline, message, continuingfunction
     ///<param name="continuingfunction" type="function">(Optional) a function that will be used when a user clicks a button in the form. the function should be assigned to a variable and have the pattern: function (buttonData, dataValuesFromForm, optionalData) where buttonData is the value assigned in the button Definition, dataValuesFromForm is an object that contains the values from the controls. if there are no values (such as dataValuesFromForm is empty) then optionalData will be the value in order to accomodate continuing functions with only 2 arguments when the Form is known not to have values, and optionalData is the value of optionalData from the Form object. dataValuesFromForm pattern:  {fieldIndexOfField1: {id: idOfField1, value: valuefromfield1},fieldIndexOfField2: {id: idOfField2, value: valueFromField2},...}</param>
     ///<param name="optionalData" type="object">(Optional) Ignored if continuingfunction is not specified. Any data of any type the will be passed to the continuing function</param>
     ///<param name="width" type="String">Any valid css width value</param>
-    ///<param name="optionalValidationFunction" type="function">(Optional) after user clicks a button (if the doValidation property for that button is true) this function will be run. function pattern: function (dataValuesFromForm, formIndex){Returns Boolean} where dataValuesFromForm is the value of the form fields. formIndex is the index of the form the function returns true if the data is valid control will not be sent to the continuing funtion. send messages to the dialog's error div by using FILLIN.errorMessage function. dataValuesFromForm pattern: {hasChanged: Boolean, values: ordered_Array_Of_Values, ObjId1: Value1, ObjId2: Value2, ...}</param>
+    ///<param name="optionalValidationFunction" type="function">(Optional) after user clicks a button (if the doValidation property for that button is true) this function will be run. function pattern: function (dataValuesFromForm, formIndex){Returns Boolean} where dataValuesFromForm is the value of the form fields. formIndex is the index of the form the function returns true if the data is valid control will not be sent to the continuing funtion. send messages to the dialog's error div by using FILLIN.errorMessage function. dataValuesFromForm pattern:  {fieldIndexOfField1: {id: idOfField1, value: valuefromfield1},fieldIndexOfField2: {id: idOfField2, value: valueFromField2},...}</param>
     "use strict";
     var formIndex;
     formIndex = FILLIN.createDialog(parentDivId, headline, message, continuingfunction, optionalData, width, optionalValidationFunction);

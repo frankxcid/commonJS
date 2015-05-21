@@ -148,7 +148,7 @@ COMMON.addOption = function (dDLObj, text, value) {
     var optionObj;
     optionObj = COMMON.docObj.createElement("option");
     optionObj.text = text;
-    if (value) { optionObj.value = value; } else { optionObj.value = text; }
+    if (value !== undefined && value !== null) { optionObj.value = value; } else { optionObj.value = text; }
     try {
         //for IE < 8
         dDLObj.add(optionObj, dDLObj.options[null]);
@@ -163,6 +163,44 @@ COMMON.dateToString = function (dtDate) {
     "use strict";
     if (typeof dtDate === "number") { dtDate = new Date(dtDate); }
     return String(dtDate.getMonth() + 1) + "/" + String(dtDate.getDate()) + "/" + String(dtDate.getFullYear());
+};
+COMMON.formatCurrency = function (numberIn, currencySymbol, precision) {
+    ///<summary>formats numbers into currency with commas</summary>
+    ///<param name="numberIn" type="Number">The number to convert</param>
+    ///<param name="currencySymbol" type="String">(Optional) Adds this symbol to the begining of the Number if present</param>
+    ///<param name="precision" type="Number">(Optional) The number of digits to the right of the decimal. Defaults to 4</param>
+    ///<returns type="String" />
+    "use strict";
+    var wholeNumPart, decimalPart, parts;
+    if (precision === undefined || precision === null || isNaN(precision)) { precision = 4; }
+    parts = String(numberIn).split(".");
+    wholeNumPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    decimalPart = (parts.length > 1 ? parts[1] : "00");
+    if (currencySymbol === undefined || currencySymbol === null) { currencySymbol = ""; }
+    return currencySymbol + wholeNumPart + "." + decimalPart.padRight("0", precision);
+};
+COMMON.readFlag = function (flagIn, flagIndex) {
+    ///<summary>Reads the value of a binary flag within a number</summary>
+    ///<param name="flagIn" type="Number">The number containing all the flags</param>
+    ///<param name="flagIndex" type="Number">The binary index of the flag whose value you want</param>
+    ///<returns type="Boolean" />
+    "use strict";
+    if (flagIn === undefined || flagIn === null) { flagIn = 0; }
+    return (Math.floor(flagIn / Math.pow(2, flagIndex)) % 2) === 1;
+};
+COMMON.setFlag = function (flagIn, flagIndex, newValue) {
+    ///<summary>Use to toggle or set the binary flag value within an integer for decision trees</summary>
+    ///<param name="flagIn" type="Number">The existing flag number</param>
+    ///<param name="flagIndex" type="Number">The binary index to toggle</param>
+    ///<params name="newValue" type="Boolean">(Optional) if omitted, then the value will be toggled</param>
+    ///<returns type="number">The new flag value</returns>
+    "use strict";
+    var oldValue, flagValue;
+    if (flagIn === undefined || flagIn === null) { flagIn = 0; }
+    oldValue = COMMON.readFlag(flagIn, flagIndex);
+    if (newValue !== undefined && newValue !== null && newValue === oldValue) { return flagIn; }//exit if the value is already set as intended
+    flagValue = Math.pow(2, flagIndex);
+    return flagIn + (flagValue * (oldValue ? -1 : 1));
 };
 //***************************************Utility Items: items that manipulate or fix items*************************************************************//
 //***************************************Form Utilities: items that support display**********************************************************************//
@@ -216,20 +254,48 @@ COMMON.zChangeElementAvailability = function (parentObj, tagName, enable) {
     ///<param name="tagName" type="String">The name of the html tag that is to be disabled</param>
     ///<param name="enable" type="Boolean">Whether to enable or disable the tags</param>
     "use strict";
-    var i, allElems;
+    var i, allElems, previouslyDisabledAttr, disabledByFunctionAttr, currentlyEnabled, hasPDA, hasDFA;
+    previouslyDisabledAttr = "wasdisabled";
+    disabledByFunctionAttr = "disabledthis";
     allElems = parentObj.getElementsByTagName(tagName);
     if (allElems.length > 0) {
         for (i = 0; i < allElems.length; i++) {
-            allElems[i].disabled = !enable;
+            currentlyEnabled = !allElems[i].disabled;
+            //PDA flag means that the element had been disable previously outside of this function
+            hasPDA = allElems[i].hasAttribute(previouslyDisabledAttr);
+            //DFA flag means that the element has been disabled by this function
+            hasDFA = allElems[i].hasAttribute(disabledByFunctionAttr);
+            if (enable) {
+                //here to enable all elements
+                if (hasDFA && !currentlyEnabled) {
+                    //only enable elements that have the DFA flag
+                    allElems[i].disabled = false;
+                }
+                //remove all flags if present
+                allElems[i].removeAttribute(previouslyDisabledAttr);
+                allElems[i].removeAttribute(disabledByFunctionAttr);
+            } else {
+                //here to disable all elements
+                if (!currentlyEnabled && !hasPDA && !hasDFA) {
+                    //on elements that were previously disabled and have no flags, set the PDA flag so that they will remain disabled
+                    allElems[i].setAttribute(previouslyDisabledAttr, previouslyDisabledAttr);
+                }
+                if (currentlyEnabled && !hasDFA && !hasPDA) {
+                    //on enabled elements, flag with DFA so that they will be renabled later
+                    allElems[i].setAttribute(disabledByFunctionAttr, disabledByFunctionAttr);
+                    allElems[i].disabled = true;
+                }
+            }
         }
     }
 };
-COMMON.blockInput = function (containerId, restoreFunction, waitGifURL, containerCoverId) {
+COMMON.blockInput = function (containerId, restoreFunction, waitGifURL, containerCoverId, zindex) {
     ///<summary>Covers and disables or Uncovers and enables field elements in a container designated by containerId. Can also display a Wait/Loading GIF while covered</summary>
     ///<param name="containerId" type="String">The parent container id that has the controls to cover/uncover</param>
     ///<param name="restoreFunction" type="Boolean">If true, uncovers and enables all elements in the container</param>
     ///<param name="waitGifURL" type="String">(Optional)Ignored if restoreFunction is True. The url of the GIF or other image to display when the container is covered</param>
     ///<param name="containerCoverId" type="String">(Optional) if provided this is the id of the div used to cover the container. Provide the same name when uncovering. If not provided, will prefix the container id with 'div' and suffix with 'hide'</param>
+    ///<param name="zindex" type="String">(Optional) Ignored of restoreFunction=true. Overrides the default zindex of the coverall div</param>
     "use strict";
     var parentObj, obj1, obj2, oLeft, oTop, attr;
     if (containerId === "body") {
@@ -248,7 +314,9 @@ COMMON.blockInput = function (containerId, restoreFunction, waitGifURL, containe
             oTop = 0;
             oLeft = 0;
         }
-        attr = { "style": "position:absolute;background-color:#FEFEFE;opacity:.8;z-index:98;" };
+        if (zindex === undefined || zindex === null) { zindex = "98"; }
+        if (zindex !== "") { zindex = "z-index:" + zindex + ";"; }
+        attr = { "style": "position:absolute;background-color:#FEFEFE;opacity:.8;" + zindex };
         obj1 = COMMON.getBasicElement("div", containerCoverId, null, null, null, attr);
         obj1.style.top = String(oTop) + "px";
         obj1.style.left = String(oLeft) + "px";
@@ -264,7 +332,9 @@ COMMON.blockInput = function (containerId, restoreFunction, waitGifURL, containe
         parentObj.appendChild(obj1);
 
     } else {
-        parentObj.removeChild(COMMON.docObj.getElementById(containerCoverId));
+        if (COMMON.docObj.getElementById(containerCoverId)) {
+            parentObj.removeChild(COMMON.docObj.getElementById(containerCoverId));
+        }
     }
 };
 //***************************************Form Utilities: items that support display**********************************************************************//
@@ -314,7 +384,7 @@ COMMON.setDefaultButtons = function (btnId, cancelId, mainObj) {
 //***************************************Event Utilities: Items that support common events*************************************************************//
 //****************************************Search String************************************************************************//
 COMMON.getSearchString = function () {
-    ///<summary>Returns the search string component of the uri in key, value pairs in a generic object</summar>
+    ///<summary>Returns the search string component of the uri in key, value pairs in a generic object</summary>
     ///<returns type="Object" />
     "use strict";
     var objOut, ss, i, onePair;
@@ -352,9 +422,10 @@ COMMON.writeCookie = function (cookieName, JSONObj, isPermanent) {
     cookieText = JSON.stringify(JSONObj);
     COMMON.docObj.cookie = cookieName + "=" + encodeURIComponent(cookieText) + cookieExpiresText + maxAgeText;
 };
-COMMON.readCookie = function (cookieName) {
+COMMON.readCookie = function (cookieName, getRawVal) {
     ///<summary>reads a cookie with the name designated in cookieName</summary>
     ///<param name="cookieName" type="String">The Name of the cookie to read</param>
+    ///<param name="getRawVal" type="Boolean">If true will return the value of the cookie for non-JSON data</param>
     ///<returns type="Object">a Generic Object (JSON)</returns>
     "use strict";
     var JSONobj, allCookies, i, thisPair, cookieText;
@@ -372,6 +443,7 @@ COMMON.readCookie = function (cookieName) {
             }
         }
         if (cookieText !== "") {
+            if (getRawVal) { return cookieText; }
             cookieText = decodeURIComponent(cookieText);
             JSONobj = JSON.parse(cookieText);
         }
@@ -462,10 +534,11 @@ COMMON.setTimePickerValue = function (idOrObj, newValue) {
     ///<summary>Sets the value of an existing Time Picker Control</summary>
     ///<param name="idOrObj" type="String|Element">The element or id of an element whose value will be set</param>
     ///<param name="newValue" type="String">Set the value of a time picker control in the forma HH:MM (24Hour)</param>
+    "use strict";
     var obj;
     obj = COMMON.getElement(idOrObj);
     TIMEPICKER.setValue(obj.id, newValue);
-}
+};
 //Retrieve values
 COMMON.getDDLValue = function (ddlIdOrObj, getText) {
     ///<summary>Gets the value or text of the option selected in a Select element</summary>
@@ -561,7 +634,7 @@ COMMON.fieldTypes = {
     hh6: { id: "hh6", name: "h6", tag: "h6", type: "", index: 22, isField: false, setValueFunction: COMMON.setElemValue, getValueFunction: null, canHaveMaxLen: false },
     ppp: { id: "ppp", name: "Paragraph", tag: "p", type: "", index: 23, isField: false, setValueFunction: COMMON.setElemValue, getValueFunction: null, canHaveMaxLen: false },
     eml: { id: "eml", name: "Email Text Box", tag: "input", type: "email", index: 24, isField: true, setValueFunction: COMMON.setTxtValue, getValueFunction: COMMON.getTextValue, canHaveMaxLen: true },
-    url: { id: "eml", name: "Email Text Box", tag: "input", type: "url", index: 25, isField: true, setValueFunction: COMMON.setTxtValue, getValueFunction: COMMON.getTextValue, canHaveMaxLen: true },
+    url: { id: "url", name: "URL Text Box", tag: "input", type: "url", index: 25, isField: true, setValueFunction: COMMON.setTxtValue, getValueFunction: COMMON.getTextValue, canHaveMaxLen: true },
     num: { id: "num", name: "Number Selector", tag: "input", type: "number", index: 26, isField: true, setValueFunction: COMMON.setTxtValue, getValueFunction: COMMON.getTextValue, canHaveMaxLen: false },
     tpk: { id: "tpk", name: "Time Picker", tag: "", type: "", index: 27, isField: true, setValueFunction: COMMON.setTimePickerValue, getValueFunction: COMMON.getTimePickerValue, canHaveMaxLen: false }
 };
@@ -582,6 +655,7 @@ COMMON.checkNumeric = function (fieldType, id, regex, checkMoney) {
     match = val.match(regex);
     if (match === null) { match = []; }
     if (checkMoney) {
+        val = val.replace(",", "");
         strVal = String(val).split(".");
         decPart = (strVal.length > 1 ? strVal[1] : "");
         if (strVal.length === 1 || strVal[1].length < 4) {
@@ -598,7 +672,7 @@ COMMON.checkInteger = function (fieldType, id) {
     ///<param name="id" type="String">The id of the control</param>
     ///<returns type="Boolean">True if there is an error</returns>
     "use strict";
-    return COMMON.checkNumeric(fieldType, id, /[-1234567890]/g, false);
+    return COMMON.checkNumeric(fieldType, id, /[1234567890]/g, false);
 };
 COMMON.checkDecimal = function (fieldType, id) {
     ///<summary>checks that input value is integers and decimal point only</summary>
@@ -606,7 +680,7 @@ COMMON.checkDecimal = function (fieldType, id) {
     ///<param name="id" type="String">The id of the control</param>
     ///<returns type="Boolean">True if there is an error</returns>
     "use strict";
-    return COMMON.checkNumeric(fieldType, id, /[-1234567890.]/g, false);
+    return COMMON.checkNumeric(fieldType, id, /[1234567890.]/g, false);
 };
 COMMON.checkMoney = function (fieldType, id) {
     ///<summary>Checks that input value is integers, decimal point and up to 4 decimal places</summary>
@@ -614,7 +688,7 @@ COMMON.checkMoney = function (fieldType, id) {
     ///<param name="id" type="String">The id of the control</param>
     ///<returns type="Boolean">True if there is an error</returns>
     "use strict";
-    return COMMON.checkNumeric(fieldType, id, /[-1234567890.$]/g, true);
+    return COMMON.checkNumeric(fieldType, id, /[1234567890.$]/g, true);
 };
 COMMON.checkLenghtMax = function (fieldType, id) {
     ///<summary>Checks that input lenght is less than or equal to the value of the maxlen attribute</summary>
@@ -661,7 +735,7 @@ COMMON.checkFieldHasError = function (objOrId, hasError, optionalCheck, optional
     ///<summary>checks the given element to see if it has any validationTypes attributes, runs the appropriate validation function if designated (true if there is an error), changes the background color to red if there is an error or white if it is valid</summary>
     ///<param name="obj" type="element">Field (user input) element to be checked</param>
     ///<param name="hasError" type="Boolean">the value to determine if this field or any field in the group has an error.  This will only be false if all fields pass checks</param>
-    ///<param name="optionaCheck" type="Boolean">(optional) an expression that will determine if this item has an error (true == error)</param>
+    ///<param name="optionalCheck" type="Boolean">(optional) an expression that will determine if this item has an error (true == error)</param>
     ///<param name="optionalErrMess" type="String">(optional) as message to display in title of the field (mouse hover shows message)</param>
     ///<returns type="Boolean">True if there is an error</returns>
     "use strict";
@@ -867,8 +941,8 @@ COMMON.getCheckBox = function (id, value, label, className, placeholder, attribL
         if (id !== undefined && id !== null) {
             obj2.setAttribute("for", id);
             obj2.setAttribute("accesskey", id);
-            objOut.appendChild(obj2);
             objOut.appendChild(obj1);
+            objOut.appendChild(obj2);
         } else {
             obj2.appendChild(obj1);
             objOut.appendChild(obj2);
@@ -882,7 +956,7 @@ COMMON.getNumberField = function (id, value, isrequired, className, valType, min
     ///<summary>Gets an input element with HTML5 validation of type "number"</summary>
     ///<param name="id" type="String">(Optional) The id of the element, will append "num" to the beginning of the provided id if there is not already set (i.e. for text box if the provided id = "GRID" this will result in the id of the element being "numGRID" else if the provided id is "numGrid" for the same text box then the resulting id will not change.</param>
     ///<param name="value" type="String">(Optional)  the value of the element if provided (can be null).</param>
-    ///<param name="isRequired" type="boolean">If true will require use to have selected or entered something in the field</param>
+    ///<param name="isrequired" type="boolean">If true will require use to have selected or entered something in the field</param>
     ///<param name="className" type="String">(Optional) the CSS Class Name of the element</param>
     ///<param name="valType" type="String">(Optional) The type of number validation to do on this field from COMMON.validationTypes</param>
     ///<param name="min" type="number">(Optional) Minimum value allowed</param>
@@ -898,7 +972,7 @@ COMMON.getNumberField = function (id, value, isrequired, className, valType, min
     if (step !== undefined && step !== null && typeof step === "number") { obj.setAttribute("step", String(step)); }
     return obj;
 };
-COMMON.getCalendar = function (id, value, isRequired, placeholder, messageDivId, className, onkeypressAction, onchangeAction, attribLO) {
+COMMON.getCalendar = function (id, value, isRequired, placeholder, messageDivId, className, onkeypressAction, onchangeAction, attribLO, disabled) {
     ///<summary>creates a Calendar object (textbox with calendar icon requires jpg/showcal.jpg image)</summary>
     ///<param name="id" type="String">The id of the element, will append the "cal" to the beginning of the provided id if there is not already set (i.e. if the provided id = "GRID" this will result in the id of the element being "calGRID" else if the provided id is "calGrid" for the same text box then the resulting id will not change.</param>
     ///<param name="value" type="String">(Optional) the value of the element if provided (can be null) in format MM/dd/yyyy.</param>
@@ -909,6 +983,7 @@ COMMON.getCalendar = function (id, value, isRequired, placeholder, messageDivId,
     ///<param name="onkeypressAction" type="String">(Optional) Function to run during onkeypress event</param>
     ///<param name="onchangeAction" type="String">(Optional) Function to run during onchange event of the text box and when calendar control is clicked</param>
     ///<param name="attribLO" type="Literal Object">(Optional) Object containing attributeName:attributevalue pairs</param>
+    ///<param name="disabled" type="Boolean">(Optional) if true both the button and text box will be disabled
     "use strict";
     var attrib, obj, obj1, obj2, obj3;
     attrib = {};
@@ -926,6 +1001,7 @@ COMMON.getCalendar = function (id, value, isRequired, placeholder, messageDivId,
     id = obj.id;
     obj.setAttribute("name", id);
     obj.setAttribute("style", "float:left;");
+    obj.disabled = disabled;
     obj1 = COMMON.getBasicElement("div", id);
     obj1.setAttribute("style", "margin:0;padding:0;");
     obj1.appendChild(obj);
@@ -936,6 +1012,7 @@ COMMON.getCalendar = function (id, value, isRequired, placeholder, messageDivId,
     }
     obj2 = COMMON.getLink(id, null, "#", onchangeAction);
     obj2.setAttribute("style", "margin:0;padding:0;float:left;");
+    if (disabled) { obj2.setAttribute("disabled", ""); }
     obj3 = COMMON.getImageElement(null, "jpg/showcal.jpg", "Open Calendar");
     obj3.setAttribute("style", "margin:0;padding:0;border:0;");
     obj3.height = "20";
@@ -1076,6 +1153,7 @@ COMMON.helpDialog = function (topic, displayDivId, width) {
             case "h2":
             case "h3":
             case "div":
+            case "p":
                 obj1.innerHTML = oneCt.ih;
                 break;
             case "ul":
@@ -1090,6 +1168,18 @@ COMMON.helpDialog = function (topic, displayDivId, width) {
         }
     }
     FILLIN.okDialog(displayDivId, title, objOut, width);
+};
+COMMON.createHelpContentObj = function (tag, content) {
+    ///<summary>Creates a content object used by helptopics.js</summary>
+    ///<param name="tag" type="String">The tag to create</param>
+    ///<param name="content" type="String|String Array">What the tag will contain</param>
+    ///<returns type="Object">The Object</returns>
+    "use strict";
+    var obj;
+    obj = {};
+    obj.tag = tag;
+    obj.ih = content;
+    return obj;
 };
 //*******************************Generic Help*********************************************************//
 //*****************************Javascript object enhancers*********************************************//

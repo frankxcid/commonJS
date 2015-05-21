@@ -23,7 +23,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     ///<summary>NOT FOR EXTERNAL USE...Main object, contains all the logic to create the grid, should not be called directly, use DISPLAYGRID.addGrid function to add a new grid</summary>
     ///<param name="gridIndex" type="int">assigned when creating, the index of the grid in DISPLAYGRID.allGrids array</param>
     "use strict";
-    var that, pagination, allColDefinitions, allButtonDefinitions, dataResults, columnNames, searchObj, filterObj, gridIndex, currentPage, currentSortIndex, lastSortIndex, filterString, filterFunctionRecur, gridTableId, titleRowId, titleCellId, headerTRId, sortButtonId, filterTRId, filterDDLId, pageNavDivId, pageNavCntrlId, baseClassName, titleCellClassName, titleHeadlineClassName, titleSubHeadlineClassName, gridTableClass, headerTRClass, headerBtnClass, filterTRClass, filterClass, dataRowClass, buttonColumnClass, summaryTRClass, pageNavDivClass, refreshSearchObj, cloneDataResults, getFilterDDL, setSortIndicator, getFilterString, displayRow, dataOutRow, titleBar, headerRow, filterRow, dataRow, summaryRow, pageNavigationBtns, addGridBody, paginate, currentRowColorClass, alternatingRowColorClass1, alternatingRowColorClass2, printTableClass, getButtonColumnTD;
+    var that, pagination, allColDefinitions, allButtonDefinitions, dataResults, columnNames, searchObj, filterObj, gridIndex, currentPage, currentSortIndex, lastSortIndex, filterString, filterFunctionRecur, gridTableId, titleRowId, titleCellId, headerTRId, sortButtonId, filterTRId, filterDDLId, pageNavDivId, pageNavCntrlId, baseClassName, titleCellClassName, titleHeadlineClassName, titleSubHeadlineClassName, gridTableClass, headerTRClass, headerBtnClass, filterTRClass, filterClass, dataRowClass, buttonColumnClass, summaryTRClass, pageNavDivClass, refreshSearchObj, cloneDataResults, getFilterDDL, setSortIndicator, getFilterString, displayRow, dataOutRow, titleBar, headerRow, filterRow, dataRow, summaryRow, pageNavigationBtns, addGridBody, paginate, currentRowColorClass, alternatingRowColorClass1, alternatingRowColorClass2, printTableClass, getButtonColumnTD, runQuery, setDataObject;
     //*********************Private Variables********************************//
     //********Arrays************************************//
     pagination = null; //holds the collection of Onepage objects where each element describes the data that should be in each page. Object pattern: {totalPages: Int, pageNumber0 : {start : Int, end : Int}, pageNumber1...}, total pages shows the number of pages, pageNumber is the page with the start and end row indexes of dataResults
@@ -80,7 +80,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     ///<var>the name of the container that envelopes the grid (named in initialization)</var>
     this.baseDivId = "";
     ///<var>holds the query id used to fill the grid</var>
-    this.queryId = -1;
+    this.queryId = null;
     ///<var>holds the parameter array for the query used to fill the grid</var>
     this.params = null;
     ///<var>Number of rows to display in a single grid (name in initialization)</var>
@@ -183,7 +183,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     //  index       (int)               The column Index
     //Returns       (element:select)    Drop down list
     getFilterDDL = function (index) {
-        var DDLOut, currentValue, allValues, i, li, thisValue, displayValue, holder, liObj;
+        var DDLOut, currentValue, allValues, i, li, thisValue, displayValue, liObj;
         allValues = [];
         //gather all values
         for (i = 0; i < dataResults.length; i++) {
@@ -377,7 +377,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     //construct data rows
     //Returns       (element:tr)
     dataRow = function (rowIndex, isFirstRow) {
-        var tr, td, printLink, thisColDef, thisRow, i, thisBtn;
+        var tr, td, printLink, thisColDef, thisRow, i, thisBtn, styleDef, obj;
         if (currentRowColorClass === "" || currentRowColorClass === alternatingRowColorClass2) {
             currentRowColorClass = alternatingRowColorClass1;
         } else {
@@ -386,7 +386,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         if (!that.alternateColor) { currentRowColorClass = dataRowClass; }
         tr = COMMON.getBasicElement("ttr", null, null, currentRowColorClass);
         td = document.createElement("td");
-        if (isFirstRow) {
+        if (isFirstRow && that.getRowCount() > that.rowsPerPage) {
             //Print Link
             printLink = COMMON.getLink(null, "Print", null, "DISPLAYGRID.zassemblePrint(" + String(gridIndex) + "); return false;");
             td.appendChild(printLink);
@@ -401,7 +401,10 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
             if (thisColDef.isVisible) {
                 td = COMMON.getBasicElement("ttd", null, null, (thisColDef.getCellClass(thisRow)));
                 td.style.backgroundColor = thisColDef.getColor(thisRow);
-                td.appendChild(thisColDef.getObj(thisRow));
+                styleDef = thisColDef.getStyle(thisRow);
+                obj = thisColDef.getObj(thisRow);
+                if (styleDef !== "") { COMMON.addAttribute(obj, "style", styleDef, true); }
+                td.appendChild(obj);
                 tr.appendChild(td);
             }
         }
@@ -514,7 +517,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         getFilterString();
         rppCount = 0;
         pagination[1] = { start: 0, end: 0 };
-        for (n = 1; n < allColDefinitions.length; n++) {//need to reset summaries prior to paginating
+        for (n = 1; n < allColDefinitions.length; n++) {
             allColDefinitions[n].initSummary();
         }
         for (i = 0; i < dataResults.length; i++) {
@@ -544,6 +547,39 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
             }
         }
         pagination[pagination.totalPages].end = dataResults.length - 1;
+    };
+    runQuery = function () {
+        dataResults = null;
+        columnNames = null;
+        if (that.queryId === undefined || that.queryId === null || that.queryId === -1) { return; }
+        AJAXPOST.callQuery(that.queryId, that.params);
+
+        if (!AJAXPOST.dataResults || AJAXPOST.dataResults.length === 0) { return; }
+        //copy results data to local variable
+        cloneDataResults(that.gridIndex);
+    };
+    setDataObject = function (dataObj) {
+        //assumes dataobj is an array of literal object and that each element has the same property names throughout
+        var i, n, oneProp, thisRow;
+        if (!dataObj || dataObj.length === 0) { return; }
+        dataResults = [];
+        columnNames = [];
+        for (oneProp in dataObj[0]) {
+            if (dataObj[0].hasOwnProperty(oneProp)) {
+                columnNames.push(oneProp);
+            }
+        }
+        for (i = 0; i < dataObj.length; i++) {
+            thisRow = [];
+            for (n = 0; n < columnNames.length; n++) {
+                if (dataObj[i].hasOwnProperty(columnNames[n])) {
+                    thisRow.push(dataObj[i][columnNames[n]]);
+                } else {
+                    thisRow.push("");
+                }
+            }
+            dataResults.push(thisRow);
+        }
     };
     //***************************************** Public Control Change Actions**********************************************************//
 
@@ -603,7 +639,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
             currentPage++;
             break;
         case 2:
-            if (jumpToPage.value === ""||isNaN(jumpToPage.value)) {
+            if (jumpToPage.value === "" || isNaN(jumpToPage.value)) {
                 COMMON.errMess("Please Enter a number for the page you want to jump to");
                 jumpToPage.value = "";
                 COMMON.focusme(jumpToPage.id);
@@ -661,7 +697,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     };
     //*******************Execute****************************************//
     //this will display the assembled grid
-    this.display = function () {
+    this.display = function (dataObj) {
         var div, i, thisCol, tab, alternateSortIndex;
         //construct the base of the grid in the document object
         div = document.getElementById(that.baseDivId);
@@ -680,11 +716,17 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         div.appendChild(tab);
 
         //query database
-        AJAXPOST.callQuery(that.queryId, that.params);
-        div.removeChild(tab);
+        runQuery();
+        //if a dataObj is provided then set dataResults and columnNames
+        if (dataObj !== undefined && dataObj !== null) {
+            setDataObject(dataObj);
+        }
+
+
+        div.removeChild(tab);//removes the "Waiting"
 
         //do no result actions
-        if (!AJAXPOST.dataResults || AJAXPOST.dataResults.length === 0) {
+        if (!dataResults || dataResults.length === 0) {
             if (typeof that.noResultsAction === "function") {
                 that.noResultsAction();
                 return;
@@ -701,9 +743,6 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
             return;
         }
 
-        //copy results data to local variable
-        cloneDataResults(that.gridIndex);
-
         //fill out all definitions because every column needs a definition
         for (i = 0; i < columnNames.length; i++) {
             thisCol = that.initializeColumnDefinitions(i);
@@ -715,6 +754,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
                 allColDefinitions[i].colorDefinition = thisCol.colorDefinition;
             }
         }
+
         //hide alternatesort columns and linkValueColumn
         for (i = 0; i < columnNames.length; i++) {
             thisCol = allColDefinitions[i];
@@ -886,6 +926,7 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
     //color properties
     this.colorDefinition = null; //a generic definitions containing the determinating column  and the colorvaluefunction with pattern "function (val) {return Color}" where val is the value of the determinationColumn. The color to return will be any valid css color value (#RRGGBB or common name).  If no color is return as in the case of null or undefined, then the default color white will be used
     //initializes summary, to be run in gridBody() function
+    this.styleDefinition = null; //contains the function object with the pattern function(val){return String InLine Style} where val is the value of the determinationColumn. The style returned will be applied to the object in the grid cell
     this.initSummary = function () {
         that.summarySum = 0;
         that.summaryRowCount = 0;
@@ -983,6 +1024,17 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
         dColVal = dataRow[that.colorDefinition.determinationColumn];
         color = that.colorDefinition.valueFunction(dColVal);
         return color || "transparent";
+    };
+    //Gets the style to assign to a cell (td element) based on the style definition
+    //Parameters:
+    //  dataRow     (Array:String)      The dataResult Row
+    //Returns       (String)            in-line style string
+    this.getStyle = function (dataRow) {
+        var dColVal, style;
+        if (!that.styleDefinition) { return ""; }
+        dColVal = dataRow[that.styleDefinition.determinationColumn];
+        style = that.styleDefinition.valueFunction(dColVal);
+        return style || "";
     };
     //Returns the value of the summary
     //Returns       (element:td)
@@ -1231,8 +1283,8 @@ DISPLAYGRID.addGrid = function (displayDivId, baseDivId, queryId, params, rowsPe
     ///<summary>Adds a new Grid to Array</summary>
     ///<param name="displayDivId" type="String">the container element where the grid will be displayed</param>
     ///<param name="baseDivId" type="String">grid envelope element id</param>
-    ///<param name="queryId" type="String or Int">the name of the query (SQLConnect.SQL in SQLConnect.cs) that will provide the data for this grid.  Column 0 must be a unique primary key</param>
-    ///<param name="params" type="Array of Strings">an array of values that will be included in the SQL statement as variables (see code in SQLConnect.cs)</param>
+    ///<param name="queryId" type="String or Int">(Optional) Can be omitted if providing a data object when calling DISPLAYGRID.display(). The name of the query that will provide the data for this grid.  Column 0 must be a unique primary key</param>
+    ///<param name="params" type="Array of Strings">(Optional) Ignored if queryId is null. An array of values that will be included in the SQL statement as variables (see code in SQLConnect.cs)</param>
     ///<param name="rowsPerPage" type="Int">number of rows to show at one time</param>
     ///<param name="firstSortIndex" type="Int">(Optional) the columns that the grid will be sorted by when initially displayed</param>
     ///<param name="reverseSort" type="Boolean">(Optional) is the initialSort Reversed. Ignored if firstSortIndex is not set</param>
@@ -1300,6 +1352,17 @@ DISPLAYGRID.addColorDefinition = function (gridIndex, colindex, determinationCol
     var thisColumnDefinition;
     thisColumnDefinition = DISPLAYGRID.zgetColumnDef(gridIndex, colindex);
     thisColumnDefinition.colorDefinition = { determinationColumn: determinationColumn, valueFunction: colorValueFunction };
+};
+DISPLAYGRID.addStyleDefinition = function (gridIndex, colIndex, determinationColumn, styleValueFunction) {
+    //<summary>adds style Definitions for a column</summary>
+    ///<param name="gridIndex" type="int">The index of the grid</param>
+    ///<param name="colIndex" type="int">The index of the column to affect</param>
+    ///<param name="determinationColumn" type="int">the index of the column whose value will determine what color to shade the data cell</param>
+    ///<param name="styleValueFunction" type="function object">The function that returns a in-line style string, The function will be in the pattern "function (val) {return String in-line style}" where val is the value of the determinationColumn. The style to return will be any valid css style string (e.g. color:white;border: 1px solid red; etc).  If no string is return as in the case of null or undefined, then no style will be applied</param>
+    "use strict";
+    var thisColumnDefinition;
+    thisColumnDefinition = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
+    thisColumnDefinition.styleDefinition = { "determinationColumn": determinationColumn, "valueFunction": styleValueFunction };
 };
 DISPLAYGRID.addTextBox = function (gridIndex, colIndex, isRequired, COMMONvalType, maxLength, onchangeAction, onkeypressAction) {
     ///<summary>adds text boxes to specific column</summary>
@@ -1451,11 +1514,12 @@ DISPLAYGRID.addReadOnlyDefinition = function (gridIndex, colIndex, determination
     thisColDef = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
     thisColDef.readOnlyDefinition = { determinationColumn: determinationColumn, valueFunction: logicFunction };
 };
-DISPLAYGRID.display = function (gridIndex) {
+DISPLAYGRID.display = function (gridIndex, dataObj) {
     ///<summary>Use after all features have been added to render the grid</summary>
     ///<param name="gridIndex" type="int">The index of the grid</param>
+    ///<param name="dataObj" type="Array">An array of literal objects in the format {"ColumnName0":"ColumnValue0","ColumnName1":"ColumnValue1",...}</param>
     "use strict";
-    DISPLAYGRID.allGrids[gridIndex].display();
+    DISPLAYGRID.allGrids[gridIndex].display(dataObj);
 };
 DISPLAYGRID.getData = function (gridIndex, forCSharp, showAll) {
     ///<summary>returns data from grid</summary>

@@ -1,17 +1,32 @@
 ﻿/*jslint browser: true  plusplus: true  */
-/*bonus Structure Help Topics*/
+/*Help Topics*/
+/// <reference path="common.js" />
+//HELPTOPICS object contains various function object that return a single object
+//The Object returns has the folloing structure
+//{
+//  content: Array of Objects (see structure below) containing the content to be displayed
+//  title: String containing the titel of the topic
+//}
+//The structure of content:
+//{
+//  tag: String containing the name of the tag to create includes h2, h3, div, p, and ul
+//  ih: String containing the text to add to the innerHTML of the tag except for ul where it is an Array of strings where each element of the array is a list item
+//}
 var HELPTOPICS = {};
 HELPTOPICS["0"] = function () {
     "use strict";
     //topic 0
     var obj, content;
     obj = {};
-    obj.title = "Home Page";
+    obj.title = "Work Order List";
     content = [];
-    content.push({ "tag": "h2", "ih": "Introduction" });
-    content.push({ "tag": "div", "ih": "This pages shows that calculated payout of the group you are assigned to and those of your subordinates.  Select the quarter you wish to display from the list of calculated quarters. Use the menu to display navigate to other components of the application." });
-    content.push({ "tag": "h3", "ih": "Columns" });
-    content.push({ "tag": "ul", "ih": ["Metric Rule - The name of the rule for which the data is displayed.", "Max Payout - (Set by administrator in Metrics Setup-->Quarterly Max Payouts) The maximum payout posible", "Total target - (Set by Administrator in Metrics Setup-->Quarterly Targets) The total of target values of all metrics in this rule.", "Total Actual (Set by Administrator in Metrics Setup-->Quarterly Targets) The total of all actual values of all metrics in this rule", "Ratio Basis - (Set by Administrator in Metric Setup-->Metric Payout Rules) Determines how the ratio is calculated that is compared with rule to determine the percentage of the max payout", "Percentage To Target - Calculated based on the ratio basis.", "Payout Percentage - Calculated by comparing the Percentage to Target and the thresholds in the Metrics rule.", "Calculated Payout - The result when the payout percentage is multiplied by the max payout"] });
+    content.push(COMMON.createHelpContentObj("p", "This is the main page where you can see all work orders that are in the system.  You can use the filters to help search for a particular work order, use the sorting button or the drop down filters located under the headers"));
+    content.push(COMMON.createHelpContentObj("div", "<img style=\"border:0; padding:0; margin:0;\" src=\"jpg/help0figure1.jpg\" alt=\"Image shows Sort Button and Column filter\" />"));
+    content.push(COMMON.createHelpContentObj("p", "Click the sort button once to sort ascending, click the same button to sort descending. The Column filters contain a list of every value displayed. Select All to display all items or one value to display records that have the value selected.  There is also a search dialog that will show records that contain the text entered in any one column"));
+    content.push(COMMON.createHelpContentObj("p", "You can view details or Add notes to existing work orders. Logged in users can Edit some aspects of existing work orders.</p><p>from this screen you can Log In if you are in the maintenance department or create a new work order."));
+    content.push(COMMON.createHelpContentObj("p", "Search Work orders by typing anything from the work order in the Search text box.  A list of work orders matching your search criteria will appear where you can select the appropriate work order.  See the help topic on the search screen for more information."));
+    content.push(COMMON.createHelpContentObj("h3", "Create a New Work Order"));
+    content.push(COMMON.createHelpContentObj("p", "Work order can be initiated by any user whether logged in or not. Enter your name, contact email or phone, select the work location, work type and priority. Enter a Summary that will tell the maintenance department about the issue. All fields except for New Note are required and need a value selected or entered. Use New Note to enter any details you want to attach to the work order"))
     obj.content = content;
     return obj;
 };
@@ -20,14 +35,9 @@ HELPTOPICS["1"] = function () {
     //topic 1
     var obj, content;
     obj = {};
-    obj.title = "Manage Employees/Users";
+    obj.title = "Search Work Orders";
     content = [];
-    content.push({ "tag": "h2", "ih": "Introduction" });
-    content.push({ "tag": "div", "ih": "Displays a listing of all user/Employees of this application. From here you can Edit, delete and add users.  You can also disable employees" });
-    content.push({ "tag": "h3", "ih": "User Actions" });
-    content.push({ "tag": "ul", "ih": ["Edit - Enables you to change aspects of an individual user", "Change Status - Click this button to disable active employees so they can no longer use this application and will no longer be available for selection in other location of the application", "Delete - Allows you to delete a user.  You can only delete employees that are not assigned to a group"] });
-    content.push({ "tag": "h3", "ih": "Edit a User/Create New User" });
-    content.push({ "tag": "div", "ih": "Enter all required information on fields marked with *. Users must have a group assignment, Name, Login Name." });
+    content.push(COMMON.createHelpContentObj("p", "After entering a search term in the Search text box you may get results of Work Orders that match. Use the Clear Search button to return to the Home Page view"));
     obj.content = content;
     return obj;
 };
@@ -36,24 +46,9 @@ HELPTOPICS["2"] = function () {
     //topic 2
     var obj, content;
     obj = {};
-    obj.title = "Manage Groups";
+    obj.title = "Loging In";
     content = [];
-    content.push({ "tag": "h2", "ih": "Introduction" });
-    content.push({ "tag": "div", "ih": "Displays a listing of groups. You can ad groups, change the name and status, delete the group, add metrics rules to a specific group or view the employees who are members of this group. To change the group name, change the text in the box provided and click Save.  Click &quot;Add New Group&quot; to add a group. Enter the name and click save.  The Group will now appear in the listing. " });
-    content.push({ "tag": "h3", "ih": "User Actions" });
-    content.push({ "tag": "ul", "ih": ["Change Status - Click this button to disable an active group or return an in-active group back to active status", "Delete - Allows you to delete a Group.  You can only delete groups that are not assigned to a user or have rule attached to them", "Manage Group Rules - Allows you to add rules to this group. Rules are configured in Metric Setup-->Metric Payout rules from the menu.", "Group Members - Displays a listing of which employees are assigned to the group."] });
-    obj.content = content;
-    return obj;
-};
-HELPTOPICS["9"] = function () {
-    "use strict";
-    //topic 9
-    var obj, content;
-    obj = {};
-    obj.title = "Manage Group Rules";
-    content = [];
-    content.push({ "tag": "h2", "ih": "Introduction" });
-    content.push({ "tag": "div", "ih": "Displays a listing of rules assigned to a particular group. You can add rules by clicking on the Add Rule button, selecting a rule that is not already in this group and clicking save.  Rules can be removed by clicking on the Delete button. Group Rules that have payout data cannot be deleted. You can change the active status by clicking on the Change Status button. Inactive Group rules will no longer be displayed elsewhere in the application" });
+    content.push(COMMON.createHelpContentObj("p", "Users of the Maintenance department are the only users required to log in. Most users do not need to log in. Enter your username and password in the text boxes provided. Check the check box labelled &quot;Keep me logged in&quot; to keep the session open for 20 hours or you will be logged out once you close your browser window"));
     obj.content = content;
     return obj;
 };
@@ -62,14 +57,9 @@ HELPTOPICS["3"] = function () {
     //topic 3
     var obj, content;
     obj = {};
-    obj.title = "Manage Metrics";
+    obj.title = "Settings";
     content = [];
-    content.push({ "tag": "h2", "ih": "Introduction" });
-    content.push({ "tag": "div", "ih": "Displays a listing of all metrics in use in this application. Metrics are the basic blocks of Metrics Rules. From this page you can change how a metric behaves within a Rule. You can add a metric, change the data of an existing metric and see which rule contain a particular metric" });
-    content.push({ "tag": "h3", "ih": "Metric Columns" });
-    content.push({ "tag": "ul", "ih": ["Name - identifies the metric", "Description - a brief description of the metric", "Priority Position - The order in which a metric will be used in a rule", "Metric Type - Designates if this metric will affect the target or actual total of a rule. Assets are positive and Liability is negative. For example AP Days will be removed from the totals of AR days in a rule that has both because AP days is a liability"] });
-    content.push({ "tag": "h3", "ih": "User Actions Buttons" });
-    content.push({ "tag": "ul", "ih": ["Move UP, Move Down, Change Priority - Use the buttons to affect the Priority Position of the metric in comparison to its neighbors", "Delete - You can delete the metric as long as it is not part of a rule or used historically", "Info - Shows which rule has this metric and which groups have the rule"] });
+    content.push(COMMON.createHelpContentObj("p", "Use this screen to edit user selections when they enter a new work order. You Have to be supervisor security level to be able to manage these lists.  Select the list you want to edit by choosing it from the drop down list. The list are Priority, work location, work type and Notification Recipients. Add a new item to the list by entering the Sort Order and Item in the blank text box at the top of the page. Sort Order is used for sorting the list items. Edit existing item by typing in the text boxes in the grid at the botom of the page. In addition, you can select whether the list item is enabled or not. Disabled list items will not appear in the drop down list.  You can also delete the items by clicking on the button provided. The only list items that can be deleted are items that are not being used else where in the database.  If you cannot delete the list item, disabling will result in the item not being displayed for new work orders. Just like any grid, you can sort the items by clicking on the column headers. Click a second time to reverse sort the item. You can also filter items by choosing the item to be filtered from the drop down list just under the column headings"));
     obj.content = content;
     return obj;
 };
@@ -78,14 +68,11 @@ HELPTOPICS["4"] = function () {
     //topic 4
     var obj, content;
     obj = {};
-    obj.title = "Manage Metric Payout Rules";
+    obj.title = "Manage Users";
     content = [];
-    content.push({ "tag": "h2", "ih": "Introduction" });
-    content.push({ "tag": "div", "ih": "Displays a listing of Rules that are used to calculate payout for groups. One or more rules can be assigned to a group.  Rules describe the rational relationship between the target goal of a metric and the actual value.  It also gathers the value of one or more metrics. Finally, a rule describes the comparison between the target-actual ratio and the thresholds for payout percentages. From this page you can add a new rule or affect existing rules" });
-    content.push({ "tag": "h3", "ih": "Rule Columns" });
-    content.push({ "tag": "ul", "ih": ["Rule Name - Identifies the rule", "Rule Basis - Describe the rational relationship between target goal and actual value for metrics within this rule", "Status - Shows whether the rule is active or not. Inactive rules will not be displayed elsewhere in the application."] });
-    content.push({ "tag": "h3", "ih": "User Actions Buttons" });
-    content.push({ "tag": "ul", "ih": ["Edit - Displays the edit rule page, allows you to changes rule settings", "Change Status - Change the active status of the rule", "Delete - Allows you to delete a rule. Rule cannot be deleted if it has be used to calculate a payout in the past, consider setting the status of the rule to inactive instead", "Show Groups - Displays a list of groups that have this rule assigned"] });
+    content.push(COMMON.createHelpContentObj("p", "From here you can review existing users, create new users, edit existing users and Deactivate existing users all by clicking the appropraite button. If the user is locked for entering too many wrong password, you can unlock him by using the provided button. Deactivated users cannon log in and can be reactivated by using the button provided</p><p>As with any grid you can sort the list by using the header buttons and filter by using the drop down lists below the header buttons"));
+    content.push(COMMON.createHelpContentObj("h3", "Create New User"))
+    content.push(COMMON.createHelpContentObj("p", "Enter as must information as possible in the text boxes provided, select the desired security role and click Save to save. Fields marked with * are required"))
     obj.content = content;
     return obj;
 };
@@ -94,16 +81,45 @@ HELPTOPICS["5"] = function () {
     //topic 5
     var obj, content;
     obj = {};
-    obj.title = "Edit Rule";
+    obj.title = "Edit Work Order";
     content = [];
-    content.push({ "tag": "h2", "ih": "Introduction" });
-    content.push({ "tag": "div", "ih": "Change the settings of a rule from this page.  Change the name and ratio basis if neede and click save. You can add or remove metrics from this rule. Finally, you can add, remove or edit thresholds from the rule." });
-    content.push({ "tag": "h3", "ih": "Metrics" });
-    content.push({ "tag": "div", "ih": "The grid shows a listing of metrics assign to this rule. Add a metric by clicking on the &quot;Add Metric to this rule&quot; button, select a metric and click save. Remove metrics by clicking on the button.  You cannot remove metrics from rules if the metrics was used to calculate a payout in the past. Consider disabling the rule and creating a new rule to maintain historical data" });
-    content.push({ "tag": "h3", "ih": "Thresholds" });
-    content.push({ "tag": "div", "ih": "The threshold grid is a listing of threshold aspects of this rule.  You can add, remove or edit existing thresholds.  Add a new threshold by clicking on the &quot;Add a New Threshold to this rule&quot; button. Enter the information and click save. Edit an existing threshold by changing the data in the grid and click the Save Changes button. Finally, remove a threshold by clicking on the Remove button. You cannot remove a threshold that was historically used in calculating a payout. Consider disabling the rule and creating a new one to maintain historical integrity." });
-    content.push({ "tag": "h3", "ih": "Threshold Description" });
-    content.push({ "tag": "ul", "ih": ["Beings At Percent - this is the begining of the threshold. When comparing with the actual-to-target ratio, the threshold applies if the ratio is greater than or equal to this percentage and is lower than the next higher threshold.  If there is no more higher thresholds, the upper limit is considered to be infinity so it will capture all values including ratios greater than 100&#37;", "Max Payout Percent - Denotes the highest payout percent that can be obtained when this threshold is in effect.", "Payout Style - describes how the max payout percentage will be applied. Fixed means that all values that have this threshold in effect will be given the max payout percentage. Scaled will calculate the percentage of the max payout percent multiplied by the ratio of (target_to_actual_ratio - begins_at_Percent)/(next_higher_threshold_or_100 - begins_at_percent)"] });
+    content.push(COMMON.createHelpContentObj("p", "Use this screen to see the status and any notes associated with the work order.  You can also add your own notes to this work order.  The maintenance department will be notified of new notes added to the work order"));
+    content.push(COMMON.createHelpContentObj("p", "Enter the note and click save to continue. Click on Print Work Order to print the work order.  This requires popups."));
+    obj.content = content;
+    return obj;
+};
+HELPTOPICS["9"] = function () {
+    "use strict";
+    //topic 5
+    var obj, content;
+    obj = {};
+    obj.title = "Edit Work Order";
+    content = [];
+    content.push(COMMON.createHelpContentObj("p", "Use this screen to see the status and any notes associated with the work order.  You can also add your own notes to this work order. Enter the note and click save to continue"));
+    content.push(COMMON.createHelpContentObj("p", "A work order can be cancelled if needed. You can also state that the work has been completed and ready for supervisor approval by clicking on the Maintenance Completed button. Only work orders assigned to any maintenance worker can be flag as maintenance completed by any worker. Work orders can also be rejected by the supervisor.  A work order with rejected status can be resubmitted by clicking the Maintenance Completed button. Enter notes as appropriated to explain any changes. Click on Print Work Order to print the work order.  This requires popups."));
+    obj.content = content;
+    return obj;
+};
+HELPTOPICS["10"] = function () {
+    "use strict";
+    //topic 5
+    var obj, content;
+    obj = {};
+    obj.title = "Edit Work Order";
+    content = [];
+    content.push(COMMON.createHelpContentObj("p", "Use this screen to see the status and any notes associated with the work order.  You can also add your own notes to this work order. Enter the note and click save to continue"));
+    content.push(COMMON.createHelpContentObj("p", "On work orders that have been assigned, you can cancel the work order or click on Maintenance Completed to flag the work order as ready to be inspected. On work orders marked as &quot;Maintenance Completed&quot; the supervisor can reject or close the work order. Rejecting the work order notifies the maintenance worker that some action needs to be done before closing the work order. Closing the work order signifies that all work has been completed on the work order. The supervisor can re-open a closed work order. Click on Print Work Order to print the work order.  This requires popups."));
+    obj.content = content;
+    return obj;
+};
+HELPTOPICS["11"] = function () {
+    "use strict";
+    //topic 5
+    var obj, content;
+    obj = {};
+    obj.title = "Add New Work Order";
+    content = [];
+    content.push(COMMON.createHelpContentObj("p", ">Work order can be initiated by any user whether logged in or not. Enter your name, contact email or phone, select the work location, work type and priority. Enter a Summary that will tell the maintenance department about the issue. All fields except for New Note are required and need a value selected or entered. Use New Note to enter any details you want to attach to the work order"));
     obj.content = content;
     return obj;
 };
@@ -112,10 +128,9 @@ HELPTOPICS["6"] = function () {
     //topic 6
     var obj, content;
     obj = {};
-    obj.title = "Quarterly Actual-Target Values";
+    obj.title = "Manage Notifications";
     content = [];
-    content.push({ "tag": "h2", "ih": "Introduction" });
-    content.push({ "tag": "div", "ih": "This page allows you to enter metric values for each quarter. It is here where an administrator can create a new quarter for payout calculations. Existing quarters are listed in the grid, but you can add data for new quarters.  Add a new quarter by selecting the quarter from the list and clicking save.  Creating a new quarter creates records for all metrics that are active and blank payout records for each group-rule so the administrator can enter max payout. Locked quarters can be viewed but not edited." });
+    content.push(COMMON.createHelpContentObj("p", "Use this screen to manage what events will cause a notification email to be sent.  The notification list shows the email addresses that will receive a notification.  This is control in Settings. Place a check mark by the event you want to have notification sent."));
     obj.content = content;
     return obj;
 };
@@ -124,10 +139,9 @@ HELPTOPICS["7"] = function () {
     //topic 7
     var obj, content;
     obj = {};
-    obj.title = "Edit Metric Values";
+    obj.title = "Equipment Part";
     content = [];
-    content.push({ "tag": "h2", "ih": "Introduction" });
-    content.push({ "tag": "div", "ih": "Enter Target and Actual values for each metric on this page.  Make changes and add values as required and click Save.  Click the Info button to view the rules and groups the metric belongs to." });
+    content.push(COMMON.createHelpContentObj("p", "This screen helps you control parts that have been ordered for maintenance. A part may or may not be associated with a work order. This screen list part orders based on the filter selected. You can filter by order date or the type.  Add a new Equipemnt Part Order by clicking on the button or select an existing order to manage it."));
     obj.content = content;
     return obj;
 };
@@ -136,10 +150,9 @@ HELPTOPICS["8"] = function () {
     //topic 8
     var obj, content;
     obj = {};
-    obj.title = "Manage Group Rule Payout Max Amount";
+    obj.title = "Manage Part Order";
     content = [];
-    content.push({ "tag": "h2", "ih": "Introduction" });
-    content.push({ "tag": "div", "ih": "Use this page to enter the max payout for each rule within each group. When you change data and click Save and Calculate, the Max payout will be saved and Final payout calculated. Select the Group and the quarter, enter the max payout for each rule and click &quot;Save and Calculate&quot;. You can click Save and Calculate even without making any changes to refresh calculated payout such as when a rule is changed, or metric values have been changed.  This is the only place where the final calculated payout is set." });
+    content.push(COMMON.createHelpContentObj("p", "This screen allows you to add parts to an order and manage existing part orders. To add a new order, click on the add new button. Once added, part orders can be managed by receiving parts or you can delete any part order that has not received any parts."));
     obj.content = content;
     return obj;
 };
