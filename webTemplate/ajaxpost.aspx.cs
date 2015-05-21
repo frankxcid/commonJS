@@ -9,7 +9,7 @@ using System.Xml;
 using SQLConnectLibrary;
 using CrystalReportOutput;
 
-namespace webTemplate
+namespace WorkOrderV2
 {
     public partial class ajaxpost : System.Web.UI.Page
     {
@@ -20,13 +20,15 @@ namespace webTemplate
         String queryId = ""; //from the request, the query to run
         String[] optvals = null; //the parameters of the query
         SQLConnect.DataOut DOResults = null;
+        CommandObject commandObj = null;
+
         private int MaxFileSize = 5000000; //5MB is max size of uploaded files
 
         protected void Page_Load(object sender, EventArgs e)
         {
             String input = "";
             InitialObj initObj = null;
-            if (Request.Params["reqType"] == null)
+            if (Request.Params["commandObj"] == null)
             {
                 int streamLen = Convert.ToInt32(Request.InputStream.Length);
                 if (streamLen > 0)
@@ -43,34 +45,72 @@ namespace webTemplate
             else
             {
                 initObj = new InitialObj();
-                initObj.reqType = Request.Params["reqType"];
-                initObj.dataRead = Request.Params["dataRead"];
+                initObj.commandObj = Request.Params["commandObj"];
+                initObj.sendVars = Request.Params["sendVars"];
             }
-            switch (initObj.reqType)
+            commandObj = System.Web.Helpers.Json.Decode(initObj.commandObj, typeof(CommandObject));
+
+            switch (commandObj.reqType)
             {
                 case "query":
-                    queryRequested(initObj.dataRead);
+                    queryRequested(initObj.sendVars);
                     return;
                 case "fileupload":
-                    doFileUpload(initObj.dataRead);
+                    doFileUpload(initObj.sendVars);
                     return;
                 case "downloadPDF":
-                    doDownloadPDF(initObj.dataRead);
+                    doDownloadPDF(initObj.sendVars);
                     return;
                 case "fileList":
-                    getFileList(initObj.dataRead);
+                    getFileList(initObj.sendVars);
                     return;
                 case "imagetosql":
-                    doImageToSQL(initObj.dataRead);
+                    doImageToSQL(initObj.sendVars);
+                    return;
+                case "crystalReportStream":
+                    executeReport(initObj.sendVars);
+                    return;
+                case "crystalReportSave":
+                    executeReportSaveFile(initObj.sendVars);
+                    return;
+                default:
+                    doCustomRequest(initObj.sendVars);
                     return;
             }
 
         }
         private class InitialObj
         {
-            public String reqType = "";
-            public String dataRead = "";
+            public String commandObj = "";
+            public String sendVars = "";
         }
+        private class CommandObject
+        {
+            public String reqType = "";
+            public String tokenId = "";
+            public Boolean iframePost = false;
+        }
+        private void sendResponse(String message)
+        {
+            if (message != "")
+            {
+                Response.Write(message);
+            }
+            var myCookie = new System.Web.HttpCookie(commandObj.tokenId);
+            myCookie.Value = commandObj.tokenId;
+            Response.Cookies.Add(myCookie);
+        }
+        private static String setPathName()
+        {
+            String appPath = "";
+            appPath = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
+            appPath = appPath.Substring(8);
+            appPath = appPath.Replace('/', '\\');
+            appPath = appPath.Substring(0, appPath.LastIndexOf("\\"));
+            appPath = appPath.Substring(0, appPath.LastIndexOf("\\"));
+            return appPath;
+        }
+        #region "SQL Query"
         private void queryRequested(String JSONData)
         {
             //change the incoming JSON text stream to a dr object
@@ -92,12 +132,16 @@ namespace webTemplate
                 var oSerializer = new System.Web.Script.Serialization.JavaScriptSerializer();
                 String strOut = oSerializer.Serialize(DOResults); //JSON.stringify
                 strOut = strOut.Replace("&", "&amp;");
-                Response.Write(strOut);
-                Response.End();
+                sendResponse(strOut);
             }
+            else
+            {
+                sendResponse("SQL Command Processed");
+            }
+            Response.End();
         }
 
-        
+
         private Boolean runQuery()
         {
             //custom queries in the pattern if (queryId == "[queryname]") { return function boolean(); }
@@ -152,6 +196,26 @@ namespace webTemplate
                 }
             }
         }
+        #endregion
+        #region "Custom Request"
+        private void doCustomRequest(String JSONData)
+        {
+            Payload param = System.Web.Helpers.Json.Decode(JSONData, typeof(Payload));
+            var oSerializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+            String outPut = "Command Complete";
+            switch (commandObj.reqType)
+            {
+                    //list custom commands here, If downloading, use sendResponse("") with a blank message to skip the response but will create token cookie in case AJAX is listening for token cookie to complete download.
+                
+            }
+            sendResponse(outPut);
+            Response.End();
+        }
+        private class Payload
+        {
+            public String[] param = null;
+        }
+        #endregion
         #region "File Upload"
         private void doFileUpload(String JSONData)
         {
@@ -181,7 +245,9 @@ namespace webTemplate
                 if (overrideFileName != "") { destinationFileName = overrideFileName; }
 
                 //determine destination path
-                String destinationPath = setPathName() + ad.destinationPath;
+                String appPath = setPathName();
+                if (ad.destinationPath.Substring(0, 1) == "\\") { ad.destinationPath = ad.destinationPath.Substring(1); }
+                String destinationPath = System.IO.Path.Combine(appPath, ad.destinationPath);
 
                 //check file size
                 if (pf.ContentLength > MaxFileSize)
@@ -205,19 +271,8 @@ namespace webTemplate
             }
 
             exceptionMessage = getErrorMessage(errLev) + exceptionMessage;
-            Response.Write(exceptionMessage);
+            sendResponse(exceptionMessage);
             Response.End();
-
-        }
-        private static String setPathName()
-        {
-            String appPath = "";
-            appPath = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
-            appPath = appPath.Substring(8);
-            appPath = appPath.Replace('/', '\\');
-            appPath = appPath.Substring(0, appPath.LastIndexOf("\\"));
-            appPath = appPath.Substring(0, appPath.LastIndexOf("\\"));
-            return appPath;
         }
         private enum errorLevels
         {
@@ -269,7 +324,7 @@ namespace webTemplate
             var strImage = bytesToSQLBinary(imageData);
             its.spParameters[its.indexOfImageInParameters] = "0x" + strImage;
             SQLHelper.doSPQuery(its.spName, its.spParameters, SQLConnect.outputType.noOutput);
-            Response.Write("Upload Successful");
+            sendResponse("Upload Successful");
             Response.End();
         }
         private class ImageToSQL
@@ -292,6 +347,7 @@ namespace webTemplate
             if (!System.IO.File.Exists(fullPath)) { return; }
             String fileName = new System.IO.FileInfo(fullPath).Name;
             if (pd.overrideFileName != "") { fileName = pd.overrideFileName; }
+            sendResponse("Download Complete");
             Response.AppendHeader("content-disposition", "attachment; filename = " + fileName);
             Response.WriteFile(fullPath);
             Response.Flush();
@@ -312,7 +368,7 @@ namespace webTemplate
 
             //Optional action to perform in the pattern: if (cd.action == [actionName] && !Boolean function(cd.optionalData)) { return; }
 
-            String reportPath = setPathName() + cd.pathAndFile;
+            String reportPath = setPathName() + "\\" + cd.pathAndFile;
             List<Object> param = new List<Object>();
             if (cd.parameters != null && cd.parameters.Length > 0)
             {
@@ -321,14 +377,44 @@ namespace webTemplate
                     param.Add(cd.parameters[i]);
                 }
             }
-            System.IO.MemoryStream myStream = new System.IO.MemoryStream();
-            if (!ReportRunner.execute(reportPath, ref myStream, param)) { return; }
-            Response.Clear();
+            sendResponse("Report Created");
             Response.ContentType = "Application/pdf";
-            Response.AppendHeader("content-disposition", "attachment; filename=" + cd.outputFileName);
-            myStream.WriteTo(Response.OutputStream);
+            ReportRunner.execute(reportPath, Response, "W3b4pp5", cd.outputFileName, param);
             Response.Flush();
-            Response.Close();
+            Response.End();
+        }
+        private void executeReportSaveFile(String JSONData)
+        {
+            CRData cd = System.Web.Helpers.Json.Decode(JSONData, typeof(CRData));
+            cd.outputFileName = setPathName() + "\\" + cd.outputFileName;
+
+            //Optional action to perform in the pattern: if (cd.action == [actionName] && !Boolean function(cd.optionalData)) { return; }
+            if ((cd.action == "checkexists" && !System.IO.File.Exists(cd.outputFileName)) || (cd.action == ""))
+            {
+
+                String reportPath = setPathName() + "\\" + cd.pathAndFile;
+                List<Object> param = new List<Object>();
+                if (cd.parameters != null && cd.parameters.Length > 0)
+                {
+                    for (int i = 0; i < cd.parameters.Length; i++)
+                    {
+                        param.Add(cd.parameters[i]);
+                    }
+                }
+                if (!ReportRunner.executeSave(reportPath, cd.outputFileName, "W3b4pp5", param))
+                {
+                    var sw = new System.IO.StreamWriter(setPathName() + "\\rpt\\output\\err.log");
+                    sw.WriteLine(ReportRunner.ErrorMessage);
+                    sw.Close();
+                }
+            }
+            sendResponse("Report Created");
+            if (cd.downloadFile)
+            {
+                Response.ContentType = "Application/pdf";
+                Response.AppendHeader("content-disposition", "attachment; filename = " + (new System.IO.FileInfo(cd.outputFileName).Name));
+                Response.WriteFile(cd.outputFileName);
+            }
             Response.End();
         }
         private class CRData
@@ -338,6 +424,9 @@ namespace webTemplate
             public String action = "";
             public String outputFileName = "";
             public String optionalData = "";
+            public String fileId = "";
+            public String cookieName = "";
+            public Boolean downloadFile = false;
         }
         #endregion
         #region "getFileList"
@@ -376,8 +465,7 @@ namespace webTemplate
             var oSerializer = new System.Web.Script.Serialization.JavaScriptSerializer();
             String strOut = oSerializer.Serialize(flo); //JSON.stringify
             strOut = strOut.Replace("&", "&amp;");
-            Response.Write(strOut);
-            Response.End();
+            sendResponse(strOut);
         }
         private class FileListParams
         {

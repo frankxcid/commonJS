@@ -1,1 +1,1 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ajaxpost.aspx.cs" Inherits="webTemplate.ajaxpost" EnableViewState="false" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ajaxpost.aspx.cs" Inherits="WorkOrderV2.ajaxpost" EnableViewState="false" %>
