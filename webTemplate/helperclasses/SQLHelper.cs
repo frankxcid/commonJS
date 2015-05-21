@@ -5,8 +5,7 @@ using System.Web;
 using intranetTools4_5;
 using SQLConnectLibrary;
 
-namespace webTemplate
-
+namespace WorkOrderV2
 {
     public class SQLHelper
     {
@@ -123,6 +122,19 @@ namespace webTemplate
             optvals = parameters;
             databaseType = dbTypes.SP;
             return doWork(storedProcedureName, _outputType);
+        }
+        public static String[,] cloneResults()
+        {
+            if (results == null) { return null; }
+            var strOut = new String[results.GetLength(0), results.GetLength(1)];
+            for (int i = 0; i < results.GetLength(1); i++)
+            {
+                for (int n = 0; n < results.GetLength(0); n++)
+                {
+                    strOut[n, i] = results[n, i];
+                }
+            }
+            return strOut;
         }
     }
 }
