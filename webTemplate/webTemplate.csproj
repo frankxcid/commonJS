@@ -44,7 +44,8 @@
     <Reference Include="CrystalDecisions.Shared, Version=13.0.2000.0, Culture=neutral, PublicKeyToken=692fbea5521e1304, processorArchitecture=MSIL">
       <Private>True</Private>
     </Reference>
-    <Reference Include="CrystalReportOutput">
+    <Reference Include="CrystalReportOutput, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\CrystalReportOutput\CrystalReportOutput\bin\Debug\CrystalReportOutput.dll</HintPath>
     </Reference>
     <Reference Include="intranetTools4.5">
@@ -121,7 +122,6 @@
     <Compile Include="ajaxpost.aspx.designer.cs">
       <DependentUpon>ajaxpost.aspx</DependentUpon>
     </Compile>
-    <Compile Include="helperclasses\SQLHelper.cs" />
     <Compile Include="index.aspx.cs">
       <DependentUpon>index.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -138,6 +138,9 @@
     <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="helperclasses\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
