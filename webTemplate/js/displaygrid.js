@@ -188,7 +188,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         //gather all values
         for (i = 0; i < dataResults.length; i++) {
             thisValue = dataResults[i][index].trim();
-            allValues.push((thisValue === "" || isNaN(thisValue)) ? thisValue : parseFloat(thisValue));
+            allValues.push((thisValue === "" || !COMMON.isNumber(thisValue, null, null, true)) ? thisValue : parseFloat(thisValue));
         }
         //sort them for grouping
         COMMON.sortArray(allValues, null, false);
@@ -632,21 +632,21 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         }//if the form is invalid do nothing
         COMMON.errMess("");//clear any error messages
         switch (controlId) {
-        case 0:
-            currentPage--;
-            break;
-        case 1:
-            currentPage++;
-            break;
-        case 2:
-            if (jumpToPage.value === "" || isNaN(jumpToPage.value)) {
-                COMMON.errMess("Please Enter a number for the page you want to jump to");
-                jumpToPage.value = "";
-                COMMON.focusme(jumpToPage.id);
-                return;
-            }
-            currentPage = jumpToPage.value;
-            break;
+            case 0:
+                currentPage--;
+                break;
+            case 1:
+                currentPage++;
+                break;
+            case 2:
+                if (jumpToPage.value === "" || isNaN(jumpToPage.value)) {
+                    COMMON.errMess("Please Enter a number for the page you want to jump to");
+                    jumpToPage.value = "";
+                    COMMON.focusme(jumpToPage.id);
+                    return;
+                }
+                currentPage = jumpToPage.value;
+                break;
         }
         addGridBody();
     };
@@ -965,33 +965,33 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
             attrib.onchange = "DISPLAYGRID.zfieldChanged(" + String(gridIndex) + ", this);";
         }
         switch (localType.id) {
-        case "cal":
-            obj = COMMON.getCalendar(id, value, that.controlRequired, null, COMMON.pageMessageDivId, null, that.onkeypressAction, that.onchangeAction, attrib);
-            break;
-        case "ddl":
-            if (that.onchangeAction !== undefined && that.onchangeAction !== null) {
-                attrib.onchange += that.onchangeAction;
-            }
-            if (that.listItem) {
-                obj = COMMON.getDDL(id, value, that.controlRequired, null, that.listItem, null, attrib);
-            } else {
-                obj = COMMON.getDDLfromQuery(id, value, that.controlRequired, that.valueListQuery, that.listQueryParams, null, null, attrib);
-            }
-            break;
-        case "lnk":
-            if (that.href) { localHref = that.href.replace("~", dataRow[that.linkValueColumn]); } else { localHref = null; }
-            if (that.onclickAction) { localOnclick = that.onclickAction.replace("~", dataRow[that.linkValueColumn]); } else { localOnclick = null; }
-            obj = COMMON.getLink(id, dataRow[colIndex], localHref, localOnclick, that.toolTip, attrib);
-            break;
-        default:
-            if (that.onchangeAction !== undefined && that.onchangeAction !== null) {
-                attrib.onchange += that.onchangeAction;
-            }
-            if (that.onkeypressAction !== undefined && that.onkeypressAction !== null) {
-                attrib.onkeyup = that.onkeypressAction;
-            }
-            obj = COMMON.getFieldObject(localType.id, id, value, that.controlRequired, that.numberValidationType, null, null, null, attrib);
-            break;
+            case "cal":
+                obj = COMMON.getCalendar(id, value, that.controlRequired, null, COMMON.pageMessageDivId, null, that.onkeypressAction, that.onchangeAction, attrib);
+                break;
+            case "ddl":
+                if (that.onchangeAction !== undefined && that.onchangeAction !== null) {
+                    attrib.onchange += that.onchangeAction;
+                }
+                if (that.listItem) {
+                    obj = COMMON.getDDL(id, value, that.controlRequired, null, that.listItem, null, attrib);
+                } else {
+                    obj = COMMON.getDDLfromQuery(id, value, that.controlRequired, that.valueListQuery, that.listQueryParams, null, null, attrib);
+                }
+                break;
+            case "lnk":
+                if (that.href) { localHref = that.href.replace("~", dataRow[that.linkValueColumn]); } else { localHref = null; }
+                if (that.onclickAction) { localOnclick = that.onclickAction.replace("~", dataRow[that.linkValueColumn]); } else { localOnclick = null; }
+                obj = COMMON.getLink(id, dataRow[colIndex], localHref, localOnclick, that.toolTip, attrib);
+                break;
+            default:
+                if (that.onchangeAction !== undefined && that.onchangeAction !== null) {
+                    attrib.onchange += that.onchangeAction;
+                }
+                if (that.onkeypressAction !== undefined && that.onkeypressAction !== null) {
+                    attrib.onkeyup = that.onkeypressAction;
+                }
+                obj = COMMON.getFieldObject(localType.id, id, value, that.controlRequired, that.numberValidationType, null, null, null, attrib);
+                break;
         }
         return obj;
     };
@@ -1045,18 +1045,18 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
             td.innerHTML = "&nbsp;";
         } else {
             switch (that.summaryType) {
-            case DISPLAYGRID.summaryTypes.sum:
-                thisVal = that.summarySum;
-                break;
-            case DISPLAYGRID.summaryTypes.min:
-                thisVal = that.summaryMin;
-                break;
-            case DISPLAYGRID.summaryTypes.max:
-                thisVal = that.summaryMax;
-                break;
-            case DISPLAYGRID.summaryTypes.avg:
-                thisVal = (that.summaryRowCount === 0 ? 0 : that.summarySum / that.summaryRowCount);
-                break;
+                case DISPLAYGRID.summaryTypes.sum:
+                    thisVal = that.summarySum;
+                    break;
+                case DISPLAYGRID.summaryTypes.min:
+                    thisVal = that.summaryMin;
+                    break;
+                case DISPLAYGRID.summaryTypes.max:
+                    thisVal = that.summaryMax;
+                    break;
+                case DISPLAYGRID.summaryTypes.avg:
+                    thisVal = (that.summaryRowCount === 0 ? 0 : that.summarySum / that.summaryRowCount);
+                    break;
             }
             decPart = String(Math.round(Math.round(thisVal * Math.pow(10, that.summaryPrecision))) - (Math.floor(thisVal) * Math.pow(10, that.summaryPrecision)));
             intPart = String(Math.floor(thisVal));
