@@ -641,38 +641,53 @@ COMMON.fieldTypes = {
 //validation
 COMMON.checkNumeric = function (fieldType, id, regex, checkMoney) {
     "use strict";
-    ///<summary>return TRUE IF THERE IS AN ERROR unless isKeyPress is true</summary>
+    ///<summary>compares the value of a field to a regex and checks for proper formatting if checkMoney is true</summary>
     ///<param name="fieldtype" type="String">the COMMON.fieldtype key</param>
     ///<param name="id" type="String">The id of the control</param>
     ///<param name="regex" type="RegularExpression">regular expression to match. the value of the control will be compared to the regex and if the filtered string matches then there is no error</param>
     ///<param name="checkMoney" type="Boolean">(Optional)checks the precision of numbers entered so that they are between 2 and 4 decimal places</param>
     ///<returns type="Boolean">True if there is an error</returns>
     //master function compares the input to a regex and will check for decimal places on money type
-    var thisFieldType, val, strVal, match, decPart;
+    var thisFieldType, val, result;
     thisFieldType = COMMON.fieldTypes[fieldType];
     val = thisFieldType.getValueFunction(id);
-    if (val === "") { return false; }//this will not check that it has a value.  Use the "required" attribute to check for blanks
+    result = !(COMMON.isNumber(val, regex, checkMoney));
+    if (result && checkMoney) {
+        thisFieldType.setValueFunction(id, COMMON.formatCurrency(val));
+    }
+};
+COMMON.isNumber = function (val, regex, checkMoney, noLeadingZero) {
+    ///<summary>Checks whether a val is a number</summary>
+    ///<param name="val" type="String">The value to check</param>
+    ///<param name="regex" type"Regex">(Optional) The regex used to compare the value to.  If missing defaults to /[1234567890.$-]/g</param>
+    ///<param name="checkMoney" type="Boolean">(Optional) If true will check that the value does not have more than 4 decimal places</param>
+    ///<param name="noLeadingZero" type="Boolean">(Optional) If true will check that the value does not have leading zero</param>
+    ///<returns type="Boolean">True if it is a number</returns>
+    "use strict";
+    var strVal, match, decPart;
+    if (regex === undefined || regex === null) { regex = /^[\-+]?[0123456789.$]+$/; }
+    if (val === undefined || val === null || val === "") { return false; }
+    if (noLeadingZero && String(val).substring(0, 1) === "0") { return false; }
     match = val.match(regex);
-    if (match === null) { match = []; }
+    if (match === null) { return false; }
     if (checkMoney) {
         val = val.replace(",", "");
         strVal = String(val).split(".");
         decPart = (strVal.length > 1 ? strVal[1] : "");
         if (strVal.length === 1 || strVal[1].length < 4) {
             decPart = decPart.padRight("0", 4);
-            thisFieldType.setValueFunction(id, strVal[0] + "." + decPart);
         }
-        return !(decPart.length <= 4 && match.join("") === val);
+        return (decPart.length <= 4 && match);
     }
-    return match.join("") !== val;
+    return match;
 };
 COMMON.checkInteger = function (fieldType, id) {
-    ///<summary>checls that input value is intergers only</summary>
+    ///<summary>checks that input value is intergers only</summary>
     ///<param name="fieldtype" type="String">the COMMON.fieldtype key</param>
     ///<param name="id" type="String">The id of the control</param>
     ///<returns type="Boolean">True if there is an error</returns>
     "use strict";
-    return COMMON.checkNumeric(fieldType, id, /[1234567890]/g, false);
+    return COMMON.checkNumeric(fieldType, id, /^[\-+]?[0123456789]+$/, false);
 };
 COMMON.checkDecimal = function (fieldType, id) {
     ///<summary>checks that input value is integers and decimal point only</summary>
@@ -680,7 +695,7 @@ COMMON.checkDecimal = function (fieldType, id) {
     ///<param name="id" type="String">The id of the control</param>
     ///<returns type="Boolean">True if there is an error</returns>
     "use strict";
-    return COMMON.checkNumeric(fieldType, id, /[1234567890.]/g, false);
+    return COMMON.checkNumeric(fieldType, id, /^[\-+]?[0123456789.]+$/, false);
 };
 COMMON.checkMoney = function (fieldType, id) {
     ///<summary>Checks that input value is integers, decimal point and up to 4 decimal places</summary>
@@ -688,7 +703,7 @@ COMMON.checkMoney = function (fieldType, id) {
     ///<param name="id" type="String">The id of the control</param>
     ///<returns type="Boolean">True if there is an error</returns>
     "use strict";
-    return COMMON.checkNumeric(fieldType, id, /[1234567890.$]/g, true);
+    return COMMON.checkNumeric(fieldType, id, /^[\-+]?[0123456789.$]+$/, true);
 };
 COMMON.checkLenghtMax = function (fieldType, id) {
     ///<summary>Checks that input lenght is less than or equal to the value of the maxlen attribute</summary>
@@ -1150,19 +1165,19 @@ COMMON.helpDialog = function (topic, displayDivId, width) {
             oneCt = content[i];
             obj1 = COMMON.docObj.createElement(oneCt.tag);
             switch (oneCt.tag) {
-            case "h2":
-            case "h3":
-            case "div":
-            case "p":
-                obj1.innerHTML = oneCt.ih;
-                break;
-            case "ul":
-                for (n = 0; n < oneCt.ih.length; n++) {
-                    obj2 = COMMON.docObj.createElement("li");
-                    obj2.innerHTML = oneCt.ih[n];
-                    obj1.appendChild(obj2);
-                }
-                break;
+                case "h2":
+                case "h3":
+                case "div":
+                case "p":
+                    obj1.innerHTML = oneCt.ih;
+                    break;
+                case "ul":
+                    for (n = 0; n < oneCt.ih.length; n++) {
+                        obj2 = COMMON.docObj.createElement("li");
+                        obj2.innerHTML = oneCt.ih[n];
+                        obj1.appendChild(obj2);
+                    }
+                    break;
             }
             objOut.appendChild(obj1);
         }
@@ -1193,7 +1208,7 @@ if (!Array.prototype.indexOf) {
     Array.prototype.indexOf = function (value, start) {
         "use strict";
         var i;
-        for (i = (start || 0); i < this.length; i++) {
+        for (i = (start || 0) ; i < this.length; i++) {
             if (this[i] === value) { return i; }
         }
         return -1;
