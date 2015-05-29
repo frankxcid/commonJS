@@ -49,7 +49,7 @@
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="SQLConnect">
-      <HintPath>..\..\SQLConnect\SQLConnect\bin\Debug\SQLConnect.dll</HintPath>
+      <HintPath>..\..\SQLConnect\SQLConnect\bin\Release\SQLConnect.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
@@ -80,7 +80,6 @@
     <Content Include="bin\CrystalDecisions.Shared.dll" />
     <Content Include="bin\CrystalReportOutput.dll" />
     <Content Include="bin\intranetTools4.5.dll" />
-    <Content Include="bin\SQLConnect.dll" />
     <Content Include="bin\System.Web.Helpers.dll" />
     <Content Include="bin\zebra2014.dll" />
     <Content Include="css\calendar.css" />
@@ -118,7 +117,6 @@
     <Compile Include="ajaxpost.aspx.designer.cs">
       <DependentUpon>ajaxpost.aspx</DependentUpon>
     </Compile>
-    <Compile Include="helperclasses\SQLHelper.cs" />
     <Compile Include="index.aspx.cs">
       <DependentUpon>index.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -136,7 +134,9 @@
       <DependentUpon>Web.config</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="helperclasses\" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

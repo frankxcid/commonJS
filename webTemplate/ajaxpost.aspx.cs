@@ -19,7 +19,6 @@ namespace webTemplate
         Boolean HasNoOutput = false; //from the request, whether the query has an output or not
         String queryId = ""; //from the request, the query to run
         String[] optvals = null; //the parameters of the query
-        SQLConnect.DataOut DOResults = null;
         CommandObject commandObj = null;
 
         private int MaxFileSize = 5000000; //5MB is max size of uploaded files
@@ -124,13 +123,12 @@ namespace webTemplate
             optvals = dr.optvals;
             HasNoOutput = (dr.noresult == 1);
             //do query
-            if (!runQuery()) { return; }
+            if (!SQLHelper.doSPQuery(queryId, optvals, (HasNoOutput ? SQLConnect.outputType.noOutput : SQLConnect.outputType.forRemoteQ))) { return; }
             //return result if available
             if (!HasNoOutput)
             {
                 //convert the object to JSON
-                var oSerializer = new System.Web.Script.Serialization.JavaScriptSerializer();
-                String strOut = oSerializer.Serialize(DOResults); //JSON.stringify
+                String strOut = SQLHelper.JSONResults;
                 strOut = strOut.Replace("&", "&amp;");
                 sendResponse(strOut);
             }
@@ -142,32 +140,6 @@ namespace webTemplate
         }
 
 
-        private Boolean runQuery()
-        {
-            //custom queries in the pattern if (queryId == "[queryname]") { return function boolean(); }
-
-            //queries that have sqls
-            SQLHelper.SQLS thisSQL;
-            if (Enum.TryParse<SQLHelper.SQLS>(queryId, false, out thisSQL))
-            {
-                if (HasNoOutput)
-                {
-                    return SQLHelper.doQuery(thisSQL, optvals, SQLConnectLibrary.SQLConnect.outputType.noOutput);
-                }
-                if (!SQLHelper.doQuery(thisSQL, optvals, SQLConnectLibrary.SQLConnect.outputType.forRemoteQ)) { return false; }
-                DOResults = SQLHelper.DOResults;
-                return true;
-            }
-
-            //run the query
-            if (HasNoOutput)
-            {
-                return SQLHelper.doSPQuery(queryId, optvals, SQLConnect.outputType.noOutput);
-            }
-            if (!SQLHelper.doSPQuery(queryId, optvals, SQLConnect.outputType.forRemoteQ)) { return false; }
-            DOResults = SQLHelper.DOResults;
-            return true;
-        }
         private class DataRead
         {
             //object version of incomming JSON string
