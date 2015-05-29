@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using intranetTools4_5;
 using SQLConnectLibrary;
 
-namespace WorkOrderV2
+namespace webTemplate
 {
     public class SQLHelper
     {
