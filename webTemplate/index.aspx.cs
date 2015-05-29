@@ -13,6 +13,9 @@ namespace webTemplate
         UserData currentUser = null;
         protected void Page_Load(object sender, EventArgs e)
         {
+            //init SQLHelper
+            SQLHelper.SQLServerName = "";
+            SQLHelper.SQLServerDatabaseName = "";
             currentUser = new UserData(HttpContext.Current.User.Identity.Name.ToString());
             var oSerializer = new System.Web.Script.Serialization.JavaScriptSerializer();
             String strOut = oSerializer.Serialize(currentUser); //JSON.stringify

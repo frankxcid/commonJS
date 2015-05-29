@@ -112,11 +112,15 @@ namespace webTemplate
         #region "SQL Query"
         private void queryRequested(String JSONData)
         {
+            //init SQLHelper
+            SQLHelper.SQLServerName = "";
+            SQLHelper.SQLServerDatabaseName = "";
             //change the incoming JSON text stream to a dr object
             //the JSON object has 3 values
-            //1 - queryid, type = number - the enum name or enum number of the query to use in SQLConnect
+            //1 - queryid, type = string - stored procedure name, can exclude "pr_"
             //2 - optvals, type = String Array - the variable values place in SQL statement in SQLConnect
             //3 - noResult, type = Boolean/Bit (allowable values (1, 0, null, undefined) - true if the SQL statement returns no values otherwise false. If this value is missing (null, undefined) assume false
+
             DataRead dr = System.Web.Helpers.Json.Decode(JSONData, typeof(DataRead));
             //set global variables
             queryId = dr.queryid;
