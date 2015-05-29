@@ -9,7 +9,7 @@ using System.Xml;
 using SQLConnectLibrary;
 using CrystalReportOutput;
 
-namespace WorkOrderV2
+namespace webTemplate
 {
     public partial class ajaxpost : System.Web.UI.Page
     {
