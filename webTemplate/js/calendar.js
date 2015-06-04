@@ -538,12 +538,11 @@ CAL.zcheckDaysInMonth = function (days, month, year) {
     ///<param name="Years" type="Int">(Optional)</param>
     ///<returns type="Boolean">True if days exceed amount</returns>
     "use strict";
-    var thisDate;
-    if (!year) { year = 2004; }//set to a known leap year to allow for February 29 when year is still not provided
-    thisDate = new Date(year, month - 1, 1);
-    thisDate = new Date(thisDate.setMonth(thisDate.getMonth() + 1));
-    thisDate = new Date(thisDate.setDate(thisDate.getDate() - 1));
-    return days > thisDate.getDate();
+    var mDays;
+    mDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    if (year == undefined || year == null) { year = 2004; }
+    if (month === 2 && year % 4 === 0) { mDays[1] = 29; }
+    return (days > mDays[month - 1]);
 };
 CAL.errors = {
     "none": "&nbsp;",
