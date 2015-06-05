@@ -28,38 +28,6 @@ FILLIN.zsetButtons = function (divId, setEnabled, formIndex) {
     var parentObj;
     parentObj = document.getElementById(divId);
     COMMON.blockInput(parentObj.id, setEnabled, null, FILLIN.coverallDivIdPrefix + String(formIndex), "39");
-    //var allBtns, parentObj, i, obj1, oLeft, oTop;
-    //parentObj = document.getElementById(divId);
-    //allBtns = parentObj.getElementsByTagName("input");
-    //if (allBtns.length > 0) {
-    //    for (i = 0; i < allBtns.length; i++) {
-    //        if (allBtns[i].type === "button" || allBtns[i].type === "submit") {
-    //            allBtns[i].disabled = !setEnabled;
-    //        }
-    //    }
-    //}
-    //allBtns = parentObj.getElementsByTagName("select");
-    //if (allBtns.length > 0) {
-    //    for (i = 0; i < allBtns.length; i++) {
-    //        allBtns[i].disabled = !setEnabled;
-    //    }
-    //}
-    //if (!setEnabled) {
-    //    oTop = parentObj.offsetTop;
-    //    oLeft = parentObj.offsetLeft;
-    //    if (parentObj.style.position && parentObj.style.position === "absolute") {
-    //        oTop = 0;
-    //        oLeft = 0;
-    //    }
-    //    obj1 = COMMON.getBasicElement("div", FILLIN.coverallDivIdPrefix + String(formIndex), null, "dvCDcoverall");
-    //    obj1.style.top = String(oTop) + "px";
-    //    obj1.style.left = String(oLeft) + "px";
-    //    obj1.style.width = String(parentObj.offsetWidth) + "px";
-    //    obj1.style.height = String(parentObj.scrollHeight) + "px";
-    //    parentObj.appendChild(obj1);
-    //} else {
-    //    parentObj.removeChild(document.getElementById(FILLIN.coverallDivIdPrefix + String(formIndex)));
-    //}
 };
 FILLIN.zbuttonClicked = function (formIndex, btnObj) {
     ///<summary>NOT FOR EXTERNAL USE...Run on any buttons onclick event, closes the form if it is a dialog, runs the continuing function and removes the form from memory</summary>
@@ -369,6 +337,14 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
     this.numFieldData = null; //data in the format {min:value, max:value, step:value}
     this.preconfiguredContainer = null; //if the element is created in the calling script, then return that object;
     this.target = null; //for links only, sets the href target
+    this.calendarCloseFunction = null; //function that runs when a date is chosen in the format function(valueSelect, calendarOptionalData)
+    this.calendarOptionalData = null; //optional data send to calendar close function
+    this.calendarCloseHelper = function (value, optionalData) {
+        FILLIN.zfieldChanged(formIndex);
+        if (that.calendarCloseFunction) {
+            that.calendarCloseFunction(value, optionalData);
+        }
+    }
     //gets the field element construct
     //Parameters:
     //Returns       (Element)
@@ -412,37 +388,37 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
             objOut.style.width = "95%";
         }
         switch (fieldType.id) {
-        case "cal":
-            obj1 = COMMON.getCalendar(id, that.value, required, null, COMMON.pageMessageDivId, null, fieldChangeScript, fieldChangeScript, attrib);
-            break;
-        case "ddl":
-            attrib.onchange = fieldChangeScript;
-            if (that.listItem) {
-                obj1 = COMMON.getDDL(id, value, required, null, that.listItem, null, attrib);
-            } else {
-                obj1 = COMMON.getDDLfromQuery(id, value, required, that.queryid, that.params, null, null, attrib);
-            }
-            break;
-        case "lnk":
-            obj1 = COMMON.getLink(id, value, (that.linkOnClick ? "#" : that.href), that.linkOnClick, null, attrib, that.target);
-            break;
-        case "num":
-            attrib.onchange = fieldChangeScript;
-            obj1 = COMMON.getNumberField(id, value, required, null, numberValidation, that.numFieldData.min, that.numFieldData.max, that.numFieldData.step, that.placeholder, attrib);
-            break;
-        default:
-            if (fieldType.isField) {
+            case "cal":
+                obj1 = COMMON.getCalendar(id, that.value, required, null, COMMON.pageMessageDivId, null, fieldChangeScript, fieldChangeScript, attrib, false, that.calendarCloseHelper, that.calendarOptionalData);
+                break;
+            case "ddl":
                 attrib.onchange = fieldChangeScript;
-                if (fieldType.canHaveMaxLen) { attrib.onkeyup = fieldChangeScript; }
-            }
-            if (fieldType === COMMON.fieldTypes.txa) {
-                attrib.style = "";
-                if (that.height !== undefined && that.height !== null && that.height !== "") { attrib.style += "height:" + that.height + ";"; }
-                if (that.width !== undefined && that.width !== null && that.width !== "") { attrib.style += "width:" + that.width + ";"; }
-            }
-            obj1 = COMMON.getFieldObject(fieldType.id, id, value, required, numberValidation, that.placeholder, maxLen, null, attrib);
-            //if (fieldType !== COMMON.fieldTypes.txa) { obj1.style.height = that.height; }
-            break;
+                if (that.listItem) {
+                    obj1 = COMMON.getDDL(id, value, required, null, that.listItem, null, attrib);
+                } else {
+                    obj1 = COMMON.getDDLfromQuery(id, value, required, that.queryid, that.params, null, null, attrib);
+                }
+                break;
+            case "lnk":
+                obj1 = COMMON.getLink(id, value, (that.linkOnClick ? "#" : that.href), that.linkOnClick, null, attrib, that.target);
+                break;
+            case "num":
+                attrib.onchange = fieldChangeScript;
+                obj1 = COMMON.getNumberField(id, value, required, null, numberValidation, that.numFieldData.min, that.numFieldData.max, that.numFieldData.step, that.placeholder, attrib);
+                break;
+            default:
+                if (fieldType.isField) {
+                    attrib.onchange = fieldChangeScript;
+                    if (fieldType.canHaveMaxLen) { attrib.onkeyup = fieldChangeScript; }
+                }
+                if (fieldType === COMMON.fieldTypes.txa) {
+                    attrib.style = "";
+                    if (that.height !== undefined && that.height !== null && that.height !== "") { attrib.style += "height:" + that.height + ";"; }
+                    if (that.width !== undefined && that.width !== null && that.width !== "") { attrib.style += "width:" + that.width + ";"; }
+                }
+                obj1 = COMMON.getFieldObject(fieldType.id, id, value, required, numberValidation, that.placeholder, maxLen, null, attrib);
+                //if (fieldType !== COMMON.fieldTypes.txa) { obj1.style.height = that.height; }
+                break;
         }
         if (fieldType === COMMON.fieldTypes.spa && that.width) {
             //fixes width on inline span
@@ -715,7 +691,7 @@ FILLIN.addLink = function (formIndex, id, value, title, href, onclick, newLine, 
     thisControl.target = target;
     FILLIN.zaddControl(formIndex, thisControl);
 };
-FILLIN.addCalendar = function (formIndex, id, value, title, isRequired, newLine, onchangeScript) {
+FILLIN.addCalendar = function (formIndex, id, value, title, isRequired, newLine, onchangeScript, itemSelectedFunction, itemSelectedOptionalData) {
     ///<summary>Adds a calendar control to the form</summary>
     ///<param name="formIndex" type="Int">the index of the form in FILLIN.allForms</param>
     ///<param name="id" type="String">The element's id</param>
@@ -724,10 +700,14 @@ FILLIN.addCalendar = function (formIndex, id, value, title, isRequired, newLine,
     ///<param name="isRequired" type="Boolean">(Optional)  if true, the field will be required to have an entry in it during validation</param>
     ///<param name="newLine" type="Boolean">(Optional) if true, this field will start a new row on the form.  </param>
     ///<param name="onchangeScript" type="String">(Optional) the script to run if the object is changed, this will be run if the user changes the value of the text box and if the user clicks on the calendar button (Not necessarily changes the value)</param>
+    ///<param name="itemSelectedFunction" type="Function Variable">(Optional) A function that is run when the user selects a date from the calendar. format = function(valueSelected, itemSelectedOptionalData);</param>
+    ///<param name="itemSelectedOptionalData" type="Object">(Optional) Ignored if itemSelectedFunction is not provided. Optional data to send to the itemSelected function</param>
     "use strict";
     var thisControl;
     thisControl = new FILLIN.ZOneControl("cal", formIndex, id, value, title, isRequired, null, null, newLine);
     thisControl.fieldChangeScript = onchangeScript;
+    thisControl.calendarCloseFunction = itemSelectedFunction;
+    thisControl.calendarOptionalData = itemSelectedOptionalData;
     FILLIN.zaddControl(formIndex, thisControl);
 };
 FILLIN.addGenericControl = function (formIndex, preconfiguredControl, title, newLine) {

@@ -1,9 +1,10 @@
 ﻿/*jslint browser: true, plusplus: true */
-/*global AJAXPOST, FILLIN, HELPTOPICS, TIMEPICKER*/
+/*global AJAXPOST, FILLIN, HELPTOPICS, TIMEPICKER, CAL*/
 /// <reference path="ajaxpost.js" />
 /// <reference path="fillinform.js" />
 /// <reference path="helptopics.js" />
 /// <reference path="timepicker.js" />
+/// <reference path="calendar.js" />
 //ver 2.0.1 01/19/2015
 //01/19/2015 - changed COMMON.blockInput to be able to block all items in the body if containerId = "body", added logic to disable links also, added COMMON.zChangeElementAvailability
 //Holds function that are common to all scripts like control makers and other items. Added COMMON.getFileUpload
@@ -987,7 +988,7 @@ COMMON.getNumberField = function (id, value, isrequired, className, valType, min
     if (step !== undefined && step !== null && typeof step === "number") { obj.setAttribute("step", String(step)); }
     return obj;
 };
-COMMON.getCalendar = function (id, value, isRequired, placeholder, messageDivId, className, onkeypressAction, onchangeAction, attribLO, disabled) {
+COMMON.getCalendar = function (id, value, isRequired, placeholder, messageDivId, className, onkeypressAction, onchangeAction, attribLO, disabled, calendarCloseFunction, optionalData) {
     ///<summary>creates a Calendar object (textbox with calendar icon requires jpg/showcal.jpg image)</summary>
     ///<param name="id" type="String">The id of the element, will append the "cal" to the beginning of the provided id if there is not already set (i.e. if the provided id = "GRID" this will result in the id of the element being "calGRID" else if the provided id is "calGrid" for the same text box then the resulting id will not change.</param>
     ///<param name="value" type="String">(Optional) the value of the element if provided (can be null) in format MM/dd/yyyy.</param>
@@ -996,11 +997,15 @@ COMMON.getCalendar = function (id, value, isRequired, placeholder, messageDivId,
     ///<param name="MessageDivId" type="String">The element id where error messages will be displayed</param>
     ///<param name="className" type="String">(Optional) the CSS Class Name of the element</param>
     ///<param name="onkeypressAction" type="String">(Optional) Function to run during onkeypress event</param>
-    ///<param name="onchangeAction" type="String">(Optional) Function to run during onchange event of the text box and when calendar control is clicked</param>
+    ///<param name="onchangeAction" type="String">(Optional) Function Variable to run during onchange event of the text box and when calendar control is clicked</param>
     ///<param name="attribLO" type="Literal Object">(Optional) Object containing attributeName:attributevalue pairs</param>
     ///<param name="disabled" type="Boolean">(Optional) if true both the button and text box will be disabled
+    ///<param name="calendarCloseFunction" type="FunctionVariable">(Optional) a function that is run when the calendar is closed by the act of selecting and item. The format is function(valueSelected, optionalData)</param>
+    ///<param name="optionalData" type="Object">(Optional) Ignored if calendarCloseFunction is not provided. A value passed to the calendarCloseFunction</param>
     "use strict";
     var attrib, obj, obj1, obj2, obj3;
+    CAL.continuingFunction = calendarCloseFunction;
+    CAL.optionalData = optionalData;
     attrib = {};
     COMMON.addAttribute(attrib, attribLO);
     if (onkeypressAction) {
@@ -1020,11 +1025,7 @@ COMMON.getCalendar = function (id, value, isRequired, placeholder, messageDivId,
     obj1 = COMMON.getBasicElement("div", id);
     obj1.setAttribute("style", "margin:0;padding:0;");
     obj1.appendChild(obj);
-    if (onchangeAction !== undefined && onchangeAction !== null) {
-        onchangeAction += "CAL.showDaySelector(COMMON.docObj.getElementById('" + id + "')); return false;";
-    } else {
-        onchangeAction = "CAL.showDaySelector(COMMON.docObj.getElementById('" + id + "')); return false;";
-    }
+    onchangeAction = "CAL.zshowDaySelector(COMMON.docObj.getElementById('" + id + "'));";
     obj2 = COMMON.getLink(id, null, "#", onchangeAction);
     obj2.setAttribute("style", "margin:0;padding:0;float:left;");
     if (disabled) { obj2.setAttribute("disabled", ""); }

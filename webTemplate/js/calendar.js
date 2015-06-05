@@ -54,6 +54,10 @@ CAL.startPos = 0;
 CAL.endPos = 0;
 ///<var>the object to receive the output</var>
 CAL.valueReturnObj = null;
+///<var>A function object that if exists will execute in the format function(valueSelected, CAL.optionalData);</var>
+CAL.continuingFunction = null;
+///<var>An object or data that will be passed to the continuing function
+CAL.optionalData = null;
 ///<var>Names of the month</var>
 CAL.monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 CAL.zgetMonthName = function (dateIn) {
@@ -203,7 +207,7 @@ CAL.zbottom = function () {
     "use strict";
     var obj1, obj2;
     obj1 = COMMON.getBasicElement("div", null, null, CAL.zbottomDivClassName);
-    obj2 = COMMON.getLink(null, "Close", null, "CAL.zclose();");
+    obj2 = COMMON.getLink(null, "Close", null, "CAL.zclose(true);");
     obj1.appendChild(obj2);
     return obj1;
 };
@@ -491,8 +495,9 @@ CAL.zmoveLateral = function (itemCurrentlyDisplayed, selectorType, rightArrowCli
     itemCurrentlyDisplayed = selectorObj.changeFunction(itemCurrentlyDisplayed, rightArrowClicked);
     CAL.zpaneMovement(rightArrowClicked, selectorType, itemCurrentlyDisplayed, true);
 };
-CAL.zclose = function () {
+CAL.zclose = function (nothingSelected) {
     ///<summary>NOT FOR EXTERNAL USE...Closes and hides the base of the calendar control</summary>
+    ///<param name="nothingSelected" type="Boolean">if true will not execute the continuing function (CAL.continuingfunction)</param>
     "use strict";
     var baseObj, obj1;
     baseObj = COMMON.docObj.getElementById(CAL.baseDivId);
@@ -501,6 +506,9 @@ CAL.zclose = function () {
         obj1.removeChild(baseObj);
     }
     COMMON.blockInput("body", true);
+    if (CAL.continuingFunction && !nothingSelected) {
+        CAL.continuingFunction(CAL.valueReturnObj.value, CAL.optionalData);
+    }
 };
 CAL.zitemSelected = function (selectorType, itemSelected, sendValueToObject) {
     ///<summary>NOT FOR EXTERNAL USE...The click event of selecting any item in any selector</summary>
@@ -540,7 +548,7 @@ CAL.zcheckDaysInMonth = function (days, month, year) {
     "use strict";
     var mDays;
     mDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-    if (year == undefined || year == null) { year = 2004; }
+    if (year === undefined || year === null) { year = 2004; }
     if (month === 2 && year % 4 === 0) { mDays[1] = 29; }
     return (days > mDays[month - 1]);
 };
@@ -613,8 +621,8 @@ CAL.checkDateEntry = function (event) {
     }
     return CAL.zdisplayError(obj, "none", errorDivId);
 };
-CAL.showDaySelector = function (txtObj, parentDivId) {
-    ///<summary>Displays the day selector control in association with a text box</summary>
+CAL.zshowDaySelector = function (txtObj, parentDivId) {
+    ///<summary>NOT for External Use.  User COMMON.getCalendar(). Displays the day selector control in association with a text box</summary>
     ///<param name="txtObj" type="input:element">The text box associated with the calendar</param>
     ///<param name="parentDivId" type="String">Optional) The id of a parent element where this control will be displayed</param>
     ///<returnss type=""></returns>
