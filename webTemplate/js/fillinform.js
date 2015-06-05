@@ -490,6 +490,14 @@ FILLIN.suppressPendingChangesMessage = function (formIndex) {
     "use strict";
     FILLIN.allForms[formIndex].suppressPendingMessage = true;
 };
+FILLIN.closeDialog = function (formIndex) {
+    ///<summary>Closes a dialog without prompting or validating.</summary>
+    ///param name="formIndex" type="Number">The index of the form in FILLIN.allForms</param>
+    "use strict";
+    var thisForm;
+    thisForm = FILLIN.allForms[formIndex];
+    thisForm.continueClose(true);
+};
 FILLIN.saveData = function (formIndex, queryId, params, hasNoResults, suppressMessage) {
     ///<summary>Saves form data and reset pending change, if there are not pending changes, will do nothing</summary>
     ///<param name="formIndex" type="Int">the index of the form in FILLIN.allForms</param>
