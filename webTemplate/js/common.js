@@ -1026,7 +1026,7 @@ COMMON.getCalendar = function (id, value, isRequired, placeholder, messageDivId,
     obj1.setAttribute("style", "margin:0;padding:0;");
     obj1.appendChild(obj);
     onchangeAction = "CAL.zshowDaySelector(COMMON.docObj.getElementById('" + id + "'));";
-    obj2 = COMMON.getLink(id, null, "#", onchangeAction);
+    obj2 = COMMON.getLink(id, null, "#", onchangeAction, "Open Calendar and Select Date");
     obj2.setAttribute("style", "margin:0;padding:0;float:left;");
     if (disabled) { obj2.setAttribute("disabled", ""); }
     obj3 = COMMON.getImageElement(null, "jpg/showcal.jpg", "Open Calendar");
