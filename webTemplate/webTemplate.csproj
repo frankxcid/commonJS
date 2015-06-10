@@ -98,6 +98,7 @@
     <Content Include="jpg\search30.jpg" />
     <Content Include="jpg\showcal.jpg" />
     <Content Include="jpg\waiting.gif" />
+    <Content Include="jsTests\datediff.js" />
     <Content Include="js\ajaxpost.js" />
     <Content Include="js\calendar.js" />
     <Content Include="js\common.js" />
@@ -136,6 +137,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="helperclasses\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
