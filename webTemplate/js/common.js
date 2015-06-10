@@ -165,6 +165,29 @@ COMMON.dateToString = function (dtDate) {
     if (typeof dtDate === "number") { dtDate = new Date(dtDate); }
     return String(dtDate.getMonth() + 1) + "/" + String(dtDate.getDate()) + "/" + String(dtDate.getFullYear());
 };
+
+COMMON.dateDiff = function (interval, startDate, endDate) {
+    "use strict";
+    ///<summary>Gives the difference between two dates in Months, Days or Years</summary>
+    ///<param name="interval" type="String">The time interval, accepts: Y, Year, M, Month, D, Day</params>
+    ///<param name="startDate" type="Date">The Start Date</param>
+    ///<param name="enddate" type="Date">The End Date</param>
+    ///<returns type="Number">The difference</returns>
+    var remainderMonths, utcStart, utcEnd, millisecondInADay;
+    if (interval.toUpperCase() === "Y" || interval.toUpperCase() === "YEAR") {
+        return (endDate.getFullYear() - startDate.getFullYear());
+    }
+    if (interval.toUpperCase() === "M" || interval.toUpperCase() === "MONTH") {
+        remainderMonths = 12 - startDate.getMonth() + endDate.getMonth();
+        return ((endDate.getFullYear() - (startDate.getFullYear() + 1))) * 12 + remainderMonths;
+    }
+    if (interval.toUpperCase() === "D" || interval.toUpperCase() === "Day") {
+        millisecondInADay = 1000 * 60 * 60 * 24;
+        utcStart = Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+        utcEnd = Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+        return Math.floor((utcEnd - utcStart) / millisecondInADay);
+    }
+};
 COMMON.formatCurrency = function (numberIn, currencySymbol, precision) {
     ///<summary>formats numbers into currency with commas</summary>
     ///<param name="numberIn" type="Number">The number to convert</param>
@@ -1166,19 +1189,19 @@ COMMON.helpDialog = function (topic, displayDivId, width) {
             oneCt = content[i];
             obj1 = COMMON.docObj.createElement(oneCt.tag);
             switch (oneCt.tag) {
-                case "h2":
-                case "h3":
-                case "div":
-                case "p":
-                    obj1.innerHTML = oneCt.ih;
-                    break;
-                case "ul":
-                    for (n = 0; n < oneCt.ih.length; n++) {
-                        obj2 = COMMON.docObj.createElement("li");
-                        obj2.innerHTML = oneCt.ih[n];
-                        obj1.appendChild(obj2);
-                    }
-                    break;
+            case "h2":
+            case "h3":
+            case "div":
+            case "p":
+                obj1.innerHTML = oneCt.ih;
+                break;
+            case "ul":
+                for (n = 0; n < oneCt.ih.length; n++) {
+                    obj2 = COMMON.docObj.createElement("li");
+                    obj2.innerHTML = oneCt.ih[n];
+                    obj1.appendChild(obj2);
+                }
+                break;
             }
             objOut.appendChild(obj1);
         }
@@ -1209,7 +1232,7 @@ if (!Array.prototype.indexOf) {
     Array.prototype.indexOf = function (value, start) {
         "use strict";
         var i;
-        for (i = (start || 0) ; i < this.length; i++) {
+        for (i = (start || 0); i < this.length; i++) {
             if (this[i] === value) { return i; }
         }
         return -1;
