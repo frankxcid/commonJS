@@ -447,7 +447,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     };
     //construct the page navigation buttons, do not go into this function unless there is more than one page
     pageNavigationBtns = function () {
-        var baseDiv, navDiv, obj;
+        var baseDiv, navDiv, obj, tab;
         if (pagination === null) { return; }
         baseDiv = document.getElementById(that.baseDivId);
         navDiv = document.getElementById(pageNavDivId);
@@ -455,6 +455,11 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
             navDiv = COMMON.getBasicElement("div", pageNavDivId, null, pageNavDivClass);
             baseDiv.appendChild(navDiv);
         }
+        //Places the page navigation buttons in place directly under table
+        tab = document.getElementById(gridTableId);
+        navDiv.style.position = "relative";
+        navDiv.style.left = String(tab.offsetLeft) + "px";
+        navDiv.style.width = String(tab.offsetWidth) + "px";
         while (navDiv.firstChild) {
             navDiv.removeChild(navDiv.firstChild);
         }
