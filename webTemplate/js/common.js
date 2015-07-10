@@ -1255,7 +1255,7 @@ String.prototype.padRight = function (char, len) {
     return pads.substring(0, len);
 };
 //*****************************Javascript object enhancers*********************************************//
-//*****************************IE Version************************************************************//
+//*****************************Browser Info***********************************************************//
 COMMON.zgetIEVer = function () {
     ///<summary>NOT FOR EXTERNAL USE...gets the ie version and places if in COMMMON.ieVer</param>
     "use strict";
@@ -1272,4 +1272,10 @@ COMMON.zgetIEVer = function () {
 };
 ///<var>Contains the ie version as a string</var>
 COMMON.ieVer = COMMON.zgetIEVer();
+COMMON.getWindowWidth = function () {
+    "use strict";
+    if (window.self.innerWidth) { return window.self.innerWidth; }
+    if (document.documentElement && document.documentElement.clientWidth) { return document.documentElement.clientWidth; }
+    if (document.body) { return document.body.clientWidth; }
+};
 //*****************************IE Version************************************************************//
