@@ -21,6 +21,10 @@ MENU.allMenuObjects = [];
 MENU.timeoutObj = null;
 ///<var>The time it take for a sub menu to disappear after user stop hovering over the menu in seconds</var>
 MENU.menuDisplayTimeout = 1;
+///<var>Overrides the width of the submenus which normally is the width of the top level menu
+MENU.subMenuWidthOverride = null;
+///<var>Display symbol if true</var>
+MENU.displaySymbol = true;
 MENU.ZOneMenuChoice = function (text, href, onclickFunction, tooltip, target) {
     ///<summary>NOT FOR EXTERNAL USE...holds property for a menu choice</summary>
     "use strict";
@@ -35,13 +39,12 @@ MENU.ZOneMenuChoice = function (text, href, onclickFunction, tooltip, target) {
             iHTML = document.createElement("div");
             if (typeof text === "string" || typeof text === "number") {
                 obj1 = COMMON.getBasicElement("span", null, text);
-                //obj1.style.marginRight = "3px";
                 iHTML.appendChild(obj1);
             } else {
                 iHTML.appendChild(text);
             }
             obj1 = COMMON.getBasicElement("span", null, defaultSymbol);
-            iHTML.appendChild(obj1);
+            if (MENU.displaySymbol) { iHTML.appendChild(obj1); }
         }
         onclick = onclickFunction;
         if (isSub && onclickFunction) {
@@ -108,7 +111,11 @@ MENU.ZOneMenuObject = function () {
                 for (n = 0; n < thisMenuGrouping.allSubMenuChoices.length; n++) {
                     subObj2 = thisMenuGrouping.allSubMenuChoices[n].getObject(true);
                     subObj2.className = MENU.subMenuLinkClassName;
-                    if (thisMenuGrouping.width !== undefined && thisMenuGrouping.width !== null) { subObj2.style.width = thisMenuGrouping.width; }
+                    if (MENU.subMenuWidthOverride !== undefined && MENU.subMenuWidthOverride !== null) {
+                        subObj2.style.width = MENU.subMenuWidthOverride;
+                    } else if (thisMenuGrouping.width !== undefined && thisMenuGrouping.width !== null) {
+                        subObj2.style.width = thisMenuGrouping.width;
+                    }
                     subObj1.appendChild(subObj2);
                 }
                 obj1.appendChild(subObj1);
@@ -133,16 +140,23 @@ MENU.zclearAllMenus = function () {
 MENU.zshowOneMenu = function (obj) {
     "use strict";
     ///<summary>NOT FOR EXTERNAL USE...when hovering over a top level menu item, this will display sub menus if there are any</summary>
-    var thisMenu, menuIndex, choiceIndex, menuWidth;
+    var thisMenu, menuIndex, choiceIndex, menuWidth, calcLeft, calcWidth, windowWidth;
     menuIndex = obj.getAttribute("menuindex");
     choiceIndex = obj.getAttribute("choiceindex");
     menuWidth = obj.getAttribute("setwidth");
     thisMenu = document.getElementById("menu" + menuIndex.padLeft("0", 3) + choiceIndex);
     if (!thisMenu) { return false; }
     thisMenu.style.display = "inline";
+    thisMenu.style.width = MENU.subMenuWidthOverride || menuWidth;
+    calcWidth = thisMenu.offsetWidth;
     thisMenu.style.top = String(obj.offsetTop + obj.offsetHeight) + "px";
-    thisMenu.style.left = String(obj.offsetLeft) + "px";
-    thisMenu.style.width = menuWidth;
+    calcLeft = obj.offsetLeft;
+    windowWidth = COMMON.getWindowWidth();
+    if ((calcLeft + calcWidth) > windowWidth) {
+        calcLeft = (windowWidth - calcWidth);
+        if (calcLeft < 0) { calcLeft = 0; }
+    }
+    thisMenu.style.left = String(calcLeft) + "px";
     return true;
 };
 MENU.zstopTimeout = function () {
