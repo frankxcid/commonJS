@@ -7,11 +7,11 @@
     z-index:39;
 }
 /*Base*/
-.dvCDBase, .dvFFBase
+.dvCDBase, .dvFFBase, .dvFFBaseLeft, .dvFFBaseRight
 {
     background-color: white;
     border:solid 4px black;
-    margin:0 3%;
+    margin:0 auto;
 }
 .dvCDBase
 {
@@ -20,6 +20,14 @@
 .dvFFBase
 {
     clear:both;
+}
+.dvFFBaseLeft
+{
+    float:left;
+}
+.dvFFBaseRight
+{
+    float:right;
 }
 /*Title*/
 .dvCDTitle, .dvFFTitle

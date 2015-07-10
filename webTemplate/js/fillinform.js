@@ -17,6 +17,12 @@ FILLIN.buttondivClassName = "dvCDBottomButtons";
 FILLIN.subHeadClassName2 = "dvCDSubHeadSimpleDialog";
 ///<var>the id prefix (suffixed with formid) of the div used to hide the parent
 FILLIN.coverallDivIdPrefix = "divFFCoverall";
+///<var>Enum for form stacking. this determines whether the base div is float-ed left or right or clear-ed</var>
+FILLIN.formStacking = {
+    "left": "Left",
+    "right": "Right",
+    "stacked": ""
+};
 //*********************************************Helper Objects NOT FOR EXTERNAL USE*******************************************//
 
 FILLIN.zsetButtons = function (divId, setEnabled, formIndex) {
@@ -89,7 +95,7 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
         errorDivId += String(that.formIndex);
         //set classNames to use fillinform styles
         if (that.isForm) {
-            baseObjClassName = baseObjClassName.replace("CD", "FF");
+            baseObjClassName = baseObjClassName.replace("CD", "FF") + that.formStacking;
             titleObjClassName = titleObjClassName.replace("CD", "FF");
             contentBaseClassName = contentBaseClassName.replace("CD", "FF");
             errorDivClassName = errorDivClassName.replace("CD", "FF");
@@ -134,6 +140,7 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
     this.isForm = false; //when true will display as form inline on page instead of popup
     this.pendingChanges = false; //user has changed a field in the form
     this.removeMe = false; //if true, upon close will remove this form from memory
+    this.formStacking = FILLIN.formStacking.stacked; //sets the float or clear of the base div in forms only
     //Displays a message at the top of the form in red letters (see customconfirm.css)
     //Parameters:
     // message      (String)    Message to display
@@ -344,7 +351,7 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
         if (that.calendarCloseFunction) {
             that.calendarCloseFunction(value, optionalData);
         }
-    }
+    };
     //gets the field element construct
     //Parameters:
     //Returns       (Element)
@@ -477,6 +484,15 @@ FILLIN.reset = function () {
     "use strict";
     FILLIN.allForms = [];
     //FILLIN.maxFormIndex = 0;
+};
+FILLIN.setStacking = function (formIndex, stacking) {
+    ///<summary>Sets the stacking of the form by float-ing or clear-ing the base div. Ignored in dialogs</summary>
+    ///<param name="formIndex" type="Number">The index of the form in FILLIN.allForms</param>
+    ///<param name="stacking" type="FILLIN.stacking">Use FILLIN.stacking enumeration</param>
+    "use strict";
+    var thisForm;
+    thisForm = FILLIN.allForms[formIndex];
+    thisForm.formStacking = stacking;
 };
 FILLIN.validateForm = function (formIndex) {
     ///<summary>Does common validation and optional validation if provided</summary>
