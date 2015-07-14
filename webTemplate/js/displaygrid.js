@@ -984,6 +984,9 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
         if (localType.isField) {
             attrib.onchange = "DISPLAYGRID.zfieldChanged(" + String(gridIndex) + ", this);";
         }
+        if (localType.id === "txt" || localType.id === "txa") {
+            attrib.onkeyup = "DISPLAYGRID.zfieldChanged(" + String(gridIndex) + ", this);";
+        }
         switch (localType.id) {
             case "cal":
                 obj = COMMON.getCalendar(id, value, that.controlRequired, null, COMMON.pageMessageDivId, null, that.onkeypressAction, that.onchangeAction, attrib);
@@ -1008,7 +1011,7 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
                     attrib.onchange += that.onchangeAction;
                 }
                 if (that.onkeypressAction !== undefined && that.onkeypressAction !== null) {
-                    attrib.onkeyup = that.onkeypressAction;
+                    COMMON.addAttribute(attrib, "onkeyup", that.onkeypressAction);
                 }
                 obj = COMMON.getFieldObject(localType.id, id, value, that.controlRequired, that.numberValidationType, null, null, null, attrib);
                 break;
