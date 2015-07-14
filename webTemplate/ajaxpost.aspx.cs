@@ -462,6 +462,12 @@ namespace webTemplate
             FileListParams fl = System.Web.Helpers.Json.Decode(JSONData, typeof(FileListParams));
             if (fl.extensionFilter == "") { fl.extensionFilter = "*.*"; }
             directoryFileRecurse(fl, fl.parentFolder);
+            if (fl.fileList == null)
+            {
+                //no files found
+                sendResponse("[]");
+                return;
+            }
             var flo = fl.fileList.ToArray();
             var oSerializer = new System.Web.Script.Serialization.JavaScriptSerializer();
             String strOut = oSerializer.Serialize(flo); //JSON.stringify
