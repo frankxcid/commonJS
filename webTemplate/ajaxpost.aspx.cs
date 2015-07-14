@@ -8,6 +8,7 @@ using System.Text;
 using System.Xml;
 using SQLConnectLibrary;
 using CrystalReportOutput;
+using Microsoft.Win32;
 
 namespace webTemplate
 {
@@ -411,7 +412,7 @@ namespace webTemplate
             var thisDir = new System.IO.DirectoryInfo(setPathName() + "\\" + parentDir);
             foreach (System.IO.FileInfo thisFile in thisDir.GetFiles())
             {
-                if (fl.fileList == null) { fl.fileList = new List<string>(); }
+                if (fl.fileList == null) { fl.fileList = new List<FileListOut>(); }
                 String path = thisFile.DirectoryName;
                 if (path.Length > (setPathName() + "\\" + fl.parentFolder).Length)
                 {
@@ -421,7 +422,13 @@ namespace webTemplate
                 {
                     path = "";
                 }
-                fl.fileList.Add((path + thisFile.Name).Replace("\\", "/"));
+                var oneFile = new FileListOut();
+                oneFile.filename = thisFile.Name;
+                oneFile.filetype = getFileType(thisFile.Extension);
+                oneFile.filesize = (thisFile.Length / 1028).ToString("0");
+                oneFile.filedate = thisFile.LastWriteTime.ToString("M/d/yyyy");
+                oneFile.pathname = path.Replace("\\", "/");
+                fl.fileList.Add(oneFile);
             }
             if (fl.includeSubFolders && thisDir.GetDirectories().Length > 0)
             {
@@ -431,13 +438,31 @@ namespace webTemplate
                 }
             }
         }
+        private String getFileType(String extension)
+        {
+            String strOut = "Unknown";
+            try
+            {
+                RegistryKey thisKey = Registry.ClassesRoot.OpenSubKey(extension);
+                String fType = thisKey.GetValue("").ToString();
+                thisKey = Registry.ClassesRoot.OpenSubKey(fType);
+                String desc = thisKey.GetValue("").ToString();
+                strOut = desc;
+            }
+            catch
+            {
+                strOut = "Unknown";
+            }
+            if (strOut == "Unknown" && extension.ToUpper() == "PDF") { return "Portable Document Format (PDF)"; }
+            return strOut;
+
+        }
         private void getFileList(String JSONData)
         {
             FileListParams fl = System.Web.Helpers.Json.Decode(JSONData, typeof(FileListParams));
             if (fl.extensionFilter == "") { fl.extensionFilter = "*.*"; }
             directoryFileRecurse(fl, fl.parentFolder);
-            var flo = new FileListOut();
-            flo.fileList = fl.fileList.ToArray();
+            var flo = fl.fileList.ToArray();
             var oSerializer = new System.Web.Script.Serialization.JavaScriptSerializer();
             String strOut = oSerializer.Serialize(flo); //JSON.stringify
             strOut = strOut.Replace("&", "&amp;");
@@ -448,11 +473,16 @@ namespace webTemplate
             public String parentFolder = "";
             public Boolean includeSubFolders = false;
             public String extensionFilter = "";
-            public List<string> fileList = null;
+            public List<FileListOut> fileList = null;
+
         }
         private class FileListOut
         {
-            public String[] fileList = null;
+            public String filename = "";
+            public String filetype = "";
+            public String filesize = "";
+            public String filedate = "";
+            public String pathname = "";
         }
         #endregion
     }

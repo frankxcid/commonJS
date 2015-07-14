@@ -306,7 +306,7 @@ AJAXPOST.getFileList = function (parentFolder, includeSubFolders, extensionFilte
     ///<param name="extensionFilter" type="String">(Optional) a string represent the file extenstion search pattern filter (e.g. "*.txt")</param>
     ///<param name="continuingFunction" type="Function">(Optional)The script to run after iFrame is loaded. In the pattern of format function(tokenId, optionalData){}. Use token id in AJAXPOST.getResponse(tokenId) to get the response</param>
     ///<param name="optionalData" type="Any">(Optional)Any data that can be send in the continuingFunction</param>
-    ///<returns type="Object">JSON object with an array listing all files</returns>
+    ///<returns type="Object">JSON object with an array listing all files in format {"filename":"", "filetype":"","filesize":"","fildate":"","pathname":""}</returns>
     "use strict";
     var sendVars, tokenId;
     //create and object (sendVars) that can be turned into a JSON string
