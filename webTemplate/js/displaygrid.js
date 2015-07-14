@@ -108,7 +108,8 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     this.alternateColor = false;
     ///<var>the width of the button column if present</var>
     this.buttonColumnWidth = null;
-
+    ///<var>overrides the position in the css with this value.  Used to allign the grid with another object</var>
+    this.leftPosition = null;
     //*****************Public ReadOnlyProperties******************************//
     this.getColumnName = function (colIndex) {
         ///<summary>Gets the column Name of an Index</summary>
@@ -708,6 +709,12 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         div = document.getElementById(that.baseDivId);
         if (div === null || !div) {
             div = COMMON.getBasicElement("div", that.baseDivId, null, baseClassName);
+            if (that.leftPosition !== undefined && that.leftPosition !== null) {
+                COMMON.addAttribute(div, "style", "margin-left:0; margin-right:0; position:relative; left:" + that.leftPosition + ";", true);
+            }
+            if (that.gridWidth !== undefined && that.gridWidth !== null && that.gridWidth !== "") {
+                div.style.width = that.gridWidth;
+            }
             document.getElementById(that.displayDivId).appendChild(div);
         } else {
             while (div.firstChild) {
@@ -778,7 +785,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         tab.id = gridTableId;
         tab.className = gridTableClass;
         if (that.gridWidth !== undefined && that.gridWidth !== null && that.gridWidth !== "") {
-            tab.style.width = that.gridWidth;
+            tab.style.width = "100%";
         }
         tab.appendChild(titleBar()); //Title Bar Row
         tab.appendChild(headerRow()); //Header Row
@@ -1283,6 +1290,16 @@ DISPLAYGRID.resetGrid = function () {
     ///<summary>Clears all grids from memory</summary>
     "use strict";
     DISPLAYGRID.allGrids = [];
+};
+DISPLAYGRID.allignGrid = function (gridIndex, idOrObject) {
+    "use strict";
+    var thisGrid, obj;
+    thisGrid = DISPLAYGRID.allGrids[gridIndex];
+    obj = idOrObject;
+    if (typeof idOrObject === "string") {
+        obj = document.getElementById(idOrObject);
+    }
+    thisGrid.leftPosition = String(obj.offsetLeft) + "px";
 };
 DISPLAYGRID.addGrid = function (displayDivId, baseDivId, queryId, params, rowsPerPage, firstSortIndex, reverseSort, suppressAlert, noResultsMessage, noResultsAction) {
     ///<summary>Adds a new Grid to Array</summary>
