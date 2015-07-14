@@ -144,6 +144,14 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         intOut = searchObj[keyToSearch].index;
         return (intOut === undefined ? -1 : intOut);
     };
+    this.getRowData = function (rowkey) {
+        ///<summary>gets the data for the whole row indicated by the key</summary>
+        ///<param name="rowkey" type="String">The key of the row</param>
+        ///<returns type="String Array">An Array containing the ordered row data</returns>
+        var rowIndex;
+        rowIndex = that.getKeyRow(rowkey);
+        return dataResults[rowIndex];
+    };
     //***************************Private Methods****************************************//
     getButtonColumnTD = function () {
         var td;
@@ -1551,6 +1559,14 @@ DISPLAYGRID.getData = function (gridIndex, forCSharp, showAll) {
     ///<returns type="Literal Object">Pattern if forCSharp is true:  {data : [[{ColumnName : (String), Value : (String), ColIndex : (Int)},{column 2}...],[row 2]...]} Pattern if forCSharp is false: {primaryKey0 : { 0 : column0Value(String), 1 : column1Value(String), ...}, primaryKey1 : { 0: column0Value, 1: column1Value, ...}, ...}</returns>
     "use strict";
     return DISPLAYGRID.allGrids[gridIndex].getData(forCSharp, showAll);
+};
+DISPLAYGRID.getDataRow = function (gridIndex, pkey) {
+    ///<summary>gets the data for the whole row indicated by the key</summary>
+    ///<param name="gridIndex" type="int">The index of the grid</param>
+    ///<param name="pkey" type="String">The key of the row</param>
+    ///<returns type="String Array">An Array containing the ordered row data</returns>
+    "use strict";
+    return DISPLAYGRID.allGrids[gridIndex].getRowData(pkey);
 };
 DISPLAYGRID.validateGrid = function (gridIndex) {
     ///<summary>Validates user editable fields in the grid</summary>
