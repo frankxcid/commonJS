@@ -1,7 +1,7 @@
 ﻿///<reference path="common.js" />
 //Used to query using pre established sql queries
 /*jslint browser: true, plusplus: true */
-/*global FILLIN, COMMON*/
+/*global COMMON*/
 /*Ver 1.1.0 01/23/2015*/
 var AJAXPOST = {};
 ///<var>array that holds the column names in orders from the query</var>
@@ -23,6 +23,7 @@ AJAXPOST.requestType = {
     ImageToSQL: { requestType: "imagetosql", postType: "upload" },
     downloadPDF: { requestType: "downloadPDF", postType: "download" },
     fileList: { requestType: "fileList", postType: "other" },
+    fileListMedia: { requestType: "fileListMedia", postType: "other" },
     crystalReportStream: { requestType: "crystalReportStream", postType: "download" },
     crystalReportSave: { requestType: "crystalReportSave", postType: "download" }
 };
@@ -299,19 +300,21 @@ AJAXPOST.downloadPDF = function (relativePathAndFileName, overrideFileName, acti
     sendVars = { "pathAndFile": relativePathAndFileName, "action": action, "overrideFileName": overrideFileName, "optionalData": optionalData };
     return AJAXPOST.zdoPost(AJAXPOST.requestType.downloadPDF.requestType, sendVars, null, continuingFunction, optionalData);
 };
-AJAXPOST.getFileList = function (parentFolder, includeSubFolders, extensionFilter, continuingFunction, optionalData) {
+AJAXPOST.getFileList = function (parentFolder, includeSubFolders, extensionFilter, continuingFunction, optionalData, withMedia) {
     ///<summary>Gets a list of files that are in a directory</summary>
     ///<param name="parentFolder" type="String">the relative path to the folder where the files are stored</param>
     ///<param name="includeSubFolders" type="Boolean">(Optional) True will also list files from subfolders</param>
     ///<param name="extensionFilter" type="String">(Optional) a string represent the file extenstion search pattern filter (e.g. "*.txt")</param>
     ///<param name="continuingFunction" type="Function">(Optional)The script to run after iFrame is loaded. In the pattern of format function(tokenId, optionalData){}. Use token id in AJAXPOST.getResponse(tokenId) to get the response</param>
     ///<param name="optionalData" type="Any">(Optional)Any data that can be send in the continuingFunction</param>
+    ///<param name="withMedia" type="Boolean">(Optional)Returns additional media data for videos</param>
     ///<returns type="Object">JSON object with an array listing all files in format {"filename":"", "filetype":"","filesize":"","fildate":"","pathname":""}</returns>
     "use strict";
-    var sendVars, tokenId;
+    var sendVars, tokenId, rqType;
     //create and object (sendVars) that can be turned into a JSON string
     sendVars = { "parentFolder": parentFolder, "includeSubFolders": (includeSubFolders !== undefined && includeSubFolders !== null && includeSubFolders), "extensionFilter": (extensionFilter === undefined || extensionFilter === null ? "*.*" : extensionFilter) };
-    tokenId = AJAXPOST.zdoPost(AJAXPOST.requestType.fileList.requestType, sendVars, null, continuingFunction, optionalData);
+    rqType = (withMedia ? AJAXPOST.requestType.fileListMedia : AJAXPOST.requestType.fileList);
+    tokenId = AJAXPOST.zdoPost(rqType.requestType, sendVars, null, continuingFunction, optionalData);
     //process the reply from the server
     //turn the result into a JSON object (generic object) that was predefined in remoteq.aspx.cs
     //public String parentFolder = "";

@@ -87,6 +87,7 @@
     <Content Include="css\fillinform.css" />
     <Content Include="css\main.css" />
     <Content Include="css\menu.css" />
+    <Content Include="css\trainingvideo.css" />
     <Content Include="index.aspx" />
     <Content Include="jpg\browseBack.jpg" />
     <Content Include="jpg\browseBtn.jpg" />
@@ -108,6 +109,8 @@
     <Content Include="js\main.js" />
     <Content Include="js\menu.js" />
     <Content Include="js\timepicker.js" />
+    <Content Include="js\tvt.js" />
+    <Content Include="trainingvideos.html" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>

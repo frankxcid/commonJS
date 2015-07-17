@@ -1,0 +1,72 @@
+﻿html
+{
+    width:100%;
+    margin:0;
+    padding:0;
+    font-family:"Segoe UI", Segoe, Tahoma, Arial;
+    font-size:11pt;
+}
+body {
+    width:100%;
+    margin:0;
+    padding:0;
+    background-color:black;
+}
+.leftdisplay
+{
+    position:absolute;
+    left:0;
+    top:0;
+    width:75%;
+    float:left;
+    z-index:5;
+}
+#rightdisplay
+{
+    position:absolute;
+    left:75%;
+    top:0;
+    width:25%;
+    float:left;
+    z-index:1;
+}
+#topright {
+    width: 100%;
+    height: 150px;
+    text-align:center;
+    color:white;
+}
+#topright a, #bottomright a
+{
+    text-decoration:none;
+    color:white;
+    font-size:1.2em;
+}
+#bottomright
+{
+    width:100%;
+    text-align:center;
+    color:white;
+}
+#divWaiting
+{
+    position:absolute;
+    top:200px;
+    left:28%;
+    background-color:white;
+    text-align:center;
+    color:black;
+    padding:10px;
+}
+#btnFullScreen
+{
+    position:absolute;
+    color:white;
+    background-color:#A0A0A0;
+    top:0;
+    left:0;
+    z-index:10;
+}
+a.homepage{
+    background-color:#3F9AD3;
+}

@@ -64,6 +64,9 @@ namespace webTemplate
                 case "fileList":
                     getFileList(initObj.sendVars);
                     return;
+                case "fileListMedia":
+                    getFileListMedia(initObj.sendVars);
+                    return;
                 case "imagetosql":
                     doImageToSQL(initObj.sendVars);
                     return;
@@ -182,8 +185,10 @@ namespace webTemplate
             String outPut = "Command Complete";
             switch (commandObj.reqType)
             {
-                    //list custom commands here, If downloading, use sendResponse("") with a blank message to skip the response but will create token cookie in case AJAX is listening for token cookie to complete download.
-                
+                case "videostarted":
+                    outPut = HttpContext.Current.User.Identity.Name.ToString();
+                    break;
+
             }
             sendResponse(outPut);
             Response.End();
@@ -325,10 +330,27 @@ namespace webTemplate
             String fileName = new System.IO.FileInfo(fullPath).Name;
             if (pd.overrideFileName != "") { fileName = pd.overrideFileName; }
             sendResponse("Download Complete");
-            Response.AppendHeader("content-disposition", "attachment; filename = " + fileName);
-            Response.WriteFile(fullPath);
-            Response.Flush();
-            Response.End();
+            var fi = new System.IO.FileInfo(pd.pathAndFile);
+            switch (fi.Extension)
+            {
+                case ".pdf":
+                    Response.ContentType = "application/pdf";
+                    Response.AppendHeader("content-disposition", "attachment; filename = " + fileName);
+                    Response.WriteFile(fullPath);
+                    Response.Flush();
+                    Response.End();
+                    return;
+                case ".mp4":
+                    Response.ContentType = "video/mp4";
+                    Response.AppendHeader("content-disposition", "attachment; filename = " + fileName);
+                    System.IO.FileStream sourceFile = new System.IO.FileStream(fullPath, System.IO.FileMode.Open);
+                    long fileSize = sourceFile.Length;
+                    byte[] getContent = new byte[(int)fileSize];
+                    sourceFile.Read(getContent, 0, (int)sourceFile.Length);
+                    sourceFile.Close();
+                    Response.BinaryWrite(getContent);
+                    break;
+            }
         }
         private class PDFData
         {
@@ -406,11 +428,120 @@ namespace webTemplate
             public Boolean downloadFile = false;
         }
         #endregion
+        #region "getFileListMedia"
+        private List<String> getMediaInfo(String FileFullName)
+        {
+            System.Diagnostics.Process proc = new System.Diagnostics.Process();
+            System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo();
+            psi.FileName = "\"" + setPathName() + "\\bin\\mediainfo.exe\"";
+            psi.Arguments = "--Output=XML \"" + FileFullName + "\"";
+            psi.UseShellExecute = false;
+            psi.RedirectStandardOutput = true;
+            psi.CreateNoWindow = true;
+            proc.StartInfo = psi;
+            proc.Start();
+            XmlDocument doc = new XmlDocument();
+            doc.Load(proc.StandardOutput);
+            proc.WaitForExit();
+            proc.Close();
+            var strOut = new List<String>();
+            strOut.Add(fixMediaInfo(doc.SelectSingleNode("/Mediainfo/File").ChildNodes[1].SelectSingleNode("Width___________________________________").InnerXml));
+            strOut.Add(fixMediaInfo(doc.SelectSingleNode("/Mediainfo/File").ChildNodes[1].SelectSingleNode("Height__________________________________").InnerXml));
+
+            return strOut;
+        }
+        private void createThumbnails(String FileFullName)
+        {
+            String thumbnailFileName = FileFullName.Replace(".mp4", ".jpg");
+            thumbnailFileName = thumbnailFileName.Substring(thumbnailFileName.LastIndexOf("\\") + 1);
+            thumbnailFileName = setPathName() + "\\images\\" + thumbnailFileName;
+            if (System.IO.File.Exists(thumbnailFileName)) { return; }
+            System.Diagnostics.Process proc = new System.Diagnostics.Process();
+            System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo();
+            psi.FileName = "\"" + setPathName() + "\\bin\\ffmpeg.exe\"";
+            psi.Arguments = "-i \"" + FileFullName + "\" -ss 00:00:30 -s 75X75 -f image2 \"" + thumbnailFileName + "\"";
+            psi.UseShellExecute = false;
+            psi.RedirectStandardOutput = true;
+            psi.CreateNoWindow = true;
+            proc.StartInfo = psi;
+            proc.Start();
+            proc.WaitForExit();
+            proc.Close();
+        }
+        private String fixMediaInfo(String str)
+        {
+            str = str.Replace("pixels", "");
+            str = str.Replace(" ", "");
+            return str;
+        }
+        private void directoryFileRecurseMedia(FileListParamsMedia fl, String parentDir)
+        {
+            var thisDir = new System.IO.DirectoryInfo(setPathName() + "\\" + parentDir);
+
+
+            foreach (System.IO.FileInfo thisFile in thisDir.GetFiles(fl.extensionFilter))
+            {
+                if (fl.fileList == null) { fl.fileList = new List<OneFile>(); }
+                String path = thisFile.DirectoryName;
+                if (path.Length > (setPathName() + "\\" + fl.parentFolder).Length)
+                {
+                    path = path.Substring((setPathName() + "\\" + fl.parentFolder).Length) + "/";
+                }
+                else
+                {
+                    path = "";
+                }
+                var onef = new OneFile((path + thisFile.Name).Replace("\\", "/"));
+                List<String> strOut = getMediaInfo(thisFile.FullName);
+                createThumbnails(thisFile.FullName);
+                onef.frameWidth = strOut[0];
+                onef.frameHeight = strOut[1];
+                fl.fileList.Add(onef);
+            }
+            if (fl.includeSubFolders && thisDir.GetDirectories().Length > 0)
+            {
+                foreach (System.IO.DirectoryInfo thisSubDir in thisDir.GetDirectories())
+                {
+                    directoryFileRecurseMedia(fl, thisSubDir.FullName);
+                }
+            }
+        }
+        private void getFileListMedia(String JSONData)
+        {
+            FileListParamsMedia fl = System.Web.Helpers.Json.Decode(JSONData, typeof(FileListParamsMedia));
+            if (fl.extensionFilter == "") { fl.extensionFilter = "*.*"; }
+            directoryFileRecurseMedia(fl, fl.parentFolder);
+            var flo = fl.fileList.ToArray();
+            var oSerializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+            String strOut = oSerializer.Serialize(flo); //JSON.stringify
+            strOut = strOut.Replace("&", "&amp;");
+            Response.Write(strOut);
+            Response.End();
+        }
+        private class FileListParamsMedia
+        {
+            public String parentFolder = "";
+            public Boolean includeSubFolders = false;
+            public String extensionFilter = "";
+            public List<OneFile> fileList = null;
+
+        }
+        private class OneFile
+        {
+            public String filename = "";
+            public String frameHeight = "";
+            public String frameWidth = "";
+            public OneFile(String _fileName)
+            {
+                this.filename = _fileName;
+            }
+        }
+        #endregion
         #region "getFileList"
         private void directoryFileRecurse(FileListParams fl, String parentDir)
         {
             var thisDir = new System.IO.DirectoryInfo(setPathName() + "\\" + parentDir);
-            foreach (System.IO.FileInfo thisFile in thisDir.GetFiles())
+            foreach (System.IO.FileInfo thisFile in thisDir.GetFiles(fl.extensionFilter))
             {
                 if (fl.fileList == null) { fl.fileList = new List<FileListOut>(); }
                 String path = thisFile.DirectoryName;
