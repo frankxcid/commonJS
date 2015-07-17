@@ -92,6 +92,8 @@
     <Content Include="jpg\browseBack.jpg" />
     <Content Include="jpg\browseBtn.jpg" />
     <Content Include="jpg\DDlogo.jpg" />
+    <Content Include="jpg\DDlogosm.jpg" />
+    <Content Include="jpg\fullpage.jpg" />
     <Content Include="jpg\grid.gif" />
     <Content Include="jpg\help.jpg" />
     <Content Include="jpg\screen.jpg" />

@@ -7,21 +7,27 @@
     <script src="js/ajaxpost.js"></script>
     <script src="js/common.js"></script>
     <script src="js/tvt.js"></script>
-    <link href="Styles/trainingvideo.css" rel="stylesheet" />
+    <script src="js/main.js"></script>
+    <script src="js/fillinform.js"></script>
+    <link href="css/trainingvideo.css" rel="stylesheet" />
+    <link href="css/fillinform.css" rel="stylesheet" />
 </head>
 <body>
-    <div id="leftdisplay" class="leftdisplay">&nbsp;</div>
-    <div id="rightdisplay">
-        <div id="topright">
-            <div id="imgLogo">
-                <img src="images/DDlogosm.jpg" height="62" width="205" />
+    <div id="toplevel">
+        <div id="leftdisplay" class="leftdisplay">&nbsp;</div>
+        <div id="rightdisplay">
+            <div id="topright">
+                <div id="imgLogo">
+                    <img src="jpg/DDlogosm.jpg" height="62" width="205" />
+                </div>
+                <a href="/" title="Return to home Page" class="homepage">Home Page</a><a href="#" onclick="TVT.zdisplayHelp(); return false;" title="Show Help" class="homepage">Help/Instructions</a>
             </div>
-            <a href="/" title="Return to home Page" class="homepage">Home Page</a>
+            <div id="bottomright"></div>
         </div>
-        <div id="bottomright"></div>
     </div>
     <script>
-        TVT.initdisplay("bottomright", "maximizervideos")
+        MAIN.init();
+        TVT.zinitdisplay("bottomright")
     </script>
 </body>
 </html>
