@@ -57,11 +57,17 @@
     margin:0;
     padding:0;
 }
-.dvCDContentBase h2, .dvCDContentBase h3, .dvCDContentBase p, .dvCDContentBase img, .dvFFContentBase h2, .dvFFContentBase h3, .dvFFContentBase p, .dvFFContentBase img, .dvCDControlCell h5
+.dvCDContentBase h2, .dvCDContentBase h3, .dvCDContentBase p, .dvFFContentBase h2, .dvFFContentBase h3, .dvFFContentBase p, .dvCDControlCell h5
 {
     margin:0;
     padding:0;
     width:100%;
+}
+.dvFFContentBase img, .dvCDContentBase img
+{
+    margin:0;
+    padding:0;
+    border:0;
 }
 div.dvCDErr, div.dvFFErr
 {
