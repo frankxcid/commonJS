@@ -340,7 +340,7 @@ COMMON.blockInput = function (containerId, restoreFunction, waitGifURL, containe
         }
         if (zindex === undefined || zindex === null) { zindex = "98"; }
         if (zindex !== "") { zindex = "z-index:" + zindex + ";"; }
-        attr = { "style": "position:absolute;background-color:#FEFEFE;opacity:.8;" + zindex };
+        attr = { "style": "position:fixed;background-color:#FEFEFE;opacity:.8;" + zindex };
         obj1 = COMMON.getBasicElement("div", containerCoverId, null, null, null, attr);
         obj1.style.top = String(oTop) + "px";
         obj1.style.left = String(oLeft) + "px";
@@ -1179,7 +1179,7 @@ COMMON.helpDialog = function (topic, displayDivId, width) {
     ///<param name="displayDivId" type="String">The id of the parentNode of which the help div will be the child</param>
     ///<param name="width" type="String">CSS width value used for the help dialog</param>
     "use strict";
-    var content, title, objOut, i, n, oneCt, obj1, obj2, helpTopicObj;
+    var content, title, objOut, i, n, oneCt, obj1, obj2, helpTopicObj, formIndex;
     helpTopicObj = HELPTOPICS[topic]();
     content = helpTopicObj.content;
     title = "Help - " + helpTopicObj.title;
@@ -1189,24 +1189,27 @@ COMMON.helpDialog = function (topic, displayDivId, width) {
             oneCt = content[i];
             obj1 = COMMON.docObj.createElement(oneCt.tag);
             switch (oneCt.tag) {
-            case "h2":
-            case "h3":
-            case "div":
-            case "p":
-                obj1.innerHTML = oneCt.ih;
-                break;
-            case "ul":
-                for (n = 0; n < oneCt.ih.length; n++) {
-                    obj2 = COMMON.docObj.createElement("li");
-                    obj2.innerHTML = oneCt.ih[n];
-                    obj1.appendChild(obj2);
-                }
-                break;
+                case "h2":
+                case "h3":
+                case "div":
+                case "p":
+                    obj1.innerHTML = oneCt.ih;
+                    break;
+                case "ul":
+                    for (n = 0; n < oneCt.ih.length; n++) {
+                        obj2 = COMMON.docObj.createElement("li");
+                        obj2.innerHTML = oneCt.ih[n];
+                        obj1.appendChild(obj2);
+                    }
+                    break;
             }
             objOut.appendChild(obj1);
         }
     }
-    FILLIN.okDialog(displayDivId, title, objOut, width);
+    formIndex = FILLIN.okDialog(displayDivId, title, objOut, width);
+    obj1 = document.getElementById("divformBase" + String(formIndex));
+    obj1.style.position = "absolute";
+    obj1.style.top = "0";
 };
 COMMON.createHelpContentObj = function (tag, content) {
     ///<summary>Creates a content object used by helptopics.js</summary>
@@ -1232,7 +1235,7 @@ if (!Array.prototype.indexOf) {
     Array.prototype.indexOf = function (value, start) {
         "use strict";
         var i;
-        for (i = (start || 0); i < this.length; i++) {
+        for (i = (start || 0) ; i < this.length; i++) {
             if (this[i] === value) { return i; }
         }
         return -1;

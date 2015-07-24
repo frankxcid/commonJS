@@ -213,7 +213,7 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
         parentDivObj.appendChild(baseDivObj);
         //set position of the form when it is a dialog
         if (!that.isForm) {
-            baseDivObj.style.position = "absolute";
+            baseDivObj.style.position = "fixed";
             leftPosition = ((parentDivObj.offsetWidth - baseDivObj.offsetWidth) / 2);
             if (leftPosition < 0) { leftPosition = 0; }
             baseDivObj.style.left = String(leftPosition) + "px";
@@ -795,6 +795,7 @@ FILLIN.okDialog = function (parentDivId, headLine, message, width, buttonText) {
     formIndex = FILLIN.createDialog(parentDivId, headLine, message, null, null, width);
     FILLIN.addButton(formIndex, true, "btnDialogOK" + formIndex, (buttonText || "OK"));
     FILLIN.displayForm(formIndex);
+    return formIndex;
 };
 FILLIN.createForm = function (parentDivId, headline, message, continuingfunction, optionalData, width, optionalValidationFunction) {
     ///<summary>Creates a Form object (not dialog)</summary>
