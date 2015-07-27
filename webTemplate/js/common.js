@@ -212,6 +212,21 @@ COMMON.formatCurrency = function (numberIn, currencySymbol, precision, useParens
     if (currencySymbol === undefined || currencySymbol === null) { currencySymbol = ""; }
     return parensBegin + currencySymbol + wholeNumPart + "." + decimalPart + parensEnd;
 };
+COMMON.unformatNumber = function (val) {
+    ///<summary>if the value in is a number removes comma and parens if present. Replaces parens with (-)
+    ///<param name="val" type="String|Number">The value to process</param>
+    ///<returns type="String">Returns the number as a string<returns>
+    "use strict";
+    var tmp;
+    tmp = String(val).replace(/\,/g, "");
+    if (!isNaN(tmp)) {
+        return tmp;
+    }
+    if (tmp.indexOf("(") === 0 && tmp.indexOf(")") === (tmp.length - 1) && !isNaN(tmp.replace(/\(/g, "").replace(/\)/g, "")) && tmp.indexOf("-") < 0) {
+        return "-" + tmp.replace(/\(/g, "").replace(/\)/g, "");
+    }
+    return String(val);
+};
 COMMON.readFlag = function (flagIn, flagIndex) {
     ///<summary>Reads the value of a binary flag within a number</summary>
     ///<param name="flagIn" type="Number">The number containing all the flags</param>
