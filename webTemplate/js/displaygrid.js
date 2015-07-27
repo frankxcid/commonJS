@@ -1057,10 +1057,13 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
     //  dataRow     (Array:String)      The dataResult Row
     //Returns       (String)            in-line style string
     this.getStyle = function (dataRow) {
-        var dColVal, style;
+        var dColVal, style, i;
         if (!that.styleDefinition) { return ""; }
-        dColVal = dataRow[that.styleDefinition.determinationColumn];
-        style = that.styleDefinition.valueFunction(dColVal);
+        style = "";
+        for (i = 0; i < that.styleDefinition.length; i++) {
+            dColVal = dataRow[that.styleDefinition[i].determinationColumn];
+            style += that.styleDefinition[i].valueFunction(dColVal);
+        }
         return style || "";
     };
     //Returns the value of the summary
@@ -1417,7 +1420,8 @@ DISPLAYGRID.addStyleDefinition = function (gridIndex, colIndex, determinationCol
     "use strict";
     var thisColumnDefinition;
     thisColumnDefinition = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
-    thisColumnDefinition.styleDefinition = { "determinationColumn": determinationColumn, "valueFunction": styleValueFunction };
+    if (thisColumnDefinition.styleDefinition === undefined || thisColumnDefinition.styleDefinition === null) { thisColumnDefinition.styleDefinition = []; }
+    thisColumnDefinition.styleDefinition.push({ "determinationColumn": determinationColumn, "valueFunction": styleValueFunction });
 };
 DISPLAYGRID.addTextBox = function (gridIndex, colIndex, isRequired, COMMONvalType, maxLength, onchangeAction, onkeypressAction) {
     ///<summary>adds text boxes to specific column</summary>
