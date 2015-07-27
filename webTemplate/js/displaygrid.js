@@ -110,6 +110,8 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     this.buttonColumnWidth = null;
     ///<var>overrides the position in the css with this value.  Used to allign the grid with another object</var>
     this.leftPosition = null;
+    ///<var>overrides the automated display of the print link. set to true to always show or false to hide. leave as null to return to automatic</var>
+    this.overridePrintLinkDisplay = null;
     //*****************Public ReadOnlyProperties******************************//
     this.getColumnName = function (colIndex) {
         ///<summary>Gets the column Name of an Index</summary>
@@ -395,7 +397,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         if (!that.alternateColor) { currentRowColorClass = dataRowClass; }
         tr = COMMON.getBasicElement("ttr", null, null, currentRowColorClass);
         td = document.createElement("td");
-        if (isFirstRow && that.getRowCount() > that.rowsPerPage) {
+        if (isFirstRow && ((that.getRowCount() > that.rowsPerPage) || that.overridePrintLinkDisplay === true) && that.overridePrintLinkDisplay !== false) {
             //Print Link
             printLink = COMMON.getLink(null, "Print", null, "DISPLAYGRID.zassemblePrint(" + String(gridIndex) + "); return false;");
             td.appendChild(printLink);
@@ -1372,6 +1374,13 @@ DISPLAYGRID.setButtonColumnWidth = function (gridIndex, width) {
     ///<param name="width" type="String">Any valid CSS width value</param>
     "use strict";
     DISPLAYGRID.allGrids[gridIndex].buttonColumnWidth = width;
+};
+DISPLAYGRID.overridePrintLinkDisplay = function (gridIndex, alwaysDisplay) {
+    ///<summary>Override the automated Print Link display (does not display unless there is more than one page)</summary>
+    ///<param name="gridIndex" type="int">The index of the grid</param>
+    ///<param name="alwaysDisplay" type="Boolean">set true or false, if null or undefined will be ignored</param>
+    "use strict";
+    DISPLAYGRID.allGrids[gridIndex].overridePrintLinkDisplay = alwaysDisplay;
 };
 DISPLAYGRID.alternateColors = function (gridIndex) {
     "use strict";
