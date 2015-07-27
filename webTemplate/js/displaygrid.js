@@ -816,7 +816,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     //  newWindow   (object:window)     the window object created on which the data will be displayed
     this.getDataToPrint = function (newWindow) {
         //used for printer friendly document
-        var i, n, thisColDefinition, titleObj, thisValue, thisSummaryRow, iHTML;
+        var i, n, thisColDefinition, titleObj, thisValue, thisSummaryRow, iHTML, cellStyle, thisRow, today, adjHours, ampm;
         if (currentPage < 1) { currentPage = 1; }
         if (currentPage > pagination.totalPages) { currentPage = pagination.totalPages; }
         titleObj = newWindow.document.createElement("h1");
@@ -830,13 +830,20 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         }
         iHTML += "</tr>";
         for (i = 0; i < dataResults.length; i++) {
+            thisRow = dataResults[i];
             if (displayRow(dataResults[i])) {
                 iHTML += "<tr>";
                 for (n = 1; n < columnNames.length; n++) {
                     thisColDefinition = allColDefinitions[n];
                     if (thisColDefinition.isVisible) {
                         thisValue = dataResults[i][n];
-                        iHTML += "<td class=\"" + (isNaN(thisValue) ? DISPLAYGRID.dataCellClass : DISPLAYGRID.dataCellNumberClass) + "\">" + thisValue + "</td>";
+                        if (thisColDefinition.formatNumber && thisColDefinition.formatNumber.format === true) {
+                            thisValue = COMMON.formatCurrency(thisValue, (thisColDefinition.formatNumber.currencysymbol ? "$" : ""), thisColDefinition.formatNumber.decimals, thisColDefinition.formatNumber.parens);
+                        }
+                        cellStyle = (thisColDefinition.getColor(thisRow));
+                        if (cellStyle !== "") { cellStyle = "background-color:" + cellStyle + ";"; }
+                        cellStyle += thisColDefinition.getStyle(thisRow);
+                        iHTML += "<td class=\"" + (isNaN(thisValue) ? DISPLAYGRID.dataCellClass : DISPLAYGRID.dataCellNumberClass) + "\" " + (cellStyle === "" ? "" : "style=\"" + cellStyle + "\"") + ">" + thisValue + "</td>";
                     }
                 }
                 iHTML += "</tr>";
@@ -845,6 +852,19 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         iHTML += "</table>";
         //add title
         if (that.title !== undefined && that.title !== null && that.title !== "") { newWindow.document.body.appendChild(titleObj); }
+        //add print time
+        today = new Date();
+        adjHours = today.getHours();
+        ampm = "A.M.";
+        if (adjHours > 12) {
+            adjHours -= 12;
+            ampm = "P.M.";
+        } else if (adjHours === 12) {
+            ampm = "P.M.";
+        } else if (adjHours === 0) {
+            adjHours = 12;
+        }
+        newWindow.document.body.innerHTML += "<h4>Printed: " + COMMON.dateToString(today) + " " + String(adjHours) + ":" + String(today.getMinutes()).padLeft("0", 2) + ":" + String(today.getSeconds()) + " " + ampm + "</h4>";
         //add table to window
         newWindow.document.body.innerHTML += iHTML;
         //add summary
@@ -983,7 +1003,7 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
         id = String(gridIndex) + "GRID" + that.getColumnLetter() + primaryKey;
         value = dataRow[colIndex];
         if (that.formatNumber && that.formatNumber.format === true) {
-            value = COMMON.formatCurrency(value, (that.formatNumber.currencysymbol ? "$" : ""), that.formatNumber.precision, that.formatNumber.parens);
+            value = COMMON.formatCurrency(value, (that.formatNumber.currencysymbol ? "$" : ""), that.formatNumber.decimals, that.formatNumber.parens);
         }
         attrib = { "pkey": primaryKey, "column": String(colIndex), "gridindex": String(gridIndex) };
         //add onchange to keep track of what fields have changed
