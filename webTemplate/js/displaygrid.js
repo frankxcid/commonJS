@@ -1421,7 +1421,7 @@ DISPLAYGRID.addNumberFormating = function (gridIndex, colIndex, decimalPlaces, u
     ///<param name="useParens" type="Boolean">(Optional) if set to true will indicate negative numbers by surrounding the number with parenthesis</param>
     ///<param name="currencySymbol" type="Boolean">(Optional) if provided will add a currency symbol to the number</param>
     "use strict";
-    var thisColumnDefinition, formatObj;
+    var thisColumnDefinition;
     //{ "format": false, "decimals": 0, "parens": false, "currencysymbol": false }
     thisColumnDefinition = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
     thisColumnDefinition.formatNumber.format = true;
