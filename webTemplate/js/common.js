@@ -219,6 +219,7 @@ COMMON.unformatNumber = function (val) {
     "use strict";
     var tmp;
     tmp = String(val).replace(/\,/g, "");
+    if (tmp.length > 1 && (tmp.substring(0, 1) === "$" || tmp.substring(1, 1) === "$")) { tmp = tmp.replace("$", ""); }//replaces only one $
     if (!isNaN(tmp)) {
         return tmp;
     }

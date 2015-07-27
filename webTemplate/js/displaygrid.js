@@ -947,6 +947,7 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
     this.colorDefinition = null; //a generic definitions containing the determinating column  and the colorvaluefunction with pattern "function (val) {return Color}" where val is the value of the determinationColumn. The color to return will be any valid css color value (#RRGGBB or common name).  If no color is return as in the case of null or undefined, then the default color white will be used
     //initializes summary, to be run in gridBody() function
     this.styleDefinition = null; //contains the function object with the pattern function(val){return String InLine Style} where val is the value of the determinationColumn. The style returned will be applied to the object in the grid cell
+    this.formatNumber = { "format": false, "decimals": 0, "parens": false, "currencysymbol": false };//will format this column is is number. Settings ignored if format == false. Sets decimals to the places set in "decimals" property (default = 4) and negative numbers surrounded by parenthesis if parens == true and currencysymbol will be displayed if provided
     this.initSummary = function () {
         that.summarySum = 0;
         that.summaryRowCount = 0;
@@ -979,6 +980,9 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
         primaryKey = dataRow[0];
         id = String(gridIndex) + "GRID" + that.getColumnLetter() + primaryKey;
         value = dataRow[colIndex];
+        if (that.formatNumber && that.formatNumber.format === true) {
+            value = COMMON.formatCurrency(value, (that.formatNumber.currencysymbol ? "$" : ""), that.formatNumber.precision, that.formatNumber.parens);
+        }
         attrib = { "pkey": primaryKey, "column": String(colIndex), "gridindex": String(gridIndex) };
         //add onchange to keep track of what fields have changed
         if (localType.isField) {
@@ -1192,6 +1196,8 @@ DISPLAYGRID.zfieldChanged = function (gridIndex, obj) {
     pkey = obj.getAttribute("pkey"); //get the primary key
     col = obj.getAttribute("column"); //get the column Index
     val = fieldType.getValueFunction(obj);//get the value
+    //remove any formating from numbers
+    val = COMMON.unformatNumber(val);
     //change the value and set hasChanged flag
     DISPLAYGRID.allGrids[gridIndex].valueChange(pkey, col, val);
 };
@@ -1374,6 +1380,22 @@ DISPLAYGRID.setWidth = function (gridIndex, width) {
     ///<param name="width" type="String">A valid css element width value</param>
     "use strict";
     DISPLAYGRID.allGrids[gridIndex].gridWidth = width;
+};
+DISPLAYGRID.addNumberFormating = function (gridIndex, colIndex, decimalPlaces, useParens, currencySymbol) {
+    ///<summary>Any numbers in the give column will be formatted as financial numbers (with thousands comma) and other properties (see parameters)</summary>
+    ///<param name="gridIndex" type="int">The index of the grid</param>
+    ///<param name="colIndex" type="int">The index of the column to affect</param>
+    ///<param name="decimalPlaces" type="int">(Optional) if omitted defaults to 4. Number of decimal places to show</param>
+    ///<param name="useParens" type="Boolean">(Optional) if set to true will indicate negative numbers by surrounding the number with parenthesis</param>
+    ///<param name="currencySymbol" type="Boolean">(Optional) if provided will add a currency symbol to the number</param>
+    "use strict";
+    var thisColumnDefinition, formatObj;
+    //{ "format": false, "decimals": 0, "parens": false, "currencysymbol": false }
+    thisColumnDefinition = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
+    thisColumnDefinition.formatNumber.format = true;
+    thisColumnDefinition.formatNumber.decimals = decimalPlaces;
+    thisColumnDefinition.formatNumber.parens = (useParens === true ? true : false);
+    thisColumnDefinition.formatNumber.currencysymbol = (currencySymbol === true ? true : false);
 };
 DISPLAYGRID.addColorDefinition = function (gridIndex, colindex, determinationColumn, colorValueFunction) {
     ///<summary>adds a Color Definitions for a column</summary>
