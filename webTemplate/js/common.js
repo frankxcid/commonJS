@@ -188,20 +188,29 @@ COMMON.dateDiff = function (interval, startDate, endDate) {
         return Math.floor((utcEnd - utcStart) / millisecondInADay);
     }
 };
-COMMON.formatCurrency = function (numberIn, currencySymbol, precision) {
+COMMON.formatCurrency = function (numberIn, currencySymbol, precision, useParens) {
     ///<summary>formats numbers into currency with commas</summary>
     ///<param name="numberIn" type="Number">The number to convert</param>
     ///<param name="currencySymbol" type="String">(Optional) Adds this symbol to the begining of the Number if present</param>
     ///<param name="precision" type="Number">(Optional) The number of digits to the right of the decimal. Defaults to 4</param>
+    ///<param name="useParens" type="Boolean">(Optional) If true will add parenthesis around negative numbers</params>
     ///<returns type="String" />
     "use strict";
-    var wholeNumPart, decimalPart, parts;
+    var wholeNumPart, decimalPart, parts, parensBegin, parensEnd;
     if (precision === undefined || precision === null || isNaN(precision)) { precision = 4; }
+    parensBegin = (parseFloat(numberIn) < 0 && useParens === true ? "(" : "");
+    parensEnd = (parensBegin === "(" ? ")" : "");
     parts = String(numberIn).split(".");
     wholeNumPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    if (useParens) { wholeNumPart = wholeNumPart.replace(/-/g, ""); }
     decimalPart = (parts.length > 1 ? parts[1] : "00");
+    if (precision === 0) {
+        decimalPart = "";
+    } else {
+        decimalPart = decimalPart.padRight("0", precision);
+    }
     if (currencySymbol === undefined || currencySymbol === null) { currencySymbol = ""; }
-    return currencySymbol + wholeNumPart + "." + decimalPart.padRight("0", precision);
+    return parensBegin + currencySymbol + wholeNumPart + "." + decimalPart + parensEnd;
 };
 COMMON.readFlag = function (flagIn, flagIndex) {
     ///<summary>Reads the value of a binary flag within a number</summary>
@@ -1244,6 +1253,7 @@ if (!Array.prototype.indexOf) {
 String.prototype.padLeft = function (char, len) {
     "use strict";
     var i, pads;
+    if (len === 0) { return this; }
     pads = "";
     for (i = 1; i <= len; i++) { pads += String(char); }
     pads += this;
@@ -1252,6 +1262,7 @@ String.prototype.padLeft = function (char, len) {
 String.prototype.padRight = function (char, len) {
     "use strict";
     var i, pads;
+    if (len === 0) { return this; }
     pads = "";
     for (i = 1; i <= len; i++) { pads += String(char); }
     pads = this + pads;

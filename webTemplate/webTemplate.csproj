@@ -102,6 +102,7 @@
     <Content Include="jpg\showcal.jpg" />
     <Content Include="jpg\waiting.gif" />
     <Content Include="jsTests\datediff.js" />
+    <Content Include="jsTests\padandcurrency.js" />
     <Content Include="js\ajaxpost.js" />
     <Content Include="js\calendar.js" />
     <Content Include="js\common.js" />
