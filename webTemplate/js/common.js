@@ -193,7 +193,7 @@ COMMON.formatCurrency = function (numberIn, currencySymbol, precision, useParens
     ///<param name="numberIn" type="Number">The number to convert</param>
     ///<param name="currencySymbol" type="String">(Optional) Adds this symbol to the begining of the Number if present</param>
     ///<param name="precision" type="Number">(Optional) The number of digits to the right of the decimal. Defaults to 4</param>
-    ///<param name="useParens" type="Boolean">(Optional) If true will add parenthesis around negative numbers</params>
+    ///<param name="useParens" type="Boolean">(Optional) If true will add parenthesis around negative numbers</param>
     ///<returns type="String" />
     "use strict";
     var wholeNumPart, decimalPart, parts, parensBegin, parensEnd;
