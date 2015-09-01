@@ -158,14 +158,14 @@ COMMON.addOption = function (dDLObj, text, value) {
     }
 };
 COMMON.dateToString = function (dtDate) {
-    ///<summary>NOT FOR EXTERNAL USE...Converts a date object to a string representing M/d/yyyy</summary>
+    ///<summary>Converts a date object to a string representing M/d/yyyy</summary>
     ///<param name="dtDate" type="Date">Date Object</param> 
     ///<returns type="String"></returns>
     "use strict";
+    if (dtDate === undefined || dtDate === null) { dtDate = new Date(); }
     if (typeof dtDate === "number") { dtDate = new Date(dtDate); }
     return String(dtDate.getMonth() + 1) + "/" + String(dtDate.getDate()) + "/" + String(dtDate.getFullYear());
 };
-
 COMMON.dateDiff = function (interval, startDate, endDate) {
     "use strict";
     ///<summary>Gives the difference between two dates in Months, Days or Years</summary>
