@@ -346,6 +346,7 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
     this.isEditable = (fieldType !== undefined && fieldType !== null && fieldType.isField === true); //true if the field accepts user input
     this.placeholder = null; //add visible text to text fields
     this.numFieldData = null; //data in the format {min:value, max:value, step:value}
+    this.helpText = null; //if not null then will display an I and will display this text when you hover over the item
     this.preconfiguredContainer = null; //if the element is created in the calling script, then return that object;
     this.target = null; //for links only, sets the href target
     this.calendarCloseFunction = null; //function that runs when a date is chosen in the format function(valueSelect, calendarOptionalData)
@@ -374,6 +375,10 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
         if (label !== undefined && label !== null && label !== "") {
             obj1 = document.createElement("h5");
             obj1.innerHTML = (required ? "*" : "") + label;
+            if (that.helpText !== undefined && that.helpText !== null && typeof (that.helpText) === "string" && that.helpText !== "") {
+                obj1.innerHTML += "&nbsp;<span tag=\"" + that.helpText + "\"></span>";
+                COMMON.addAttribute(obj1, "class", "fillinshowtip", true);
+            }
             objOut.appendChild(obj1);
         }
         fieldChangeScript = "FILLIN.zfieldChanged(" + formIndex + ", this);" + (that.fieldChangeScript !== undefined && that.fieldChangeScript !== null ? that.fieldChangeScript : "");
@@ -574,7 +579,7 @@ FILLIN.errorMessage = function (formIndex, message) {
     "use strict";
     FILLIN.allForms[formIndex].errorMessage(message);
 };
-FILLIN.addSpan = function (formIndex, id, value, title, width, newLine) {
+FILLIN.addSpan = function (formIndex, id, value, title, width, newLine, helpText) {
     ///<summary>Adds a span tag (Label?) to the form</summary>:
     ///<param name="formIndex" type="Int">the index of the form in FILLIN.allForms</param>
     ///<param name="id" type="String">The element's id</param>
@@ -582,12 +587,14 @@ FILLIN.addSpan = function (formIndex, id, value, title, width, newLine) {
     ///<param name="title" type="String">The text to be displayed in field's label</param>
     ///<param name="width" type="String">(Optional) Any valid css width value.  if provided will set the css width of this field</param>
     ///<param name="newLine" type="Boolean">(Optional) if true, this field will start a new row on the form. </param>
+    ///<param name="helpText" type="String">(Optional) Ignored if title is not provided. if provided will add an "i" to the label where user can hover to get this tool tip</param>
     "use strict";
     var fieldIndex;
     fieldIndex = FILLIN.zaddControl(formIndex, new FILLIN.ZOneControl("spa", formIndex, id, value, title, false, null, null, newLine));
     FILLIN.allForms[formIndex].allControls[fieldIndex].width = width;
+    FILLIN.allForms[formIndex].allControls[fieldIndex].helpText = helpText;
 };
-FILLIN.addNumberBox = function (formIndex, id, value, title, isRequired, COMMONvalType, min, max, step, width, newline, placeholder) {
+FILLIN.addNumberBox = function (formIndex, id, value, title, isRequired, COMMONvalType, min, max, step, width, newline, placeholder, helpText) {
     ///<summary>Adds a input of type number</summary>
     ///<param name="formIndex" type="Int">the index of the form in FILLIN.allForms</param>
     ///<param name="id" type="String">The element's id</param>
@@ -601,6 +608,7 @@ FILLIN.addNumberBox = function (formIndex, id, value, title, isRequired, COMMONv
     ///<param name="width" type="String">(Optional) Any valid css width value.  if provided will set the css width of this field</param>
     ///<param name="newLine" type="Boolean">(Optional) if true, this field will start a new row on the form. </param>
     ///<param name="placeholder" type="Strin">(Optional) Adds a visible text on fields when field is empty HTML5</param>
+    ///<param name="helpText" type="String">(Optional) Ignored if title is not provided. if provided will add an "i" to the label where user can hover to get this tool tip</param>
     "use strict";
     var fieldIndex, fType;
     fType = "num";
@@ -609,8 +617,9 @@ FILLIN.addNumberBox = function (formIndex, id, value, title, isRequired, COMMONv
     FILLIN.allForms[formIndex].allControls[fieldIndex].numFieldData = { "min": min, "max": max, "step": step };
     FILLIN.allForms[formIndex].allControls[fieldIndex].placeholder = placeholder;
     FILLIN.allForms[formIndex].allControls[fieldIndex].width = width;
+    FILLIN.allForms[formIndex].allControls[fieldIndex].helpText = helpText;
 };
-FILLIN.addTextBox = function (formIndex, id, value, title, isRequired, COMMONvalType, maxLength, width, newLine, placeHolder, password) {
+FILLIN.addTextBox = function (formIndex, id, value, title, isRequired, COMMONvalType, maxLength, width, newLine, placeHolder, password, helpText) {
     ///<summary>Adds a text box field to the form</summary>
     ///<param name="formIndex" type="Int">the index of the form in FILLIN.allForms</param>
     ///<param name="id" type="String">The element's id</param>
@@ -623,13 +632,15 @@ FILLIN.addTextBox = function (formIndex, id, value, title, isRequired, COMMONval
     ///<param name="newLine" type="Boolean">(Optional) if true, this field will start a new row on the form. </param>
     ///<param name="placeHolder" type="String">(Optional) Adds a visible text on fields when field is empty HTML5</param>
     ///<param name="password" type="Boolean">(Optional) set textbox type to password</param>
+    ///<param name="helpText" type="String">(Optional) Ignored if title is not provided. if provided will add an "i" to the label where user can hover to get this tool tip</param>
     "use strict";
     var fieldIndex;
     fieldIndex = FILLIN.zaddControl(formIndex, new FILLIN.ZOneControl((password === true ? "pas" : "txt"), formIndex, id, value, title, isRequired, COMMONvalType, maxLength, newLine));
     FILLIN.allForms[formIndex].allControls[fieldIndex].width = width;
     FILLIN.allForms[formIndex].allControls[fieldIndex].placeholder = placeHolder;
+    FILLIN.allForms[formIndex].allControls[fieldIndex].helpText = helpText;
 };
-FILLIN.addTextArea = function (formIndex, id, value, title, isRequired, COMMONvalType, maxLength, width, height, newLine, placeHolder) {
+FILLIN.addTextArea = function (formIndex, id, value, title, isRequired, COMMONvalType, maxLength, width, height, newLine, placeHolder, helpText) {
     ///<summary>Adds a text area field to the form</summary>
     ///<param name="formIndex" type="Int">the index of the form in FILLIN.allForms</param>
     ///<param name="id" type="String">The element's id</param>
@@ -642,14 +653,16 @@ FILLIN.addTextArea = function (formIndex, id, value, title, isRequired, COMMONva
     ///<param name="height" type="String">(Optional) and valid css height value.  If provided will set the css height of this field</param>
     ///<param name="newLine" type="Boolean">(Optional) if true, this field will start a new row on the form. </param>
     ///<param name="placeHolder" type="String">(Optional) Adds a visible text on fields when field is empty HTML5</param>
+    ///<param name="helpText" type="String">(Optional) Ignored if title is not provided. if provided will add an "i" to the label where user can hover to get this tool tip</param>
     "use strict";
     var fieldIndex;
     fieldIndex = FILLIN.zaddControl(formIndex, new FILLIN.ZOneControl("txa", formIndex, id, value, title, isRequired, COMMONvalType, maxLength, newLine));
     FILLIN.allForms[formIndex].allControls[fieldIndex].width = width;
     FILLIN.allForms[formIndex].allControls[fieldIndex].height = height;
     FILLIN.allForms[formIndex].allControls[fieldIndex].placeholder = placeHolder;
+    FILLIN.allForms[formIndex].allControls[fieldIndex].helpText = helpText;
 };
-FILLIN.addDDL = function (formIndex, id, value, title, isRequired, queryIdOrArray, params, width, newLine, fieldChangeScript) {
+FILLIN.addDDL = function (formIndex, id, value, title, isRequired, queryIdOrArray, params, width, newLine, fieldChangeScript, helpText) {
     ///<summary>Adds a drop downlist to the form</summary>
     ///<param name="formIndex" type="Int">the index of the form in FILLIN.allForms</param>
     ///<param name="id" type="String">The element's id</param>
@@ -661,8 +674,9 @@ FILLIN.addDDL = function (formIndex, id, value, title, isRequired, queryIdOrArra
     ///<param name="width" type="String">(Optional) Any valid css width value.  if provided will set the css width of this field</param>
     ///<param name="newLine" type="Boolean">(Optional) if true, this field will start a new row on the form. </param>
     ///<param name="fieldChangeScript" type="String">(Optional) script to run if the selection is changed</param>
+    ///<param name="helpText" type="String">(Optional) Ignored if title is not provided. if provided will add an "i" to the label where user can hover to get this tool tip</param>
     "use strict";
-    var thisControl;
+    var thisControl, fieldIndex;
     thisControl = new FILLIN.ZOneControl("ddl", formIndex, id, value, title, isRequired, null, null, newLine);
     if (fieldChangeScript) {
         thisControl.fieldChangeScript = fieldChangeScript;
@@ -674,9 +688,10 @@ FILLIN.addDDL = function (formIndex, id, value, title, isRequired, queryIdOrArra
     } else {
         thisControl.listItem = queryIdOrArray;
     }
-    FILLIN.zaddControl(formIndex, thisControl);
+    fieldIndex = FILLIN.zaddControl(formIndex, thisControl);
+    FILLIN.allForms[formIndex].allControls[fieldIndex].helpText = helpText;
 };
-FILLIN.addYesNoDDL = function (formIndex, id, value, title, width, newLine) {
+FILLIN.addYesNoDDL = function (formIndex, id, value, title, width, newLine, helpText) {
     ///<summary>Adds a yes or no Drop down list to the form</summary>
     ///<param name="formIndex" type="Int">the index of the form in FILLIN.allForms</param>
     ///<param name="id" type="String">The element's id</param>
@@ -684,24 +699,28 @@ FILLIN.addYesNoDDL = function (formIndex, id, value, title, width, newLine) {
     ///<param name="title" type="String">The text to be displayed in field's label</param>
     ///<param name="width" type="String">(Optional) Any valid css width value.  if provided will set the css width of this field</param>
     ///<param name="newLine" type="Boolean">(Optional) if true, this field will start a new row on the form. </param>
+    ///<param name="helpText" type="String">(Optional) Ignored if title is not provided. if provided will add an "i" to the label where user can hover to get this tool tip</param>
     "use strict";
     var listItems;
     listItems = [];
     listItems.push({ text: "Yes", value: "1" });
     listItems.push({ text: "No", value: "0" });
-    FILLIN.addDDL(formIndex, id, value, title, false, listItems, null, width, newLine);
+    FILLIN.addDDL(formIndex, id, value, title, false, listItems, null, width, newLine, null, helpText);
 };
-FILLIN.addCheckBox = function (formIndex, id, value, title, newLine) {
+FILLIN.addCheckBox = function (formIndex, id, value, title, newLine, helpText) {
     ///<summary>Adds a check box field to the form</summary>
     ///<param name="formIndex" type="In">the index of the form in FILLIN.allForms</param>
     ///<param name="id" type="String">The element's id</param>
     ///<param name="value" type="String">The initial value of the field (True, 1 or else will not be checked)</param>
     ///<param name="title" type="String">The text to be displayed in field's label</param>
     ///<param name="newLine" type="Boolean">(Optional) if true, this field will start a new row on the form. </param>
+    ///<param name="helpText" type="String">(Optional) Ignored if title is not provided. if provided will add an "i" to the label where user can hover to get this tool tip</param>
     "use strict";
-    FILLIN.zaddControl(formIndex, new FILLIN.ZOneControl("chk", formIndex, id, value, title, null, null, null, newLine));
+    var fieldIndex;
+    fieldIndex = FILLIN.zaddControl(formIndex, new FILLIN.ZOneControl("chk", formIndex, id, value, title, null, null, null, newLine));
+    FILLIN.allForms[formIndex].allControls[fieldIndex].helpText = helpText;
 };
-FILLIN.addLink = function (formIndex, id, value, title, href, onclick, newLine, target) {
+FILLIN.addLink = function (formIndex, id, value, title, href, onclick, newLine, target, helpText) {
     ///<summary>Adds a link ("a" tag) field to the form</summary>
     ///<param name="formIndex" type="Int">the index of the form in FILLIN.allForms</param>
     ///<param name="id" type="String">The element's id</param>
@@ -711,16 +730,18 @@ FILLIN.addLink = function (formIndex, id, value, title, href, onclick, newLine, 
     ///<param name="onclick" type="String">(Optional) the script to run during the field's onclick event</param>
     ///<param name="newLine" type="Boolean">(Optional) if true, this field will start a new row on the form. </param>
     ///<param name="target" type="String">(Optional) Ignored unless HREF is provided. The HREF Target</param>
+    ///<param name="helpText" type="String">(Optional) Ignored if title is not provided. if provided will add an "i" to the label where user can hover to get this tool tip</param>
     "use strict";
-    var thisControl;
+    var thisControl, fieldIndex;
     thisControl = new FILLIN.ZOneControl("lnk", formIndex, id, value, title);
     thisControl.href = href;
     thisControl.linkOnClick = onclick;
     thisControl.newLine = newLine;
     thisControl.target = target;
-    FILLIN.zaddControl(formIndex, thisControl);
+    fieldIndex = FILLIN.zaddControl(formIndex, thisControl);
+    FILLIN.allForms[formIndex].allControls[fieldIndex].helpText = helpText;
 };
-FILLIN.addCalendar = function (formIndex, id, value, title, isRequired, newLine, onchangeScript, itemSelectedFunction, itemSelectedOptionalData) {
+FILLIN.addCalendar = function (formIndex, id, value, title, isRequired, newLine, onchangeScript, itemSelectedFunction, itemSelectedOptionalData, helpText) {
     ///<summary>Adds a calendar control to the form</summary>
     ///<param name="formIndex" type="Int">the index of the form in FILLIN.allForms</param>
     ///<param name="id" type="String">The element's id</param>
@@ -731,26 +752,30 @@ FILLIN.addCalendar = function (formIndex, id, value, title, isRequired, newLine,
     ///<param name="onchangeScript" type="String">(Optional) the script to run if the object is changed, this will be run if the user changes the value of the text box and if the user clicks on the calendar button (Not necessarily changes the value)</param>
     ///<param name="itemSelectedFunction" type="Function Variable">(Optional) A function that is run when the user selects a date from the calendar. format = function(valueSelected, itemSelectedOptionalData);</param>
     ///<param name="itemSelectedOptionalData" type="Object">(Optional) Ignored if itemSelectedFunction is not provided. Optional data to send to the itemSelected function</param>
+    ///<param name="helpText" type="String">(Optional) Ignored if title is not provided. if provided will add an "i" to the label where user can hover to get this tool tip</param>
     "use strict";
-    var thisControl;
+    var thisControl, fieldIndex;
     thisControl = new FILLIN.ZOneControl("cal", formIndex, id, value, title, isRequired, null, null, newLine);
     thisControl.fieldChangeScript = onchangeScript;
     thisControl.calendarCloseFunction = itemSelectedFunction;
     thisControl.calendarOptionalData = itemSelectedOptionalData;
-    FILLIN.zaddControl(formIndex, thisControl);
+    fieldIndex = FILLIN.zaddControl(formIndex, thisControl);
+    FILLIN.allForms[formIndex].allControls[fieldIndex].helpText = helpText;
 };
-FILLIN.addGenericControl = function (formIndex, preconfiguredControl, title, newLine) {
+FILLIN.addGenericControl = function (formIndex, preconfiguredControl, title, newLine, helpText) {
     ///<summary>Adds a container for other elements provided in the preconfiguredControl parameter</summary>
     ///<param name="formIndex" type="Int">the index of the form in FILLIN.allForms</param>
     ///<param name="preconfiguredControl" type="Element">An HTML container container preconfigured controls</param>
     ///<param name="title" type="String">The text to be displayed in field's label</param>
     ///<param name="newLine" type="Boolean">(Optional) if true, this field will start a new row on the form.  </param>
+    ///<param name="helpText" type="String">(Optional) Ignored if title is not provided. if provided will add an "i" to the label where user can hover to get this tool tip</param>
     "use strict";
-    var thisControl;
+    var thisControl, fieldIndex;
     thisControl = new FILLIN.ZOneControl("gen", formIndex, null, null, title);
     thisControl.preconfiguredContainer = preconfiguredControl;
     thisControl.newLine = newLine;
-    FILLIN.zaddControl(formIndex, thisControl);
+    fieldIndex = FILLIN.zaddControl(formIndex, thisControl);
+    FILLIN.allForms[formIndex].allControls[fieldIndex].helpText = helpText;
 };
 FILLIN.addButton = function (formIndex, dialogResultOrData, id, value, placeLeft, doValidation, doConfirm) {
     ///<summary>Adds a button control to the form</summary>
