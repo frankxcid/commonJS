@@ -627,7 +627,7 @@ FILLIN.addTextBox = function (formIndex, id, value, title, isRequired, COMMONval
     ///<param name="title" type="Strin">The text to be displayed in field's label</param>
     ///<param name="isRequired" type="Boolean">(Optional)  if true, the field will be required to have an entry in it during validation</param>
     ///<param name="COMMONvalType" type="String">(Optional) a value from COMMON.validationTypes in common.js. Determines a type of number validation</param>
-    ///<param name="maxLength" type="Int">(Optional) if provided will check that the number of charaters =< this value</param>
+    ///<param name="maxLength" type="Int">(Optional) if provided will check that the number of charaters less than or equal to this value</param>
     ///<param name="width" type="String">(Optional) Any valid css width value.  if provided will set the css width of this field</param>
     ///<param name="newLine" type="Boolean">(Optional) if true, this field will start a new row on the form. </param>
     ///<param name="placeHolder" type="String">(Optional) Adds a visible text on fields when field is empty HTML5</param>
