@@ -403,6 +403,9 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
         if (fieldType === COMMON.fieldTypes.txa && !that.width) {
             objOut.style.width = "95%";
         }
+        if (fieldType === COMMON.fieldTypes.txa && that.width !== undefined && that.width !== null & that.width !== "") {
+            objOut.style.width = that.width;
+        }
         switch (fieldType.id) {
             case "cal":
                 obj1 = COMMON.getCalendar(id, that.value, required, null, COMMON.pageMessageDivId, null, fieldChangeScript, fieldChangeScript, attrib, false, that.calendarCloseHelper, that.calendarOptionalData);
@@ -430,7 +433,7 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
                 if (fieldType === COMMON.fieldTypes.txa) {
                     attrib.style = "";
                     if (that.height !== undefined && that.height !== null && that.height !== "") { attrib.style += "height:" + that.height + ";"; }
-                    if (that.width !== undefined && that.width !== null && that.width !== "") { attrib.style += "width:" + that.width + ";"; }
+                    if (that.width !== undefined && that.width !== null && that.width !== "") { attrib.style += "width:" + that.width + ";"; } else { attrib.style += "width:100%;"; }
                 }
                 obj1 = COMMON.getFieldObject(fieldType.id, id, value, required, numberValidation, that.placeholder, maxLen, null, attrib);
                 //if (fieldType !== COMMON.fieldTypes.txa) { obj1.style.height = that.height; }
@@ -441,6 +444,7 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
             obj1.style.cssFloat = "left";
         }
         if (fieldType !== COMMON.fieldTypes.txa) { that.id = obj1.id; }
+        if (fieldType && fieldType === COMMON.fieldTypes.txa && !that.width) { obj1.style.width = "100%"; }
         if (that.width !== undefined && that.width !== null && that.width !== "") { obj1.style.width = that.width; }
         objOut.appendChild(obj1);
         return objOut;
@@ -649,7 +653,7 @@ FILLIN.addTextArea = function (formIndex, id, value, title, isRequired, COMMONva
     ///<param name="isRequired" type="Boolean">(Optional)  if true, the field will be required to have an entry in it during validation</param>
     ///<param name="COMMONvalType" type="String">(Optional) a value from COMMON.validationTypes in common.js. Determines a type of number validation</param>
     ///<param name="maxLength" type="Int">(Optional) if provided will check that the number of charaters is less or equal to this value</param>
-    ///<param name="width" type="String">(Optional) Any valid css width value.  if provided will set the css width of this field</param>
+    ///<param name="width" type="String">(Optional) Any valid css width value. Leave null for full width. if provided will set the css width of this field</param>
     ///<param name="height" type="String">(Optional) and valid css height value.  If provided will set the css height of this field</param>
     ///<param name="newLine" type="Boolean">(Optional) if true, this field will start a new row on the form. </param>
     ///<param name="placeHolder" type="String">(Optional) Adds a visible text on fields when field is empty HTML5</param>
