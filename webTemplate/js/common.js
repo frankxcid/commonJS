@@ -33,13 +33,12 @@ COMMON.stripHTML = function (strIn) {
     elem.innerHTML = strIn;
     return elem.textContent || elem.innerText || "";
 };
-COMMON.exists = function (elementOrId) {
-    ///<summary>Checks if the element, object or element with this id is present in the DOM or generally exists</summary>
-    ///<param name="elementOrId" type="String|Object">The id of the element, the element or object</param>
+COMMON.exists = function (element) {
+    ///<summary>Checks if the element or object is present or generally exists</summary>
+    ///<param name="element" type="Object">The element or object</param>
     ///<returns type="Boolean">True if it exists</returns>
     "use strict";
-    if (typeof elementOrId === "string") { elementOrId = document.getElementById(elementOrId); }
-    return (elementOrId !== undefined && elementOrId !== null);
+    return (element !== undefined && element !== null);
 };
 COMMON.sortArray = function (arrayIn, index, reverse) {
     ///<summary>Sorts an array of an array of arrays by a single element using the array's built in sort function</summary>
