@@ -616,7 +616,6 @@ FILLIN.addNumberBox = function (formIndex, id, value, title, isRequired, COMMONv
     "use strict";
     var fieldIndex, fType;
     fType = "num";
-    if (COMMON.ieVer < 10) { fType = "txt"; }
     fieldIndex = FILLIN.zaddControl(formIndex, new FILLIN.ZOneControl(fType, formIndex, id, value, title, isRequired, COMMONvalType, null, newline));
     FILLIN.allForms[formIndex].allControls[fieldIndex].numFieldData = { "min": min, "max": max, "step": step };
     FILLIN.allForms[formIndex].allControls[fieldIndex].placeholder = placeholder;

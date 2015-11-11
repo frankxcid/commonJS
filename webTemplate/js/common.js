@@ -948,6 +948,13 @@ COMMON.getFieldObject = function (fieldType, id, value, isRequired, valType, pla
     }
     thisValType = (valType ? COMMON.validationTypes[valType] : COMMON.validationTypes.none);
     obj = COMMON.docObj.createElement(thisfieldType.tag);
+    if (thisfieldType.type !== "") {
+        if (thisfieldType.type === "number" && COMMON.ieVer < 10) {
+            obj.type = "text";
+        } else {
+            obj.type = thisfieldType.type;
+        }
+    }
     //add fieldtype attribute
     COMMON.addAttribute(obj, "fieldtype", thisfieldType.id, true);
     if (thisfieldType.type !== "") { obj.type = thisfieldType.type; }
