@@ -226,6 +226,7 @@ COMMON.validDate = function (stringDate) {
     ///<returns type="Boolean">True for valid dates</returns>
     "use strict";
     var dtDate, dtParts, dtYear;
+    if (typeof stringDate !== "string") { return false; }
     dtDate = new Date(stringDate);
     if (!(dtDate instanceof Date && !isNaN(dtDate.getTime()))) {
         return false;
@@ -1194,7 +1195,6 @@ COMMON.getCalendar = function (id, value, isRequired, placeholder, messageDivId,
     obj.setAttribute("style", "float:left;");
     obj.disabled = disabled;
     obj1 = COMMON.getBasicElement("div", id);
-    obj1.innerHTML += "<span tag=\"\" id=\"spa" + id + "\" class=\"calHideError\" ></span>";
     obj1.setAttribute("style", "margin:0;padding:0;");
     obj1.appendChild(obj);
     onchangeAction = "CAL.zshowDaySelector(COMMON.docObj.getElementById('" + id + "'));";
