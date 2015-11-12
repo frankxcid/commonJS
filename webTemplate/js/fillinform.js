@@ -239,7 +239,7 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
         var commonValidation;
         commonValidation = COMMON.validateForm(baseObjId);
         if (!commonValidation) {
-            that.errorMessage("There are errors in one or more fields shown highlighted in red. Hover your mouse pointer over a red field to see the specific error.");
+            that.errorMessage("There are errors in one or more fields shown highlighted in red.");
         }
         if (that.pendingChanges && that.optionalValidationFunction !== undefined && that.optionalValidationFunction !== null) {
             commonValidation = commonValidation && that.optionalValidationFunction(fieldsValueObj, that.formIndex);
@@ -403,12 +403,12 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
         if (fieldType === COMMON.fieldTypes.txa && !that.width) {
             objOut.style.width = "95%";
         }
-        if (fieldType === COMMON.fieldTypes.txa && that.width !== undefined && that.width !== null & that.width !== "") {
+        if (fieldType === COMMON.fieldTypes.txa && that.width !== undefined && that.width !== null && that.width !== "") {
             objOut.style.width = that.width;
         }
         switch (fieldType.id) {
             case "cal":
-                obj1 = COMMON.getCalendar(id, that.value, required, null, COMMON.pageMessageDivId, null, fieldChangeScript, fieldChangeScript, attrib, false, that.calendarCloseHelper, that.calendarOptionalData);
+                obj1 = COMMON.getCalendar(id, that.value, required, null, null, null, fieldChangeScript, fieldChangeScript, attrib, false, that.calendarCloseHelper, that.calendarOptionalData);
                 break;
             case "ddl":
                 attrib.onchange = fieldChangeScript;
@@ -616,6 +616,7 @@ FILLIN.addNumberBox = function (formIndex, id, value, title, isRequired, COMMONv
     "use strict";
     var fieldIndex, fType;
     fType = "num";
+    if (COMMON.ieVer < 10) { fType = "txt"; }
     fieldIndex = FILLIN.zaddControl(formIndex, new FILLIN.ZOneControl(fType, formIndex, id, value, title, isRequired, COMMONvalType, null, newline));
     FILLIN.allForms[formIndex].allControls[fieldIndex].numFieldData = { "min": min, "max": max, "step": step };
     FILLIN.allForms[formIndex].allControls[fieldIndex].placeholder = placeholder;

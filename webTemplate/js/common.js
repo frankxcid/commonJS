@@ -33,6 +33,31 @@ COMMON.stripHTML = function (strIn) {
     elem.innerHTML = strIn;
     return elem.textContent || elem.innerText || "";
 };
+COMMON.findElementPosition = function (obj) {
+    ///<summary>NOT FOR EXTERNAL USE...finds the true position of an element</summary>
+    ///<param name="obj" type="Element">the element whose position is request</param>
+    "use strict";
+    var posObj, foundAbsolute, parentObj;
+    posObj = {};
+    posObj.left = obj.offsetLeft;
+    posObj.top = obj.offsetTop;
+    posObj.height = obj.offsetHeight;
+    posObj.width = obj.offsetWidth;
+    foundAbsolute = false;
+    if (COMMON.exists(obj.offsetParent)) {
+        parentObj = obj.offsetParent;
+        posObj.left += parentObj.offsetLeft;
+        posObj.top += parentObj.offsetTop;
+        foundAbsolute = (COMMON.exists(parentObj.style.position) && parentObj.style.position === "absolute");
+        while (COMMON.exists(parentObj.offsetParent) && foundAbsolute === false) {
+            parentObj = parentObj.offsetParent;
+            if (COMMON.exists(parentObj.style.position) && parentObj.style.position === "absolute") { break; }
+            posObj.left += parentObj.offsetLeft;
+            posObj.top += parentObj.offsetTop;
+        }
+    }
+    return posObj;
+};
 COMMON.exists = function (element) {
     ///<summary>Checks if the element or object is present or generally exists</summary>
     ///<param name="element" type="Object">The element or object</param>
@@ -194,6 +219,34 @@ COMMON.dateDiff = function (interval, startDate, endDate) {
         utcEnd = Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
         return Math.floor((utcEnd - utcStart) / millisecondInADay);
     }
+};
+COMMON.validDate = function (stringDate) {
+    ///<summary>Checks if the date is valid, expects mm/dd/yy or mm/dd/yyyy</summary>
+    ///<param name="stringDate" type="String">The date to check</param>
+    ///<returns type="Boolean">True for valid dates</returns>
+    "use strict";
+    var dtDate, dtParts, dtYear;
+    dtDate = new Date(stringDate);
+    if (!(dtDate instanceof Date && !isNaN(dtDate.getTime()))) {
+        return false;
+    }
+    dtParts = stringDate.split("/");
+    if (dtParts.length !== 3) {
+        return false;
+    }
+    if (parseFloat(dtParts[0]) < 1 || parseFloat(dtParts[0]) > 12) { return false; }
+    if (dtParts[2].length !== 2 && dtParts[2].length !== 4) { return false; }
+    if (dtParts[2].length === 2) {
+        dtYear = parseFloat(dtParts[2]);
+        dtYear = (dtYear > 50 ? dtYear + 1900 : dtYear + 2000);
+        dtParts[2] = String(dtYear);
+    }
+    dtYear = parseInt(dtParts[2], 10);
+    if (dtYear < 1900 || dtYear > 2100) {
+        return false;
+    }
+    if (CAL.zcheckDaysInMonth(parseFloat(dtParts[1]), parseFloat(dtParts[0]), dtYear)) { return false; }
+    return true;
 };
 COMMON.formatCurrency = function (numberIn, currencySymbol, precision, useParens) {
     ///<summary>formats numbers into currency with commas</summary>
@@ -816,12 +869,13 @@ COMMON.checkFieldHasError = function (objOrId, hasError, optionalCheck, optional
     if (obj && obj.id.length > 3) {
         idPrefix = obj.id.substring(0, 3);
         for (oneProperty in COMMON.validationTypes) {
-            if (COMMON.validationTypes.hasOwnProperty(oneProperty)) {
+            if (COMMON.validationTypes.hasOwnProperty(oneProperty) && oneProperty !== "none" && oneProperty !== "placeholder") {
                 thisValType = COMMON.validationTypes[oneProperty];
                 thisAttributeValue = obj.getAttribute(thisValType.attribute) || "";
-                if (thisValType.checkFunction !== "" && thisAttributeValue === thisValType.value) {
+                if (thisValType.checkFunction !== "" && thisAttributeValue === thisValType.value && obj.hasAttribute(thisValType.attribute)) {
                     errorCheck = thisValType.checkFunction(idPrefix, obj.id);
                     obj.setAttribute("title", (errorCheck ? thisValType.errorMessage : ""));
+                    COMMON.customizedToolTip(obj, (errorCheck ? thisValType.errorMessage : ""));
                     if (errorCheck) { break; }
                 }
             }
@@ -834,8 +888,63 @@ COMMON.checkFieldHasError = function (objOrId, hasError, optionalCheck, optional
     }
     if (errorCheck && optionalErrMess !== undefined && optionalErrMess !== null) {
         obj.setAttribute("title", optionalErrMess);
+        COMMON.customizedToolTip(obj, optionalErrMess);
     }
     return hasError || errorCheck;
+};
+COMMON.customizedToolTip = function (obj, message, position, color, style) {
+    ///<summary>Displays a message balloon near an element. Element must have an id. Usually to show an error.</summary>
+    ///<param name="obj" type="Element">The element where the tool tip will be shown</param>
+    ///<param name="message" type="String">The message to display</param>
+    ///<param name="position" type="String:Top/Bottom">(Optional) defaults to Top. The position to place the tool tip relative to the element</param>
+    ///<param name="color" type="String:CSSColor">(Optional) defaults to red. The color of the border and the letters<param>
+    ///<param name="style" type="String:CSS Style">(Optional) The styling of the tool tip</param>
+    "use strict";
+    var posObj, obj1, obj2, bod, bw0, bs0, bc0, t0, l0, t1, l1, pos;
+    posObj = COMMON.findElementPosition(obj);
+    bod = document.getElementsByTagName("body")[0];
+    obj1 = document.getElementById("mess0" + obj.id);
+    if (COMMON.exists(obj1)) { obj1.parentNode.removeChild(obj1); }
+    obj1 = document.getElementById("mess1" + obj.id);
+    if (COMMON.exists(obj1)) { obj1.parentNode.removeChild(obj1); }
+    if (!COMMON.exists(message) || message === "") { return; }
+    obj1 = document.createElement("span");
+    obj1.id = "mess0" + obj.id;
+    obj1.className = "message0";
+    obj2 = document.createElement("span");
+    obj2.id = "mess1" + obj.id;
+    obj2.className = "message1";
+    pos = "TOP";
+    if (!COMMON.exists(color)) { color = "red"; }
+    if (COMMON.exists(position)) { pos = position.toUpperCase(); }
+    if (!(pos === "TOP" || pos === "BOTTOM")) { pos = "TOP"; }
+    switch (pos) {
+        case "TOP":
+            bw0 = "10px 10px 0 10px";
+            bs0 = "solid solid none solid";
+            bc0 = color + " transparent transparent transparent";
+            t0 = String(posObj.top - 10) + "px";
+            l0 = String(posObj.left) + "px";
+            t1 = String(posObj.top - 30) + "px";
+            l1 = String(posObj.left - 10) + "px";
+            break;
+        case "BOTTOM":
+            bw0 = "0 10px 10px 10px";
+            bs0 = "none solid solid solid";
+            bc0 = "transparent transparent " + color + " transparent";
+            t0 = String(posObj.top + posObj.height) + "px";
+            l0 = String(posObj.left) + "px";
+            t1 = String(posObj.top + posObj.height + 10) + "px";
+            l1 = String(posObj.left - 10) + "px";
+            break;
+    }
+    if (!COMMON.exists(style)) { style = ""; }
+    obj1.setAttribute("style", "border-width:" + bw0 + ";border-style:" + bs0 + ";border-color:" + bc0 + ";top:" + t0 + ";left:" + l0 + ";");
+    bod.appendChild(obj1);
+    style += "top:" + t1 + ";left:" + l1 + ";color:" + color + ";border-color:" + color + ";";
+    obj2.setAttribute("style", style);
+    obj2.innerHTML += message;
+    bod.appendChild(obj2);
 };
 COMMON.validateForm = function (parentNodeId) {
     ///<summary>Validates the user editable fields in a container element</summary>
@@ -1078,13 +1187,14 @@ COMMON.getCalendar = function (id, value, isRequired, placeholder, messageDivId,
     }
     COMMON.addAttribute(attrib, "onkeyup", "return CAL.checkDateEntry(event);");
     COMMON.addAttribute(attrib, "onchange", "CAL.checkDateEntry(event);");
-    COMMON.addAttribute(attrib, "messagediv", messageDivId);
+    if (COMMON.exists(messageDivId)) { COMMON.addAttribute(attrib, "messagediv", messageDivId); }
     obj = COMMON.getFieldObject("txt", id, value, isRequired, null, placeholder, null, className, attrib);
     id = obj.id;
     obj.setAttribute("name", id);
     obj.setAttribute("style", "float:left;");
     obj.disabled = disabled;
     obj1 = COMMON.getBasicElement("div", id);
+    obj1.innerHTML += "<span tag=\"\" id=\"spa" + id + "\" class=\"calHideError\" ></span>";
     obj1.setAttribute("style", "margin:0;padding:0;");
     obj1.appendChild(obj);
     onchangeAction = "CAL.zshowDaySelector(COMMON.docObj.getElementById('" + id + "'));";

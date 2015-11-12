@@ -373,7 +373,7 @@ CAL.zinitDisplayPosition = function (txtObj) {
     ///<summary>NOT FOR EXTERNAL USE...initializes the display, creates the base of the display on the first use or uses an existing calendar base</summary>
     ///<param name="txtObj" type="input:element">the text box associated with this display</param>
     "use strict";
-    var baseObj, posLeft, posTop, parentObj, obj1, obj2, foundAbsolute;
+    var baseObj, obj1, obj2, posObj;
     //disable all controls
     COMMON.blockInput("body");
     baseObj = COMMON.getBasicElement("div", CAL.baseDivId);
@@ -389,28 +389,9 @@ CAL.zinitDisplayPosition = function (txtObj) {
     CAL.startPos = 0;
     //initialize positions
     CAL.zpositionPanes(true);
-    posLeft = txtObj.offsetLeft;
-    posTop = txtObj.offsetTop;
-    foundAbsolute = false;
-    //iterates through parents and adds offset until no parents are left or until a parent is positioned absolutely
-    if (txtObj.offsetParent) {
-        parentObj = txtObj.offsetParent;
-        posLeft += parentObj.offsetLeft;
-        posTop += parentObj.offsetTop;
-        if (parentObj.style.position && parentObj.style.position === "absolute") {
-            foundAbsolute = true;
-        }
-        while (parentObj.offsetParent && !foundAbsolute) {
-            parentObj = parentObj.offsetParent;
-            if (parentObj.style.position && parentObj.style.position === "absolute") {
-                break;
-            }
-            posLeft += parentObj.offsetLeft;
-            posTop += parentObj.offsetTop;
-        }
-    }
-    COMMON.docObj.getElementById(CAL.baseDivId).style.top = String(posTop) + "px";
-    COMMON.docObj.getElementById(CAL.baseDivId).style.left = String(posLeft) + "px";
+    posObj = COMMON.findElementPosition(txtObj);
+    COMMON.docObj.getElementById(CAL.baseDivId).style.top = String(posObj.top) + "px";
+    COMMON.docObj.getElementById(CAL.baseDivId).style.left = String(posObj.left) + "px";
 };
 CAL.zkillInterval = function () {
     ///<summary>NOT FOR EXTERNAL USE...clears the interval object and stops the CAL.zanimateMovement recurse</summary>
@@ -553,7 +534,7 @@ CAL.zcheckDaysInMonth = function (days, month, year) {
     return (days > mDays[month - 1]);
 };
 CAL.errors = {
-    "none": "&nbsp;",
+    "none": "",
     "chars": "Please enter only the numeric values or the slash.  Valid entries are 0123456789/",
     "month": "Please enter a date value in the format Month/Day/Year.  Enter a value of 1 through 12 for the month, two digit month (i.e. 01, 02, etc) is acceptable",
     "date": "Please Enter a date value in the format Month/Day/Year. Enter a value of 1 through $$ days for the month of ##, you can use two digits (i.e. 01, 02, etc) for days less than 10",
@@ -561,11 +542,10 @@ CAL.errors = {
     "delimitter": "Please Enter a date value in the format Month/Day/Year.  Use the forward slash (/) to separate Month Date and Year",
     "generic": "Please Enter a date value in the format Month/Day/Year."
 };
-CAL.zdisplayError = function (obj, errorType, errorDivId, day, month) {
+CAL.zdisplayError = function (obj, errorType, day, month) {
     ///<summary>NOT FOR EXTERNAL USE...Displays the error message and sets the field red if the incorrect format of the date was entered</summary>
     ///<param name="obj" type="Element">The text box</param>
     ///<param name="errorType" type="String">The Error from CAL.errors</param>
-    ///<param name="errorDivId" type="String">The id of the div where the error message will be displayed</param>
     ///<param name="day" type="Int">(Optional)  Used for date error in CAL.errors</param>
     ///<param name="month" type="Int">(Optional)  Ignored if day is not provided. Used for date error in CAL.errors</param>
     ///<returns type="Boolean">True if there is an error</returns>
@@ -577,8 +557,8 @@ CAL.zdisplayError = function (obj, errorType, errorDivId, day, month) {
         mess = mess.replace("$$", String(day));
         mess = mess.replace("##", CAL.monthNames[month - 1]);
     }
-    COMMON.docObj.getElementById(errorDivId).innerHTML = mess;
     hasError = errorType !== "none";
+    COMMON.customizedToolTip(obj, mess);
     return (!COMMON.checkFieldHasError(obj, hasError, hasError));
 };
 
@@ -588,27 +568,26 @@ CAL.checkDateEntry = function (event) {
     ///<param name="event" type="Event"></param>
     ///<returns type="Boolean">false if there is an error which removeds the input from the text box</returns>
     "use strict";
-    var obj, value, key, errorDivId, dateParts, days, month, year;
+    var obj, value, key, dateParts, days, month, year;
     obj = COMMON.getTargetObj(event);
     value = obj.value.trim();
     key = COMMON.getKeyPressed(event);
-    errorDivId = obj.getAttribute("messagediv");
     //check current entry
-    if (key !== undefined && !CAL.zvalidChars(key)) { return CAL.zdisplayError(obj, "chars", errorDivId); }
+    if (key !== undefined && !CAL.zvalidChars(key)) { return CAL.zdisplayError(obj, "chars"); }
     if (key <= 47) { return true; }
     //check complete entry
     dateParts = value.split('/');
-    if (dateParts.length > 3) { return CAL.zdisplayError(obj, "generic", errorDivId); }
+    if (dateParts.length > 3) { return CAL.zdisplayError(obj, "generic"); }
     //check month
     if (dateParts.length > 0) {
         month = parseInt(dateParts[0], 10);
-        if (month < 1 || month > 12) { return CAL.zdisplayError(obj, "month", errorDivId); }
+        if (month < 1 || month > 12) { return CAL.zdisplayError(obj, "month"); }
     }
     //check date
     if (dateParts.length > 1) {
         days = parseInt(dateParts[1], 10);
         if (days < 1 || CAL.zcheckDaysInMonth(days, month)) {
-            return CAL.zdisplayError(obj, "date", errorDivId, days, month);
+            return CAL.zdisplayError(obj, "date", days, month);
         }
     }
     //check year and check leap year dates
@@ -616,10 +595,10 @@ CAL.checkDateEntry = function (event) {
         year = parseInt(dateParts[2], 10);
         if (dateParts[2].length === 2 && year < 50) { year = 2000 + year; }
         if (dateParts[2].length === 2 && year > 50) { year = 1900 + year; }
-        if (dateParts[2].length === 3 || dateParts[2].length > 4 || year < 1900 || year > 2100) { return CAL.zdisplayError(obj, "year", errorDivId); }
-        if (CAL.zcheckDaysInMonth(days.month, year)) { return CAL.zdisplayError(obj, "date", errorDivId); }
+        if (dateParts[2].length === 3 || dateParts[2].length > 4 || year < 1900 || year > 2100) { return CAL.zdisplayError(obj, "year"); }
+        if (CAL.zcheckDaysInMonth(days.month, year)) { return CAL.zdisplayError(obj, "date"); }
     }
-    return CAL.zdisplayError(obj, "none", errorDivId);
+    return CAL.zdisplayError(obj, "none");
 };
 CAL.zshowDaySelector = function (txtObj, parentDivId) {
     ///<summary>NOT for External Use.  User COMMON.getCalendar(). Displays the day selector control in association with a text box</summary>

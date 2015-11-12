@@ -17,6 +17,23 @@ h4, h3, h2, h1
     margin:0;
     padding:0;
 }
+span.message0, span.message1
+{
+    position:absolute;
+    z-index:10;
+}
+span.message1
+{
+    padding: 0 7px;
+    background:white;
+    border-style:solid;
+    border-width:1px;
+    font-size:0.9em;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius:10px;
+    white-space: nowrap;
+}
 /*Disabled Controls*/
 input[disabled][type="button"], input[disabled="disabled"][type="button"], input[type="button"].disabled, input[disabled][type="submit"], input[disabled="disabled"][type="submit"], input[type="submit"].disabled, input[disabled][type="text"], input[disabled="disabled"][type="text"], input[type="text"].disabled
 {
