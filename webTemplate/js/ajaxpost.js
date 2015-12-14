@@ -235,7 +235,7 @@ AJAXPOST.callQuery = function (QueryIndex, Parameters, noResult, continuingFunct
     if (Parameters && typeof Parameters === "string") { Parameters = [Parameters]; }
     if (Parameters && Parameters.length > 0) {
         for (i = 0; i < Parameters.length; i++) {
-            Parameters[i] = String(Parameters[i]).replace("'", "&#39;");
+            Parameters[i] = String(Parameters[i]).replace(/'/g, "&#39;").replace(/\</g, "&lt;").replace(/\>/g, "&gt;");
         }
         sendVars.optvals = Parameters;
     }
