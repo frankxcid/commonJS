@@ -761,10 +761,15 @@ COMMON.checkNumeric = function (fieldType, id, regex, checkMoney) {
     var thisFieldType, val, result;
     thisFieldType = COMMON.fieldTypes[fieldType];
     val = thisFieldType.getValueFunction(id);
+    val = val.replace(/,/g, "");
     result = !(COMMON.isNumber(val, regex, checkMoney));
-    if (result && checkMoney) {
+    if (!result && checkMoney) {
         thisFieldType.setValueFunction(id, COMMON.formatCurrency(val));
     }
+    if (!result && !checkMoney) {
+        thisFieldType.setValueFunction(id, val);
+    }
+    return result;
 };
 COMMON.isNumber = function (val, regex, checkMoney, noLeadingZero) {
     ///<summary>Checks whether a val is a number</summary>
@@ -775,7 +780,7 @@ COMMON.isNumber = function (val, regex, checkMoney, noLeadingZero) {
     ///<returns type="Boolean">True if it is a number</returns>
     "use strict";
     var strVal, match, decPart;
-    if (regex === undefined || regex === null) { regex = /^[\-+]?[0123456789.$]+$/; }
+    if (regex === undefined || regex === null) { regex = /^[\-+]?[0123456789.$]+$/g; }
     if (val === undefined || val === null || val === "") { return false; }
     if (noLeadingZero && String(val).substring(0, 1) === "0") { return false; }
     match = val.match(regex);
@@ -797,7 +802,7 @@ COMMON.checkInteger = function (fieldType, id) {
     ///<param name="id" type="String">The id of the control</param>
     ///<returns type="Boolean">True if there is an error</returns>
     "use strict";
-    return COMMON.checkNumeric(fieldType, id, /^[\-+]?[0123456789]+$/, false);
+    return COMMON.checkNumeric(fieldType, id, /^[\-+]?[0123456789]+$/g, false);
 };
 COMMON.checkDecimal = function (fieldType, id) {
     ///<summary>checks that input value is integers and decimal point only</summary>
@@ -805,7 +810,7 @@ COMMON.checkDecimal = function (fieldType, id) {
     ///<param name="id" type="String">The id of the control</param>
     ///<returns type="Boolean">True if there is an error</returns>
     "use strict";
-    return COMMON.checkNumeric(fieldType, id, /^[\-+]?[0123456789.]+$/, false);
+    return COMMON.checkNumeric(fieldType, id, /^[\-+]?[0123456789.]+$/g, false);
 };
 COMMON.checkMoney = function (fieldType, id) {
     ///<summary>Checks that input value is integers, decimal point and up to 4 decimal places</summary>
@@ -813,7 +818,7 @@ COMMON.checkMoney = function (fieldType, id) {
     ///<param name="id" type="String">The id of the control</param>
     ///<returns type="Boolean">True if there is an error</returns>
     "use strict";
-    return COMMON.checkNumeric(fieldType, id, /^[\-+]?[0123456789.$]+$/, true);
+    return COMMON.checkNumeric(fieldType, id, /^[\-+]?[0123456789.$]+$/g, true);
 };
 COMMON.checkLenghtMax = function (fieldType, id) {
     ///<summary>Checks that input lenght is less than or equal to the value of the maxlen attribute</summary>
