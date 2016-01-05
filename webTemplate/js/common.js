@@ -1181,7 +1181,7 @@ COMMON.getCalendar = function (id, value, isRequired, placeholder, messageDivId,
     attrib = {};
     COMMON.addAttribute(attrib, attribLO);
     if (onkeypressAction) {
-        COMMON.addAttribute(attrib, "onkeypress", onkeypressAction);
+        COMMON.addAttribute(attrib, "onkeyup", onkeypressAction);
     }
     if (onchangeAction) {
         COMMON.addAttribute(attrib, "onchange", onchangeAction);
