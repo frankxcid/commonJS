@@ -946,11 +946,32 @@ COMMON.customizedToolTip = function (obj, message, position, color, style) {
     }
     if (!COMMON.exists(style)) { style = ""; }
     obj1.setAttribute("style", "border-width:" + bw0 + ";border-style:" + bs0 + ";border-color:" + bc0 + ";top:" + t0 + ";left:" + l0 + ";");
+    obj1.setAttribute("ctooltip", "true");
     bod.appendChild(obj1);
     style += "top:" + t1 + ";left:" + l1 + ";color:" + color + ";border-color:" + color + ";";
     obj2.setAttribute("style", style);
+    obj2.setAttribute("ctooltip", "true");
     obj2.innerHTML += message;
     bod.appendChild(obj2);
+};
+COMMON.clearToolTip = function () {
+    ///<summary>Removes any custom tool tips from display. Run this prior to doing validation</summary>
+    "use strict";
+    var bod, objs, i, toRemove;
+    bod = document.getElementsByTagName("body")[0];
+    objs = bod.getElementsByTagName("span");
+    if (objs.length === 0) { return; }
+    toRemove = [];
+    for (i = 0; i < objs.length; i++) {
+        if (objs[i].getAttribute("ctooltip") === "true") {
+            toRemove.push(objs[i]);
+        }
+    }
+    if (toRemove.length === 0) { return; }
+    //childs cannot be removed while iterating above since the lenght of objs will change
+    for (i = 0; i < toRemove.length; i++) {
+        toRemove[i].parentNode.removeChild(toRemove[i]);
+    }
 };
 COMMON.validateForm = function (parentNodeId) {
     ///<summary>Validates the user editable fields in a container element</summary>
@@ -962,6 +983,7 @@ COMMON.validateForm = function (parentNodeId) {
     if (!parentNodeObj) { return false; }//form is invalidate because I can't find it!!
     hasError = false;
     tags = {};
+    COMMON.clearToolTip();
     for (oneProperty in COMMON.fieldTypes) {
         if (COMMON.fieldTypes.hasOwnProperty(oneProperty) && COMMON.fieldTypes[oneProperty].isField) {
             tags[oneProperty] = COMMON.fieldTypes[oneProperty];
