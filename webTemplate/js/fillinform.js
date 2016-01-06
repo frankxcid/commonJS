@@ -237,15 +237,15 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
     //Returns   (Boolean)   true if form fields pass common validation and optional validation if present
     this.validateForm = function () {
         var commonValidation;
-        commonValidation = COMMON.validateForm(baseObjId);
+        commonValidation = COMMON.validateForm(baseObjId);//common validation was changed to accept commas in number text boxes
         if (!commonValidation) {
             that.errorMessage("There are errors in one or more fields shown highlighted in red.");
         }
         if (that.pendingChanges && that.optionalValidationFunction !== undefined && that.optionalValidationFunction !== null) {
+            getFieldValues(true);//the values are needed if there is an optional validation
             commonValidation = commonValidation && that.optionalValidationFunction(fieldsValueObj, that.formIndex);
         }
         if (commonValidation) {
-            that.pendingChanges = false;
             that.errorMessage("");
         }
         return commonValidation;
@@ -270,18 +270,20 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
         var contDialogResult, parentObj, baseObj;
         if (!dialogResult) { return; }
         parentObj = document.getElementById(baseObjId).parentElement;
-        //get the field Values
-        getFieldValues(true);
+        fieldsValueObj = null
         //Validation
         if (that.allButtons[btnIndex] && that.allButtons[btnIndex].doValidation === true) {
             if (!that.validateForm()) {
                 return;
             }//form has an error
         }
+        //get the field Values
+        if (fieldsValueObj === undefined || fieldsValueObj === null) { getFieldValues(true); }
         //if fieldValuesObj is null or empty, replace it with optionalData
         if (fieldsValueObj === null || COMMON.objectIsEmpty(fieldsValueObj)) {
             fieldsValueObj = that.optionalData;
         }
+        that.pendingChanges = false;
         //remove the form when it is a dialog
         if (!that.isForm) {
             baseObj = document.getElementById(baseObjId);
