@@ -178,16 +178,10 @@ COMMON.addOption = function (dDLObj, text, value) {
     ///<param name="text" type="String">The text property of the option being added</param>
     ///<param name="value" type="String">The value property of the option being added</param>
     "use strict";
-    var optionObj;
-    optionObj = COMMON.docObj.createElement("option");
-    optionObj.text = text;
-    if (value !== undefined && value !== null) { optionObj.value = value; } else { optionObj.value = text; }
-    try {
-        //for IE < 8
-        dDLObj.add(optionObj, dDLObj.options[null]);
-    } catch (e) {
-        dDLObj.add(optionObj, null);
-    }
+    var iHTML;
+    if (!COMMON.exists(value)) { value = text; }
+    iHTML = "<option value=\"" + value + "\">" + text + "</option>";
+    dDLObj.innerHTML += iHTML;
 };
 COMMON.dateToString = function (dtDate) {
     ///<summary>Converts a date object to a string representing M/d/yyyy</summary>
