@@ -76,6 +76,9 @@ namespace webTemplate
                 case "crystalReportSave":
                     executeReportSaveFile(initObj.sendVars);
                     return;
+                case "gridexcel":
+                    GridExcelExport(initObj.sendVars);
+                    return;
                 default:
                     doCustomRequest(initObj.sendVars);
                     return;
@@ -358,6 +361,65 @@ namespace webTemplate
             public String action = "";
             public String overrideFileName = "";
             public String optionalData = "";
+        }
+        #endregion
+        #region "Grid Excel"
+        private void GridExcelExport(String JSONData)
+        {
+            GridData gd = (GridData)System.Web.Helpers.Json.Decode(JSONData, typeof(GridData));
+            var rpt = new OpenXMLExcel.OpenXMLExcel();
+            if (gd.title == null || gd.title == "") { gd.title = "Grid Export"; }
+            string tabtile = gd.title;
+            if (tabtile.Length > 30) { tabtile = tabtile.Substring(0, 30); }
+            var wkid = rpt.AddWorkSheet(tabtile, true, true);
+            var data = new List<String[]>();
+            string[] s = { gd.title, "", "", "", "", "printed: " + DateTime.Now.ToString("M/d/yyyy hh:mm") };
+            data.Add(s);
+            if (gd.columnnames != null && gd.columnnames.Length > 0)
+            {
+                data.Add(gd.columnnames);
+                rpt.AddCommonFontStyle(wkid, OpenXMLExcel.CommonFontStyles.Calibri14Bold, 0, 1, 1, gd.columnnames.Length);
+                rpt.AddCommonBorderStyle(wkid, OpenXMLExcel.CommonBorderStyles.Bottom_DoubleLine, 0, 1, 1, gd.columnnames.Length);
+                rpt.AddCommonFillStyle(wkid, OpenXMLExcel.CommonFillStyles.LightSilver, 0, 1, 1);
+            }
+            if (gd.data != null && gd.data.Count > 0)
+            {
+                foreach (string[] row in gd.data)
+                {
+                    data.Add(row);
+                }
+            }
+            rpt.AddWorksheetData(wkid, data);
+            rpt.AddCommonFontStyle(wkid, OpenXMLExcel.CommonFontStyles.Calibri16Bold, 0, 0, 1, 1);
+            rpt.AddMergeCell(wkid, 0, 0, 1, 5);
+            string fn = gd.title + " " + DateTime.Now.ToString("Mdyyyyhhmmss") + ".xlsx";
+            HashSet<char> invalid = new HashSet<char>(System.IO.Path.GetInvalidFileNameChars());
+            char[] chrFN = fn.ToCharArray();
+
+            for (int i = 0; i < chrFN.Length; i++)
+            {
+                if (invalid.Contains(chrFN[i]))
+                {
+                    chrFN[i] = ' ';
+                }
+            }
+            fn = new string(chrFN);
+            if (gd.numbercolumns.Count > 0 && gd.data.Count > 0)
+            {
+                foreach (int col in gd.numbercolumns)
+                {
+                    rpt.AddCommonNumberFormatStyle(wkid, OpenXMLExcel.CommonNumberStyles.financeComma, col, 2, gd.data.Count, 1);
+                }
+            }
+            rpt.HTTPDownload(fn, Response);
+            Response.End();
+        }
+        private class GridData
+        {
+            public List<string[]> data = new List<string[]>();
+            public string[] columnnames = null;
+            public string title = "";
+            public List<int> numbercolumns = new List<int>();
         }
         #endregion
         #region "Crystal Report"

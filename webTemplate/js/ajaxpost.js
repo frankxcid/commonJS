@@ -1,7 +1,7 @@
 ﻿///<reference path="common.js" />
 //Used to query using pre established sql queries
-/*jslint browser: true, plusplus: true */
-/*global COMMON*/
+/*jslint browser: true, for: true, white: true, this: true*/
+/*global FILLIN, COMMON, window*/
 /*Ver 1.1.0 01/23/2015*/
 var AJAXPOST = {};
 ///<var>array that holds the column names in orders from the query</var>
@@ -25,7 +25,8 @@ AJAXPOST.requestType = {
     fileList: { requestType: "fileList", postType: "other" },
     fileListMedia: { requestType: "fileListMedia", postType: "other" },
     crystalReportStream: { requestType: "crystalReportStream", postType: "download" },
-    crystalReportSave: { requestType: "crystalReportSave", postType: "download" }
+    crystalReportSave: { requestType: "crystalReportSave", postType: "download" },
+    commonExcel: { requestType: "gridexcel", postType: "download" }
 };
 ///<var>holds responses from server by tokenid</var>
 AJAXPOST.responseContainer = {};
@@ -107,7 +108,7 @@ AJAXPOST.zSetNullBlank = function (valueIn) {
     ///<param name="valueIn" type="String">The value to check</param>
     ///<returns type="String" />
     "use strict";
-    return (valueIn === undefined || valueIn === null ? "" : valueIn);
+    return (valueIn === undefined || (valueIn === null ? "" : valueIn));
 };
 AJAXPOST.zcreateIFrame = function (commandObj, sendVars) {
     ///<summary>NOT FOR EXTERNAL USE**Creates an IFrame for use with posting asynchronously</summary>
@@ -234,8 +235,8 @@ AJAXPOST.callQuery = function (QueryIndex, Parameters, noResult, continuingFunct
     sendVars.noresult = (noResult ? "1" : "0");
     if (Parameters && typeof Parameters === "string") { Parameters = [Parameters]; }
     if (Parameters && Parameters.length > 0) {
-        for (i = 0; i < Parameters.length; i++) {
-            Parameters[i] = String(Parameters[i]).replace(/'/g, "&#39;").replace(/\</g, "&lt;").replace(/\>/g, "&gt;");
+        for (i = 0; i < Parameters.length; i += 1) {
+            Parameters[i] = String(Parameters[i]).replace("'", "&#39;");
         }
         sendVars.optvals = Parameters;
     }
@@ -247,7 +248,7 @@ AJAXPOST.callQuery = function (QueryIndex, Parameters, noResult, continuingFunct
     AJAXPOST.dataResults = [];
     if (objJSON.columns && objJSON.columns.length > 0) { AJAXPOST.columnNames = objJSON.columns; }//add columns to global AJAXPOST.columnNames
     if (!objJSON.rows || objJSON.rows.length === 0) { return; }//no rows then exit
-    for (i = 0; i < objJSON.rows.length; i++) {
+    for (i = 0; i < objJSON.rows.length; i += 1) {
         AJAXPOST.dataResults.push(objJSON.rows[i]);
     }
 };
@@ -300,6 +301,20 @@ AJAXPOST.downloadPDF = function (relativePathAndFileName, overrideFileName, acti
     sendVars = { "pathAndFile": relativePathAndFileName, "action": action, "overrideFileName": overrideFileName, "optionalData": optionalData };
     return AJAXPOST.zdoPost(AJAXPOST.requestType.downloadPDF.requestType, sendVars, null, continuingFunction, optionalData);
 };
+AJAXPOST.commonExcel = function (data, title, columnnames, numberformatcolumns, continuingFunction) {
+    ///<summary>Creates an Excel Download from tabular data</summary>
+    ///<param name="data" type="Array of String Arrays">The data to display</param>
+    ///<param name="title" type="String">The name of the spreadsheet</param>
+    ///<param name="columnnames" type="Array of Strings">(Optional) Column header labels</param>
+    ///<param name="numberformatcolumns" type="Array of Numbers">(Optional)Designates the columns that contain numerical data. First column is 0</param>
+    ///<param name="continuingFunction" type="Function">(Optional)The script to run after iFrame is loaded. In the pattern of format function(tokenId, optionalData){}. Use token id in AJAXPOST.getResponse(tokenId) to get the response</param>
+    "use strict";
+    var sendVars;
+    if (!COMMON.exists(columnnames)) { columnnames = []; }
+    if (!COMMON.exists(numberformatcolumns)) { numberformatcolumns = []; }
+    sendVars = { "data": data, "columnnames": columnnames, "title": title, "numbercolumns": numberformatcolumns };
+    return AJAXPOST.zdoPost(AJAXPOST.requestType.commonExcel, sendVars, null, continuingFunction, null);
+};
 AJAXPOST.getFileList = function (parentFolder, includeSubFolders, extensionFilter, continuingFunction, optionalData, withMedia) {
     ///<summary>Gets a list of files that are in a directory</summary>
     ///<param name="parentFolder" type="String">the relative path to the folder where the files are stored</param>
@@ -308,11 +323,11 @@ AJAXPOST.getFileList = function (parentFolder, includeSubFolders, extensionFilte
     ///<param name="continuingFunction" type="Function">(Optional)The script to run after iFrame is loaded. In the pattern of format function(tokenId, optionalData){}. Use token id in AJAXPOST.getResponse(tokenId) to get the response</param>
     ///<param name="optionalData" type="Any">(Optional)Any data that can be send in the continuingFunction</param>
     ///<param name="withMedia" type="Boolean">(Optional)Returns additional media data for videos</param>
-    ///<returns type="Object">JSON object with an array listing all files in format {"filename":"", "filetype":"","filesize":"","fildate":"","pathname":""}</returns>
+    ///<returns type="Object">JSON object with an array listing all files</returns>
     "use strict";
     var sendVars, tokenId, rqType;
     //create and object (sendVars) that can be turned into a JSON string
-    sendVars = { "parentFolder": parentFolder, "includeSubFolders": (includeSubFolders !== undefined && includeSubFolders !== null && includeSubFolders), "extensionFilter": (extensionFilter === undefined || extensionFilter === null ? "*.*" : extensionFilter) };
+    sendVars = { "parentFolder": parentFolder, "includeSubFolders": (includeSubFolders !== undefined && includeSubFolders !== null && includeSubFolders), "extensionFilter": (extensionFilter === undefined || (extensionFilter === null ? "*.*" : extensionFilter)) };
     rqType = (withMedia ? AJAXPOST.requestType.fileListMedia : AJAXPOST.requestType.fileList);
     tokenId = AJAXPOST.zdoPost(rqType.requestType, sendVars, null, continuingFunction, optionalData);
     //process the reply from the server

@@ -19,6 +19,7 @@
     <IISExpressAnonymousAuthentication>disabled</IISExpressAnonymousAuthentication>
     <IISExpressWindowsAuthentication>enabled</IISExpressWindowsAuthentication>
     <IISExpressUseClassicPipelineMode>false</IISExpressUseClassicPipelineMode>
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -48,6 +49,9 @@
       <HintPath>..\..\CrystalReportOutput\CrystalReportOutput\bin\Debug\CrystalReportOutputV101.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="OpenXMLExcel">
+      <HintPath>..\..\..\..\Visual Studio 2015\Projects\OpenXMLExcel\OpenXMLExcel\bin\Debug\OpenXMLExcel.dll</HintPath>
+    </Reference>
     <Reference Include="SQLConnect">
       <HintPath>..\..\SQLConnect\SQLConnect\bin\Release\SQLConnect.dll</HintPath>
     </Reference>

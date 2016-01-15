@@ -1,11 +1,11 @@
-﻿/*jslint browser: true, plusplus: true */
-/*global AJAXPOST, FILLIN, HELPTOPICS, TIMEPICKER, CAL*/
+﻿/*jslint browser: true, for: true, white: true, this: true*/
+/*global AJAXPOST, FILLIN, HELPTOPICS, TIMEPICKER, CAL, window*/
 /// <reference path="ajaxpost.js" />
 /// <reference path="fillinform.js" />
 /// <reference path="helptopics.js" />
 /// <reference path="timepicker.js" />
 /// <reference path="calendar.js" />
-//ver 2.0.1 01/19/2015
+//ver 2.0.2 01/15/2016
 //01/19/2015 - changed COMMON.blockInput to be able to block all items in the body if containerId = "body", added logic to disable links also, added COMMON.zChangeElementAvailability
 //Holds function that are common to all scripts like control makers and other items. Added COMMON.getFileUpload
 var COMMON = {};
@@ -78,7 +78,7 @@ COMMON.sortArray = function (arrayIn, index, reverse) {
     //determine if 2 dimensional
     isArray2 = (Object.prototype.toString.call(arrayIn[0]) === Object.prototype.toString.call([]));
     //see if data or column is all numeric, or all dates 
-    for (i = 0; i < arrayIn.length; i++) {
+    for (i = 0; i < arrayIn.length; i += 1) {
         thisValue = (isArray2 ? arrayIn[i][index] : arrayIn[i]);
         if (!(!isNaN(new Date(thisValue)) && isNaN(thisValue))) {
             isDate = false;
@@ -128,7 +128,7 @@ COMMON.cloneDataArray = function () {
     var dataOut, i;
     if (!AJAXPOST.dataResults) { return null; }
     dataOut = [];
-    for (i = 0; i < AJAXPOST.dataResults.length; i++) {
+    for (i = 0; i < AJAXPOST.dataResults.length; i += 1) {
         dataOut.push(AJAXPOST.dataResults[i].slice());
     }
     return dataOut;
@@ -178,10 +178,12 @@ COMMON.addOption = function (dDLObj, text, value) {
     ///<param name="text" type="String">The text property of the option being added</param>
     ///<param name="value" type="String">The value property of the option being added</param>
     "use strict";
-    var iHTML;
+    var obj;
     if (!COMMON.exists(value)) { value = text; }
-    iHTML = "<option value=\"" + value + "\">" + text + "</option>";
-    dDLObj.innerHTML += iHTML;
+    obj = document.createElement("option");
+    obj.innerHTML = text;
+    obj.setAttribute("value", value);
+    dDLObj.appendChild(obj);
 };
 COMMON.dateToString = function (dtDate) {
     ///<summary>Converts a date object to a string representing M/d/yyyy</summary>
@@ -205,7 +207,7 @@ COMMON.dateDiff = function (interval, startDate, endDate) {
     }
     if (interval.toUpperCase() === "M" || interval.toUpperCase() === "MONTH") {
         remainderMonths = 12 - startDate.getMonth() + endDate.getMonth();
-        return ((endDate.getFullYear() - (startDate.getFullYear() + 1))) * 12 + remainderMonths;
+        return (endDate.getFullYear() - (startDate.getFullYear() + 1)) * 12 + remainderMonths;
     }
     if (interval.toUpperCase() === "D" || interval.toUpperCase() === "Day") {
         millisecondInADay = 1000 * 60 * 60 * 24;
@@ -253,7 +255,7 @@ COMMON.formatCurrency = function (numberIn, currencySymbol, precision, useParens
     "use strict";
     var wholeNumPart, decimalPart, parts, parensBegin, parensEnd;
     if (precision === undefined || precision === null || isNaN(precision)) { precision = 4; }
-    parensBegin = (parseFloat(numberIn) < 0 && useParens === true ? "(" : "");
+    parensBegin = (parseFloat(numberIn) < 0 && (useParens === true ? "(" : ""));
     parensEnd = (parensBegin === "(" ? ")" : "");
     parts = String(numberIn).split(".");
     wholeNumPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -273,7 +275,7 @@ COMMON.unformatNumber = function (val) {
     ///<returns type="String">Returns the number as a string<returns>
     "use strict";
     var tmp;
-    tmp = String(val).replace(/\,/g, "");
+    tmp = String(val).replace(/,/g, "");
     if (tmp.length > 1 && (tmp.substring(0, 1) === "$" || tmp.substring(1, 1) === "$")) { tmp = tmp.replace("$", ""); }//replaces only one $
     if (!isNaN(tmp)) {
         return tmp;
@@ -363,7 +365,7 @@ COMMON.zChangeElementAvailability = function (parentObj, tagName, enable) {
     disabledByFunctionAttr = "disabledthis";
     allElems = parentObj.getElementsByTagName(tagName);
     if (allElems.length > 0) {
-        for (i = 0; i < allElems.length; i++) {
+        for (i = 0; i < allElems.length; i += 1) {
             currentlyEnabled = !allElems[i].disabled;
             //PDA flag means that the element had been disable previously outside of this function
             hasPDA = allElems[i].hasAttribute(previouslyDisabledAttr);
@@ -420,7 +422,7 @@ COMMON.blockInput = function (containerId, restoreFunction, waitGifURL, containe
         }
         if (zindex === undefined || zindex === null) { zindex = "98"; }
         if (zindex !== "") { zindex = "z-index:" + zindex + ";"; }
-        attr = { "style": "position:fixed;background-color:#FEFEFE;opacity:.8;" + zindex };
+        attr = { "style": "position:absolute;background-color:#FEFEFE;opacity:.8;" + zindex };
         obj1 = COMMON.getBasicElement("div", containerCoverId, null, null, null, attr);
         obj1.style.top = String(oTop) + "px";
         obj1.style.left = String(oLeft) + "px";
@@ -497,7 +499,7 @@ COMMON.getSearchString = function () {
     ss = ss.substring(1);
     ss = ss.split("&");
     objOut = {};
-    for (i = 0; i < ss.length; i++) {
+    for (i = 0; i < ss.length; i += 1) {
         onePair = ss[i].split("=");
         objOut[decodeURIComponent(onePair[0])] = decodeURIComponent(onePair[1]);
     }
@@ -537,7 +539,7 @@ COMMON.readCookie = function (cookieName, getRawVal) {
     cookieText = "";
     if (COMMON.docObj.cookie) {
         allCookies = COMMON.docObj.cookie.split(";");
-        for (i = 0; i < allCookies.length; i++) {
+        for (i = 0; i < allCookies.length; i += 1) {
             if (allCookies[i].indexOf("=") >= 0) {
                 thisPair = allCookies[i].split("=");
                 while (thisPair[0].charAt(0) === " ") { thisPair[0] = thisPair[0].substring(1, thisPair[0].length); }
@@ -595,7 +597,7 @@ COMMON.setDDLvalue = function (ddlIdOrObj, ddlValue) {
     var ddlObj, i;
     ddlObj = COMMON.getElement(ddlIdOrObj);
     if (ddlObj.options.length > 0) {
-        for (i = 0; i < ddlObj.options.length; i++) {
+        for (i = 0; i < ddlObj.options.length; i += 1) {
             if (ddlObj.options[i].value === String(ddlValue)) {
                 ddlObj.selectedIndex = i;
                 return;
@@ -650,9 +652,11 @@ COMMON.getDDLValue = function (ddlIdOrObj, getText) {
     ///<param name="getText" type="Boolean">(Optional) True will return the text property of the selected option otherwise, thise will return the value property</param>
     ///<returns type="String"></returns>
     "use strict";
-    var obj, valOut;
+    var obj, valOut, selIndex;
     obj = COMMON.getElement(ddlIdOrObj);
-    valOut = (getText ? obj.options[obj.selectedIndex].text : obj.options[obj.selectedIndex].value);
+    selIndex = obj.selectedIndex;
+    if (selIndex === -1) { selIndex = 0; }
+    valOut = (getText ? obj.options[selIndex].text : obj.options[selIndex].value);
     if (!valOut) { valOut = ""; }
     if (valOut === "-1") { valOut = ""; }
     return valOut;
@@ -956,14 +960,14 @@ COMMON.clearToolTip = function () {
     objs = bod.getElementsByTagName("span");
     if (objs.length === 0) { return; }
     toRemove = [];
-    for (i = 0; i < objs.length; i++) {
+    for (i = 0; i < objs.length; i += 1) {
         if (objs[i].getAttribute("ctooltip") === "true") {
             toRemove.push(objs[i]);
         }
     }
     if (toRemove.length === 0) { return; }
     //childs cannot be removed while iterating above since the lenght of objs will change
-    for (i = 0; i < toRemove.length; i++) {
+    for (i = 0; i < toRemove.length; i += 1) {
         toRemove[i].parentNode.removeChild(toRemove[i]);
     }
 };
@@ -988,7 +992,7 @@ COMMON.validateForm = function (parentNodeId) {
             thisFT = tags[oneProperty];
             allChildren = parentNodeObj.getElementsByTagName(thisFT.tag);
             if (allChildren.length > 0) {
-                for (i = 0; i < allChildren.length; i++) {
+                for (i = 0; i < allChildren.length; i += 1) {
                     if (thisFT.type === "" || allChildren[i].getAttribute("type") === thisFT.type) {
                         hasError = COMMON.checkFieldHasError(allChildren[i], hasError);
                     }
@@ -1181,7 +1185,7 @@ COMMON.getNumberField = function (id, value, isrequired, className, valType, min
     if (step !== undefined && step !== null && typeof step === "number") { obj.setAttribute("step", String(step)); }
     return obj;
 };
-COMMON.getCalendar = function (id, value, isRequired, placeholder, messageDivId, className, onkeypressAction, onchangeAction, attribLO, disabled, calendarCloseFunction, optionalData) {
+COMMON.getCalendar = function (id, value, isRequired, placeholder, messageDivId, className, onkeypressAction, onchangeAction, attribLO, disabled) {
     ///<summary>creates a Calendar object (textbox with calendar icon requires jpg/showcal.jpg image)</summary>
     ///<param name="id" type="String">The id of the element, will append the "cal" to the beginning of the provided id if there is not already set (i.e. if the provided id = "GRID" this will result in the id of the element being "calGRID" else if the provided id is "calGrid" for the same text box then the resulting id will not change.</param>
     ///<param name="value" type="String">(Optional) the value of the element if provided (can be null) in format MM/dd/yyyy.</param>
@@ -1190,26 +1194,22 @@ COMMON.getCalendar = function (id, value, isRequired, placeholder, messageDivId,
     ///<param name="MessageDivId" type="String">The element id where error messages will be displayed</param>
     ///<param name="className" type="String">(Optional) the CSS Class Name of the element</param>
     ///<param name="onkeypressAction" type="String">(Optional) Function to run during onkeypress event</param>
-    ///<param name="onchangeAction" type="String">(Optional) Function Variable to run during onchange event of the text box and when calendar control is clicked</param>
+    ///<param name="onchangeAction" type="String">(Optional) Function to run during onchange event of the text box and when calendar control is clicked</param>
     ///<param name="attribLO" type="Literal Object">(Optional) Object containing attributeName:attributevalue pairs</param>
     ///<param name="disabled" type="Boolean">(Optional) if true both the button and text box will be disabled
-    ///<param name="calendarCloseFunction" type="FunctionVariable">(Optional) a function that is run when the calendar is closed by the act of selecting and item. The format is function(valueSelected, optionalData)</param>
-    ///<param name="optionalData" type="Object">(Optional) Ignored if calendarCloseFunction is not provided. A value passed to the calendarCloseFunction</param>
     "use strict";
     var attrib, obj, obj1, obj2, obj3;
-    CAL.continuingFunction = calendarCloseFunction;
-    CAL.optionalData = optionalData;
     attrib = {};
     COMMON.addAttribute(attrib, attribLO);
     if (onkeypressAction) {
-        COMMON.addAttribute(attrib, "onkeyup", onkeypressAction);
+        COMMON.addAttribute(attrib, "onkeypress", onkeypressAction);
     }
     if (onchangeAction) {
         COMMON.addAttribute(attrib, "onchange", onchangeAction);
     }
     COMMON.addAttribute(attrib, "onkeyup", "return CAL.checkDateEntry(event);");
     COMMON.addAttribute(attrib, "onchange", "CAL.checkDateEntry(event);");
-    if (COMMON.exists(messageDivId)) { COMMON.addAttribute(attrib, "messagediv", messageDivId); }
+    COMMON.addAttribute(attrib, "messagediv", messageDivId);
     obj = COMMON.getFieldObject("txt", id, value, isRequired, null, placeholder, null, className, attrib);
     id = obj.id;
     obj.setAttribute("name", id);
@@ -1218,8 +1218,12 @@ COMMON.getCalendar = function (id, value, isRequired, placeholder, messageDivId,
     obj1 = COMMON.getBasicElement("div", id);
     obj1.setAttribute("style", "margin:0;padding:0;");
     obj1.appendChild(obj);
-    onchangeAction = "CAL.zshowDaySelector(COMMON.docObj.getElementById('" + id + "'));";
-    obj2 = COMMON.getLink(id, null, "#", onchangeAction, "Open Calendar and Select Date");
+    if (onchangeAction !== undefined && onchangeAction !== null) {
+        onchangeAction += "CAL.showDaySelector(COMMON.docObj.getElementById('" + id + "')); return false;";
+    } else {
+        onchangeAction = "CAL.showDaySelector(COMMON.docObj.getElementById('" + id + "')); return false;";
+    }
+    obj2 = COMMON.getLink(id, null, "#", onchangeAction);
     obj2.setAttribute("style", "margin:0;padding:0;float:left;");
     if (disabled) { obj2.setAttribute("disabled", ""); }
     obj3 = COMMON.getImageElement(null, "jpg/showcal.jpg", "Open Calendar");
@@ -1251,7 +1255,7 @@ COMMON.getDDL = function (id, value, isRequired, placeholder, listItem, classNam
     var obj, i;
     obj = COMMON.getFieldObject("ddl", id, null, isRequired, null, placeholder, null, className, attribLO);
     if (listItem && listItem.length > 0) {
-        for (i = 0; i < listItem.length; i++) {
+        for (i = 0; i < listItem.length; i += 1) {
             COMMON.addOption(obj, listItem[i].text, listItem[i].value);
         }
     }
@@ -1292,7 +1296,7 @@ COMMON.getDDLfromQuery = function (id, value, isRequired, queryId, params, place
     AJAXPOST.callQuery(queryId, params);
     listItem = [];
     if (AJAXPOST.dataResults && AJAXPOST.dataResults.length > 0) {
-        for (i = 0; i < AJAXPOST.dataResults.length; i++) {
+        for (i = 0; i < AJAXPOST.dataResults.length; i += 1) {
             oneItem = {
                 value: AJAXPOST.dataResults[i][0],
                 text: AJAXPOST.dataResults[i][1]
@@ -1355,7 +1359,7 @@ COMMON.helpDialog = function (topic, displayDivId, width) {
     title = "Help - " + helpTopicObj.title;
     objOut = COMMON.docObj.createElement("div");
     if (content && content.length > 0) {
-        for (i = 0; i < content.length; i++) {
+        for (i = 0; i < content.length; i += 1) {
             oneCt = content[i];
             obj1 = COMMON.docObj.createElement(oneCt.tag);
             switch (oneCt.tag) {
@@ -1366,7 +1370,7 @@ COMMON.helpDialog = function (topic, displayDivId, width) {
                     obj1.innerHTML = oneCt.ih;
                     break;
                 case "ul":
-                    for (n = 0; n < oneCt.ih.length; n++) {
+                    for (n = 0; n < oneCt.ih.length; n += 1) {
                         obj2 = COMMON.docObj.createElement("li");
                         obj2.innerHTML = oneCt.ih[n];
                         obj1.appendChild(obj2);
@@ -1405,7 +1409,7 @@ if (!Array.prototype.indexOf) {
     Array.prototype.indexOf = function (value, start) {
         "use strict";
         var i;
-        for (i = (start || 0) ; i < this.length; i++) {
+        for (i = (start || 0) ; i < this.length; i += 1) {
             if (this[i] === value) { return i; }
         }
         return -1;
@@ -1416,7 +1420,7 @@ String.prototype.padLeft = function (char, len) {
     var i, pads;
     if (len === 0) { return this; }
     pads = "";
-    for (i = 1; i <= len; i++) { pads += String(char); }
+    for (i = 1; i <= len; i += 1) { pads += String(char); }
     pads += this;
     return pads.substring(pads.length - len);
 };
@@ -1425,12 +1429,12 @@ String.prototype.padRight = function (char, len) {
     var i, pads;
     if (len === 0) { return this; }
     pads = "";
-    for (i = 1; i <= len; i++) { pads += String(char); }
+    for (i = 1; i <= len; i += 1) { pads += String(char); }
     pads = this + pads;
     return pads.substring(0, len);
 };
 //*****************************Javascript object enhancers*********************************************//
-//*****************************Browser Info***********************************************************//
+//*****************************IE Version************************************************************//
 COMMON.zgetIEVer = function () {
     ///<summary>NOT FOR EXTERNAL USE...gets the ie version and places if in COMMMON.ieVer</param>
     "use strict";

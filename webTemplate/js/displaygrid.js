@@ -1,8 +1,8 @@
 ﻿/// <reference path="menu.js" />
 /// <reference path="common.js" />
-/*jslint browser: true, plusplus: true*/
-/*global AJAXPOST, FILLIN, COMMON*/
-//ver 2.0 10/31/2014
+/*jslint browser: true, for: true, white: true, this: true*/
+/*global AJAXPOST, FILLIN, COMMON window*/
+//ver 2.01 1/15/2016
 var DISPLAYGRID = {};
 ///<var>the array that holds all the grid objects of a single page</var>
 DISPLAYGRID.allGrids = [];
@@ -166,7 +166,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         if (searchObj === null) {
             searchObj = {};
         }
-        for (i = 0; i < dataResults.length; i++) {
+        for (i = 0; i < dataResults.length; i += 1) {
             if (!searchObj.hasOwnProperty(dataResults[i][0])) {
                 searchObj[dataResults[i][0]] = {
                     index: i,
@@ -182,7 +182,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         if (!AJAXPOST.dataResults) { return; }
         dataResults = COMMON.cloneDataArray();
         columnNames = [];
-        for (i = 0; i < AJAXPOST.columnNames.length; i++) {
+        for (i = 0; i < AJAXPOST.columnNames.length; i += 1) {
             columnNames.push(AJAXPOST.columnNames[i].slice());
         }
         AJAXPOST.dataResults = null;
@@ -197,7 +197,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         var DDLOut, currentValue, allValues, i, li, thisValue, displayValue, liObj;
         allValues = [];
         //gather all values
-        for (i = 0; i < dataResults.length; i++) {
+        for (i = 0; i < dataResults.length; i += 1) {
             thisValue = dataResults[i][index].trim();
             allValues.push((thisValue === "" || !COMMON.isNumber(thisValue, null, null, true)) ? thisValue : parseFloat(thisValue));
         }
@@ -207,7 +207,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         li = "<option value=\"All\">All</option>";
         liObj = [{ "text": "All", "value": "All" }];
         //get only unique (group) values
-        for (i = 0; i < allValues.length; i++) {
+        for (i = 0; i < allValues.length; i += 1) {
             if (currentValue !== allValues[i] || i === 0) {
                 currentValue = allValues[i];
                 displayValue = COMMON.stripHTML(currentValue);
@@ -224,7 +224,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     //determine whether to display the up or down arrow
     setSortIndicator = function () {
         var i, thisBtn, buttonVal;
-        for (i = 1; i < columnNames.length; i++) {
+        for (i = 1; i < columnNames.length; i += 1) {
             buttonVal = columnNames[i].replace("@", "\n");
             if (allColDefinitions[i].isVisible) {
                 thisBtn = document.getElementById(sortButtonId + String(i));
@@ -241,7 +241,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         var ddl, i;
         filterString = "";
         filterObj = {};
-        for (i = 1; i < columnNames.length; i++) {
+        for (i = 1; i < columnNames.length; i += 1) {
             if (allColDefinitions[i].isVisible) {
                 ddl = document.getElementById(filterDDLId + String(i));
                 if (ddl.selectedIndex > 0) {
@@ -262,7 +262,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         //no filters selected return true
         if (filterString === "") { return true; }
         checkString = "";
-        for (i = 1; i < rowArray.length; i++) {
+        for (i = 1; i < rowArray.length; i += 1) {
             rowArray[i] = rowArray[i].trim();
             if (filterObj.hasOwnProperty(i)) { checkString += (rowArray[i] === "" ? "!@#$%^" : rowArray[i]); }
         }
@@ -281,7 +281,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         thisRow = dataResults[rowIndex];
         if (forCSharp) {
             dataOut = [];
-            for (i = 0; i < thisRow.length; i++) {
+            for (i = 0; i < thisRow.length; i += 1) {
                 oneItem = {
                     columnName: columnNames[i],
                     value: thisRow[i],
@@ -291,7 +291,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
             }
         } else {
             dataOut = {};
-            for (i = 0; i < thisRow.length; i++) {
+            for (i = 0; i < thisRow.length; i += 1) {
                 dataOut[i] = thisRow[i];
             }
         }
@@ -304,7 +304,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     titleBar = function () {
         var tr, td, obj1, obj2, totalColumns;
         totalColumns = columnNames.length;
-        if (allButtonDefinitions.length > 0) { totalColumns++; }
+        if (allButtonDefinitions.length > 0) { totalColumns += 1; }
         //create row
         tr = COMMON.getBasicElement("ttr", titleRowId);
         //create cell
@@ -321,6 +321,15 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         //create help link
         obj2 = COMMON.getLink(null, "How To Use This Grid", null, "DISPLAYGRID.zshowHelp();");
         obj2.style.cssFloat = "right";
+        obj2.style.marginLeft = "5px";
+        obj1.appendChild(obj2);
+        //create Excel Link
+        obj2 = COMMON.getButton(null, "Create Excel File", "DISPLAYGRID.zExcel(" + String(gridIndex) + ");");
+        obj2.style.cssFloat = "right";
+        obj2.style.width = "120px";
+        obj2.style.backgroundColor = "#6699CC";
+        obj2.style.fontSize = ".5em";
+        obj2.style.color = "white";
         obj1.appendChild(obj2);
         //create css float killer
         obj2 = document.createElement("div");
@@ -348,7 +357,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         td.style.width = "38px";
         td.style.textAlig = "right";
         tr.appendChild(td);
-        for (i = 1; i < columnNames.length; i++) {
+        for (i = 1; i < columnNames.length; i += 1) {
             buttonVal = (allColDefinitions[i].controlRequired ? "*" : "") + columnNames[i].replace("@", "tt");
             if (allColDefinitions[i].isVisible) {
                 td = document.createElement("td");
@@ -371,7 +380,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         td = COMMON.getBasicElement("ttd", null, "Filter:");
         td.style.textAlig = "right";
         tr.appendChild(td);
-        for (i = 1; i < columnNames.length; i++) {
+        for (i = 1; i < columnNames.length; i += 1) {
             if (allColDefinitions[i].isVisible) {
                 td = document.createElement("td");
                 ddl = getFilterDDL(i);
@@ -397,7 +406,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         if (!that.alternateColor) { currentRowColorClass = dataRowClass; }
         tr = COMMON.getBasicElement("ttr", null, null, currentRowColorClass);
         td = document.createElement("td");
-        if (isFirstRow && ((that.getRowCount() > that.rowsPerPage) || that.overridePrintLinkDisplay === true) && that.overridePrintLinkDisplay !== false) {
+        if (isFirstRow && that.getRowCount() > that.rowsPerPage) {
             //Print Link
             printLink = COMMON.getLink(null, "Print", null, "DISPLAYGRID.zassemblePrint(" + String(gridIndex) + "); return false;");
             td.appendChild(printLink);
@@ -407,7 +416,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         td.className = DISPLAYGRID.dataCellClass;
         tr.appendChild(td);
         thisRow = dataResults[rowIndex];
-        for (i = 1; i < thisRow.length; i++) {
+        for (i = 1; i < thisRow.length; i += 1) {
             thisColDef = allColDefinitions[i];
             if (thisColDef.isVisible) {
                 td = COMMON.getBasicElement("ttd", null, null, (thisColDef.getCellClass(thisRow)));
@@ -423,7 +432,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
             td = getButtonColumnTD();
             td.innerHTML = "";
             td.className = buttonColumnClass;
-            for (i = 0; i < allButtonDefinitions.length; i++) {
+            for (i = 0; i < allButtonDefinitions.length; i += 1) {
                 thisBtn = allButtonDefinitions[i].getObject(thisRow);
                 if (thisBtn) {
                     td.appendChild(thisBtn);
@@ -439,7 +448,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         var tr, hasSummary, i, td;
         hasSummary = false;
         //reset all summaries and determin if any columns have a summary definition
-        for (i = 1; i < allColDefinitions.length; i++) {
+        for (i = 1; i < allColDefinitions.length; i += 1) {
             //allColDefinitions[i].initSummary();
             if (allColDefinitions[i].summaryType) { hasSummary = true; break; }
         }
@@ -447,7 +456,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
 
         //do display
         tr = COMMON.getBasicElement("ttr", null, null, summaryTRClass);
-        for (i = 0; i < allColDefinitions.length; i++) {
+        for (i = 0; i < allColDefinitions.length; i += 1) {
             tr.appendChild(allColDefinitions[i].getSummary());
         }
         if (allButtonDefinitions && allButtonDefinitions.length > 0) {
@@ -499,7 +508,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         //clear table children except for filter and header rows
         while (tab.childNodes.length > 3) {
             tabChildren = tab.childNodes;
-            for (i = 0; i < tabChildren.length; i++) {
+            for (i = 0; i < tabChildren.length; i += 1) {
                 if (tabChildren[i].id !== filterTRId && tabChildren[i].id !== headerTRId && tabChildren[i].id !== titleRowId) {
                     tab.removeChild(tabChildren[i]);
                 }
@@ -509,7 +518,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         if (currentPage > pagination.totalPages) { currentPage = pagination.totalPages; }
         lcurrentPage = pagination[currentPage];
         isFirstRow = true;
-        for (i = lcurrentPage.start; i <= lcurrentPage.end; i++) {
+        for (i = lcurrentPage.start; i <= lcurrentPage.end; i += 1) {
             if (displayRow(dataResults[i])) {
                 tab.appendChild(dataRow(i, isFirstRow));
                 isFirstRow = false;
@@ -533,14 +542,14 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         getFilterString();
         rppCount = 0;
         pagination[1] = { start: 0, end: 0 };
-        for (n = 1; n < allColDefinitions.length; n++) {
+        for (n = 1; n < allColDefinitions.length; n += 1) {
             allColDefinitions[n].initSummary();
         }
-        for (i = 0; i < dataResults.length; i++) {
+        for (i = 0; i < dataResults.length; i += 1) {
             oneRowData = dataResults[i];
             if (displayRow(oneRowData)) {
                 //here if the row matches the filter criteria and the row will be visible to user
-                for (n = 1; n < oneRowData.length; n++) {
+                for (n = 1; n < oneRowData.length; n += 1) {
                     //starting at 1 and not 0 because col 0 is never displayed
                     if (!isNaN(oneRowData[n])) {
                         thisValue = parseFloat(oneRowData[n]);
@@ -548,15 +557,15 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
                             allColDefinitions[n].summaryPrecision = String(oneRowData[n]).split(".")[1].length;
                         }
                         allColDefinitions[n].summarySum += thisValue;
-                        allColDefinitions[n].summaryRowCount++;
+                        allColDefinitions[n].summaryRowCount += 1;
                         if (thisValue > allColDefinitions[n].summaryMax) { allColDefinitions[n].summaryMax = thisValue; }
                         if (thisValue < allColDefinitions[n].summaryMin) { allColDefinitions[n].summaryMin = thisValue; }
                     }
                 }
-                rppCount++;
+                rppCount += 1;
                 if (rppCount > that.rowsPerPage) {
                     pagination[pagination.totalPages].end = i - 1;
-                    pagination.totalPages++;
+                    pagination.totalPages += 1;
                     pagination[pagination.totalPages] = { start: i, end: 0 };
                     rppCount = 1;
                 }
@@ -585,9 +594,9 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
                 columnNames.push(oneProp);
             }
         }
-        for (i = 0; i < dataObj.length; i++) {
+        for (i = 0; i < dataObj.length; i += 1) {
             thisRow = [];
-            for (n = 0; n < columnNames.length; n++) {
+            for (n = 0; n < columnNames.length; n += 1) {
                 if (dataObj[i].hasOwnProperty(columnNames[n])) {
                     thisRow.push(dataObj[i][columnNames[n]]);
                 } else {
@@ -625,7 +634,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         if (filterFunctionRecur) { return; }//this will prevent recursing this function when programatically changing the values of the DDL's
         if (!that.validateGrid()) {
             filterFunctionRecur = true;
-            for (i = 0; i < columnNames.length; i++) {
+            for (i = 0; i < columnNames.length; i += 1) {
                 document.getElementById(filterDDLId + String(i)).selectedIndex = 0;
             }
             filterFunctionRecur = false;
@@ -649,10 +658,10 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         COMMON.errMess("");//clear any error messages
         switch (controlId) {
             case 0:
-                currentPage--;
+                currentPage -= 1;
                 break;
             case 1:
-                currentPage++;
+                currentPage += 1;
                 break;
             case 2:
                 if (jumpToPage.value === "" || isNaN(jumpToPage.value)) {
@@ -766,19 +775,19 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         }
 
         //fill out all definitions because every column needs a definition
-        for (i = 0; i < columnNames.length; i++) {
+        for (i = 0; i < columnNames.length; i += 1) {
             thisCol = that.initializeColumnDefinitions(i);
         }
         //if column 0 has a color definition assume this means color the whole row
         thisCol = allColDefinitions[0];
         if (thisCol.colorDefinition !== undefined && thisCol.colorDefinition !== null) {
-            for (i = 1; i < columnNames.length; i++) {
+            for (i = 1; i < columnNames.length; i += 1) {
                 allColDefinitions[i].colorDefinition = thisCol.colorDefinition;
             }
         }
 
         //hide alternatesort columns and linkValueColumn
-        for (i = 0; i < columnNames.length; i++) {
+        for (i = 0; i < columnNames.length; i += 1) {
             thisCol = allColDefinitions[i];
             if (thisCol.alternateSortColumn !== i) { allColDefinitions[thisCol.alternateSortColumn].isVisible = false; }
             if (thisCol.linkValueColumn !== i) { allColDefinitions[thisCol.linkValueColumn].isVisible = false; }
@@ -795,7 +804,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         tab.id = gridTableId;
         tab.className = gridTableClass;
         if (that.gridWidth !== undefined && that.gridWidth !== null && that.gridWidth !== "") {
-            tab.style.width = "100%";
+            tab.style.width = that.gridWidth;
         }
         tab.appendChild(titleBar()); //Title Bar Row
         tab.appendChild(headerRow()); //Header Row
@@ -822,18 +831,18 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         titleObj = newWindow.document.createElement("h1");
         titleObj.innerHTML = that.title;
         iHTML = "<table style=\"clear:both\" class=\"" + printTableClass + "\" id=\"printTable\"><tr>";
-        for (i = 1; i < columnNames.length; i++) {
+        for (i = 1; i < columnNames.length; i += 1) {
             thisColDefinition = allColDefinitions[i];
             if (thisColDefinition.isVisible) {
                 iHTML += "<th>" + columnNames[i] + "</th>";
             }
         }
         iHTML += "</tr>";
-        for (i = 0; i < dataResults.length; i++) {
+        for (i = 0; i < dataResults.length; i += 1) {
             thisRow = dataResults[i];
             if (displayRow(dataResults[i])) {
                 iHTML += "<tr>";
-                for (n = 1; n < columnNames.length; n++) {
+                for (n = 1; n < columnNames.length; n += 1) {
                     thisColDefinition = allColDefinitions[n];
                     if (thisColDefinition.isVisible) {
                         thisValue = dataResults[i][n];
@@ -870,6 +879,53 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         //add summary
         thisSummaryRow = summaryRow();
         if (thisSummaryRow) { newWindow.document.getElementById("printTable").appendChild(thisSummaryRow); }
+    };
+    this.downloadExcel = function () {
+        var i, n, columnnames, title, data, numbercolumns, thisColDef, row, colHasNumbers, val, sr;
+        columnnames = [];
+        colHasNumbers = [];
+        for (i = 1; i < columnNames.length; i += 1) {
+            thisColDef = allColDefinitions[i];
+            if (thisColDef.isVisible) {
+                columnnames.push(columnNames[i]);
+                colHasNumbers.push(false);
+            }
+        }
+        data = [];
+        for (i = 0; i < dataResults.length; i += 1) {
+            if (displayRow(dataResults[i])) {
+                row = [];
+                for (n = 1; n < columnNames.length; n += 1) {
+                    thisColDef = allColDefinitions[n];
+                    if (thisColDef.isVisible) {
+                        val = dataResults[i][n];
+                        if (!isNaN(val) && val.substring(0, 1) !== "0") { colHasNumbers[n - 1] = true; }
+                        row.push(val);
+                    }
+                }
+                data.push(row);
+            }
+        }
+        sr = summaryRow();
+        if (COMMON.exists(sr)) {
+            row = [];
+            for (i = 0; i < sr.childNodes.length; i += 1) {
+                row.push(sr.childNodes[i].innerHTML);
+            }
+            data.push(row);
+        }
+        if (COMMON.exists(that.title) && that.title !== "") {
+            title = that.title;
+        } else {
+            title = "Grid Data";
+        }
+        numbercolumns = [];
+        for (i = 0; i < colHasNumbers.length; i += 1) {
+            if (colHasNumbers[i]) {
+                numbercolumns.push(i);
+            }
+        }
+        AJAXPOST.commonExcel(data, title, columnnames, numbercolumns);
     };
     //occurs when a user editable field's value has changed
     //Parameters
@@ -1037,7 +1093,7 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
                     attrib.onchange += that.onchangeAction;
                 }
                 if (that.onkeypressAction !== undefined && that.onkeypressAction !== null) {
-                    COMMON.addAttribute(attrib, "onkeyup", that.onkeypressAction);
+                    attrib.onkeyup = that.onkeypressAction;
                 }
                 obj = COMMON.getFieldObject(localType.id, id, value, that.controlRequired, that.numberValidationType, null, null, null, attrib);
                 break;
@@ -1082,7 +1138,7 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
         var dColVal, style, i;
         if (!that.styleDefinition) { return ""; }
         style = "";
-        for (i = 0; i < that.styleDefinition.length; i++) {
+        for (i = 0; i < that.styleDefinition.length; i += 1) {
             dColVal = dataRow[that.styleDefinition[i].determinationColumn];
             style += that.styleDefinition[i].valueFunction(dColVal);
         }
@@ -1120,6 +1176,12 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
         return td;
     };
 };
+DISPLAYGRID.zExcel = function (gridIndex) {
+    ///<summary>NOT FOR EXTERNAL USE...runs when download excel is clicked</summary>
+    ///<param name="gridIndex" type="Number">The Grid Index</param>
+    "use strict";
+    DISPLAYGRID.allGrids[gridIndex].downloadExcel();
+};
 DISPLAYGRID.zshowHelp = function () {
     ///<summary>NOT FOR EXTERNAL USE...Shows help information in in OK dialog</summary>
     "use strict";
@@ -1133,6 +1195,8 @@ DISPLAYGRID.zshowHelp = function () {
     mess.appendChild(COMMON.getBasicElement("ppp", null, "You can sort the grid by clicking the column title button at the very top of the grid. The grid will be sorted numerically (smallest to largest) if all the items in the column are numbers, by date (oldest to newest) if all items in that column are date and time, otherwise, the column will be sorted alphabetically (symbols, then a-z).  If you click the same button again, the sort will be done in reverse. The column that is sorted will have an arrow indicator showing that it was sorted and the direction.  Reverse sort is indicated by an arrow pointing up.  Currently, sorting cannot be stacked so please use column filters to help this situation."));
     mess.appendChild(COMMON.getBasicElement("hh3", null, "Filters"));
     mess.appendChild(COMMON.getBasicElement("ppp", null, "Under the column name sorting buttons, there are drop downs that contain every unique value present in the column.  If the value is empty or blank, use the selection labeled [Blank]. To select the filter, click the filter selector and select a value. The only rows that will show are those that have the selected value in that column.  Select a filter for more than one column to further refine your search. To remove the filter, select &quot;All&quot;.  Filters affect the print popup and Summary rows if available."));
+    mess.appendChild(COMMON.getBasicElement("hh3", null, "Create Excel File"));
+    mess.appendChild(COMMON.getBasicElement("ppp", null, "Click on this button to create an excel file from the contents of the grid. The resulting file will be exactly what is on the screen except some of the numbers may not be formatted as intended"));
     mess.appendChild(COMMON.getBasicElement("hh3", null, "Print"));
     mess.appendChild(COMMON.getBasicElement("ppp", null, "Click on the Print link located in the first data row on the extreme left of the grid.  Click on print to display a printer friendly popup with all data from the grid.  After all data is loaded, click on the print button which will display the printer select dialog.  Select a printer and click Print button. Once your grid is printed, you can close the popup or click the close button.  Loading data to the print popup may take several minutes, please wait until the grid is completely done in order to use the Print and Close buttons.  Filters will affect the data displayed in the popup."));
     mess.appendChild(COMMON.getBasicElement("hh3", null, "Row Buttons (Not available in all grids)"));
