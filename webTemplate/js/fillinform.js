@@ -367,6 +367,7 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
         //create envelope and label
         objOut = document.createElement("div");
         objOut.className = FILLIN.ControlEnvelopeClassName;
+        objOut.id = "div" + id;
         //if (that.height === "auto") {
         //    objOut.style.height = "45px";
         //}
@@ -402,12 +403,6 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
             return objOut;
         }
         attrib = { "fieldindex": String(that.fieldIndex) };
-        if (fieldType === COMMON.fieldTypes.txa && !that.width) {
-            objOut.style.width = "95%";
-        }
-        if (fieldType === COMMON.fieldTypes.txa && that.width !== undefined && that.width !== null && that.width !== "") {
-            objOut.style.width = that.width;
-        }
         if (COMMON.exists(that.width) && that.width !== "") {
             COMMON.addAttribute(attrib, "style", "width:" + that.width + ";");
         }
@@ -436,7 +431,6 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
                     if (fieldType.canHaveMaxLen) { attrib.onkeyup = fieldChangeScript; }
                 }
                 if (fieldType === COMMON.fieldTypes.txa) {
-                    attrib.style = "";
                     if (COMMON.exists(that.height) && that.height !== "") { COMMON.addAttribute(attrib, "style", "height:" + that.height + ";"); }
                     if (!COMMON.exists(that.width) || that.width === "") { COMMON.addAttribute(attrib, "style", "width:100%;"); }
                 }
@@ -447,8 +441,6 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
             //fixes width on inline span
             obj1.style.cssFloat = "left";
         }
-        if (fieldType && fieldType === COMMON.fieldTypes.txa && !that.width) { obj1.style.width = "100%"; }
-        if (that.width !== undefined && that.width !== null && that.width !== "") { obj1.style.width = that.width; }
         objOut.appendChild(obj1);
         return objOut;
     };
