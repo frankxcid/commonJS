@@ -408,6 +408,9 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
         if (fieldType === COMMON.fieldTypes.txa && that.width !== undefined && that.width !== null && that.width !== "") {
             objOut.style.width = that.width;
         }
+        if (COMMON.exists(that.width) && that.width !== "") {
+            COMMON.addAttribute(attrib, "style", "width:" + that.width + ";");
+        }
         switch (fieldType.id) {
             case "cal":
                 obj1 = COMMON.getCalendar(id, that.value, required, null, null, null, fieldChangeScript, fieldChangeScript, attrib, false, that.calendarCloseHelper, that.calendarOptionalData);
@@ -434,18 +437,16 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
                 }
                 if (fieldType === COMMON.fieldTypes.txa) {
                     attrib.style = "";
-                    if (that.height !== undefined && that.height !== null && that.height !== "") { attrib.style += "height:" + that.height + ";"; }
-                    if (that.width !== undefined && that.width !== null && that.width !== "") { attrib.style += "width:" + that.width + ";"; } else { attrib.style += "width:100%;"; }
+                    if (COMMON.exists(that.height) && that.height !== "") { COMMON.addAttribute(attrib, "style", "height:" + that.height + ";"); }
+                    if (!COMMON.exists(that.width) || that.width === "") { COMMON.addAttribute(attrib, "style", "width:100%;"); }
                 }
                 obj1 = COMMON.getFieldObject(fieldType.id, id, value, required, numberValidation, that.placeholder, maxLen, null, attrib);
-                //if (fieldType !== COMMON.fieldTypes.txa) { obj1.style.height = that.height; }
                 break;
         }
         if (fieldType === COMMON.fieldTypes.spa && that.width) {
             //fixes width on inline span
             obj1.style.cssFloat = "left";
         }
-        if (fieldType !== COMMON.fieldTypes.txa) { that.id = obj1.id; }
         if (fieldType && fieldType === COMMON.fieldTypes.txa && !that.width) { obj1.style.width = "100%"; }
         if (that.width !== undefined && that.width !== null && that.width !== "") { obj1.style.width = that.width; }
         objOut.appendChild(obj1);
@@ -500,6 +501,13 @@ FILLIN.reset = function () {
     "use strict";
     FILLIN.allForms = [];
     //FILLIN.maxFormIndex = 0;
+};
+FILLIN.overrideDialogPosition = function (formIndex, topPosition) {
+    ///<summary>Overrides the automation of the top position on dialogs</summary>
+    ///<param name="formIndex" type="Number">The index of the form in FILLIN.allForms</param>
+    ///<param name="topPosition" type="Number">The number of pixels to put in Top style</param>
+    "use strict";
+    FILLIN.allForms[formIndex].manualOffset = topPosition;
 };
 FILLIN.setStacking = function (formIndex, stacking) {
     ///<summary>Sets the stacking of the form by float-ing or clear-ing the base div. Ignored in dialogs</summary>
