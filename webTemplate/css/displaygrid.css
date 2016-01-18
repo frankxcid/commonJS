@@ -42,7 +42,7 @@
     font-size:.9em;
     padding:0;
 }
-tbGrid input[type="text"][numeric="decimal"], tbGrid input[type="text"][numeric="integer"], tbGrid input[type="text"][numeric="money"]
+.tbGrid input[type="text"][numeric="decimal"], .tbGrid input[type="text"][numeric="integer"], .tbGrid input[type="text"][numeric="money"]
 {
     text-align:right;
 }
