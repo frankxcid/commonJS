@@ -367,7 +367,7 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
         //create envelope and label
         objOut = document.createElement("div");
         objOut.className = FILLIN.ControlEnvelopeClassName;
-        objOut.id = "div" + id;
+        objOut.id = "divCD" + id;
         //if (that.height === "auto") {
         //    objOut.style.height = "45px";
         //}
