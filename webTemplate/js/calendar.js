@@ -373,7 +373,7 @@ CAL.zinitDisplayPosition = function (txtObj) {
     ///<summary>NOT FOR EXTERNAL USE...initializes the display, creates the base of the display on the first use or uses an existing calendar base</summary>
     ///<param name="txtObj" type="input:element">the text box associated with this display</param>
     "use strict";
-    var baseObj, obj1, obj2, posObj;
+    var baseObj, obj1, obj2, posObj, screenHeight, screenWidth;
     //disable all controls
     COMMON.blockInput("body");
     baseObj = COMMON.getBasicElement("div", CAL.baseDivId);
@@ -389,7 +389,11 @@ CAL.zinitDisplayPosition = function (txtObj) {
     CAL.startPos = 0;
     //initialize positions
     CAL.zpositionPanes(true);
+    screenHeight = (COMMON.exists(window.innerHeight) ? window.innerHeight : document.documentElement.offsetHeight);
+    screenWidth = (COMMON.exists(window.innerWidth) ? window.innerWidth : document.documentElement.offsetWidth);
     posObj = COMMON.findElementPosition(txtObj);
+    if ((posObj.top + 219) > screenHeight) { posObj.top = screenHeight - 219; }
+    if ((posObj.left + 189) > screenWidth) { posObj.left = screenWidth - 189; }
     COMMON.docObj.getElementById(CAL.baseDivId).style.top = String(posObj.top) + "px";
     COMMON.docObj.getElementById(CAL.baseDivId).style.left = String(posObj.left) + "px";
 };
