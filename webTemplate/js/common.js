@@ -34,27 +34,20 @@ COMMON.stripHTML = function (strIn) {
     return elem.textContent || elem.innerText || "";
 };
 COMMON.findElementPosition = function (obj) {
-    ///<summary>NOT FOR EXTERNAL USE...finds the true position of an element</summary>
+    ///<summary>finds the true position of an element</summary>
     ///<param name="obj" type="Element">the element whose position is request</param>
     "use strict";
     var posObj, foundAbsolute, parentObj;
     posObj = {};
-    posObj.left = obj.offsetLeft;
-    posObj.top = obj.offsetTop;
+    posObj.left = 0;
+    posObj.top = 0;
     posObj.height = obj.offsetHeight;
     posObj.width = obj.offsetWidth;
-    foundAbsolute = false;
-    if (COMMON.exists(obj.offsetParent)) {
-        parentObj = obj.offsetParent;
-        posObj.left += parentObj.offsetLeft;
-        posObj.top += parentObj.offsetTop;
-        foundAbsolute = (COMMON.exists(parentObj.style.position) && parentObj.style.position === "absolute");
-        while (COMMON.exists(parentObj.offsetParent) && foundAbsolute === false) {
-            parentObj = parentObj.offsetParent;
-            if (COMMON.exists(parentObj.style.position) && parentObj.style.position === "absolute") { break; }
-            posObj.left += parentObj.offsetLeft;
-            posObj.top += parentObj.offsetTop;
-        }
+    while (COMMON.exists(obj) && obj.style.position !== "absolute") {
+        posObj.top += obj.offsetTop - obj.scrollTop;
+        posObj.left += obj.offsetLeft - obj.scrollLeft;
+        obj = obj.offsetParent;
+        if (COMMON.exists(obj) && obj.tagName.toUpperCase() === "FORM") { obj = null; }
     }
     return posObj;
 };
