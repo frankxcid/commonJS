@@ -69,67 +69,11 @@ img
     padding:2px 0;
     font-size:1.2em;
 }
-#divHeader {
-    width: 100%;
-    /*border-bottom: 3px solid black;*/
-    background-color: white;
-    padding-top: 66px;
-    background-image: url('../jpg/DDlogo.jpg');
-    background-repeat:no-repeat;
-}
-.mainlogo
-{
-    float:left;
-}
-#hh1TitleHeader, .help
-{
-    position:absolute;
-    top:0;
-    left:0;
-    width:100%;
-}
-#hh1TitleHeader
-{
-    text-align:center;
-}
-.help
-{
-    text-align:right;
-    padding: 2px 0;
-}
-.help a
-{
-    margin:0;
-    padding:0 5px 0 0;
-}
-.loginDisplay
-{
-    position:absolute;
-    top:30px;
-    left:0;
-    width:100%;
-    text-align:right;
-    padding:2px 0;
-    font-size:.75em;
-}
 #divTopMenu
 {
     width:100%;
     overflow:hidden;
     margin:2px 0 0 0;
-}
-.search
-{
-    float:right;
-    font-weight:bold;
-    margin: 0 5px 0 0;
-    position:relative;
-    top:-5px;
-}
-.search a
-{
-    position:relative;
-    top:6px;
 }
 /*End Header Area*/
 /*Data Area*/
