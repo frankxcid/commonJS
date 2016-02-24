@@ -77,7 +77,7 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
     ///<param name="width" type="String">Any valid css width value</param>
     ///<param name="message" type="String|Element">(Optional) message at the top of the form main area. if String adds a div with string as content. If object, appends as child</param>
     "use strict";
-    var that, baseObjId, contentBaseObjId, errorDivId, baseObjClassName, titleObjClassName, contentBaseClassName, errorDivClassName, init, getFieldValues, fieldsValueObj;
+    var that, baseObjId, contentBaseObjId, errorDivId, baseObjClassName, titleObjClassName, contentBaseClassName, errorDivClassName, init, getFieldValues, fieldsValueObj, cleanmessages;
     that = this;
     //Private values
     baseObjId = "divformBase";
@@ -125,6 +125,23 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
             }
         }
         if (!hasFields) { fieldsValueObj = null; }
+    };
+    cleanmessages = function () {
+        "use strict";
+        var allspans, i, spanToDelete;
+        allspans = document.getElementsByTagName("span");
+        if (allspans.length === 0) { return; }
+        spanToDelete = []
+        for (i = 0; i < allspans.length; i += 1) {
+            if (allspans[i].className === "message0" || allspans[i].className === "message1") {
+                spanToDelete.push(allspans[i]);
+            }
+        }
+        if (spanToDelete.length > 0) {
+            for (i = 0; i < spanToDelete.length; i += 1) {
+                spanToDelete[i].offsetParent.removeChild(spanToDelete[i]);
+            }
+        }
     };
     //arrays
     this.allControls = [];
@@ -306,6 +323,7 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
     //  btnObj      (Element:Button)    The button element that was clicked
     this.close = function (btnObj) {
         var btnIndex;
+        cleanmessages();
         btnIndex = parseInt(btnObj.getAttribute("buttonIndex"), 10);
         //do confirmation if pending changes
         if (that.allButtons[btnIndex].doConfirm && that.pendingChanges) {
