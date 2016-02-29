@@ -248,7 +248,7 @@ COMMON.formatCurrency = function (numberIn, currencySymbol, precision, useParens
     "use strict";
     var wholeNumPart, decimalPart, parts, parensBegin, parensEnd;
     if (precision === undefined || precision === null || isNaN(precision)) { precision = 4; }
-    parensBegin = (parseFloat(numberIn) < 0 && (useParens === true ? "(" : ""));
+    parensBegin = (parseFloat(numberIn) < 0 && useParens === true ? "(" : "");
     parensEnd = (parensBegin === "(" ? ")" : "");
     parts = String(numberIn).split(".");
     wholeNumPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
