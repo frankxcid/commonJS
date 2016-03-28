@@ -1,7 +1,7 @@
 ﻿/*jslint browser: true, plusplus: true */
 /*global XMLQuery, COMMON, fxCalendar*/
 /// <reference path="common.js" />
-//ver 1.0 10/31/2014
+//ver 1.1 03/28/2016
 var FILLIN = {};
 ///<var>an array containing form objects for a page
 FILLIN.allForms = [];
@@ -107,7 +107,7 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
         var contentBaseObj, obj, allDescendants, fieldType, fieldIndex, value, i, hasFields;
         hasFields = false;
         contentBaseObj = document.getElementById(contentBaseObjId);
-        fieldsValueObj = { "hasChanged": that.pendingChanges };
+        fieldsValueObj = { "hasChanged": that.pendingChanges, values: [] };
         allDescendants = contentBaseObj.getElementsByTagName("*");
         if (allDescendants.length > 0) {
             for (i = 0; i < allDescendants.length; i++) {
@@ -120,6 +120,7 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
                         fieldIndex = obj.getAttribute("fieldindex");
                         if (!fieldIndex) { fieldIndex = obj.id; }
                         fieldsValueObj[(setIdAsIndex ? obj.id : fieldIndex)] = { "id": obj.id, "value": value, "hasChanged": that.pendingChanges };
+                        fieldsValueObj.values.push(value);
                     }
                 }
             }
