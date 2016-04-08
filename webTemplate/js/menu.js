@@ -124,10 +124,11 @@ MENU.zclearAllMenus = function () {
     "use strict";
     ///<summary>NOT FOR EXTERNAL USER...clears (hides) any menus that may be displayed</summary>
     var allDivs = document.getElementsByTagName("div");
-    allDivs.forEach(function (item) {
-        var divId = item.id;
+    var keys = Object.keys(allDivs);
+    keys.forEach(function (item) {
+        var divId = allDivs[item.id];
         if (divId.length > 7 && divId.substring(0, 4) === "menu") {
-            item.style.display = "none";
+            allDivs[item].style.display = "none";
         }
     });
 };

@@ -1,7 +1,7 @@
 ﻿/*jslint browser: true, for: true, white: true, this: true*/
 /*global XMLQuery, COMMON, fxCalendar*/
 /// <reference path="common.js" />
-//ver 1.1 4/8/2016
+//ver 1.0 10/31/2014
 var FILLIN = {};
 ///<var>an array containing form objects for a page
 FILLIN.allForms = [];
@@ -108,8 +108,9 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
         fieldsValueObj = { "hasChanged": that.pendingChanges, values: [] };
         var allDescendants = contentBaseObj.getElementsByTagName("*");
         if (allDescendants.length > 0) {
-            allDescendants.forEach(function (item) {
-                var obj = item;
+            var keys = Object.keys(allDescendants)
+            keys.forEach(function (item) {
+                var obj = allDescendants[keys];
                 if (obj.hasAttribute("fieldtype")) {
                     var fieldType = COMMON.fieldTypes[obj.getAttribute("fieldtype")];
                     if (fieldType && fieldType.isField) {
@@ -129,7 +130,9 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
         var allspans = document.getElementsByTagName("span");
         if (allspans.length === 0) { return; }
         var spanToDelete = [];
-        allspans.forEach(function (item) {
+        keys = Object.keys(allspans);
+        keys.forEach(function (thisKey) {
+            var item = allspans[thisKey];
             if (item.className === "message0" || item.className === "message1") {
                 spanToDelete.push(item);
             }

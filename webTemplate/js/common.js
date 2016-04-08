@@ -5,7 +5,7 @@
 /// <reference path="helptopics.js" />
 /// <reference path="timepicker.js" />
 /// <reference path="calendar.js" />
-//ver 2.1. 04/8/2016
+//ver 2.0.2 01/15/2016
 //01/19/2015 - changed COMMON.blockInput to be able to block all items in the body if containerId = "body", added logic to disable links also, added COMMON.zChangeElementAvailability
 //Holds function that are common to all scripts like control makers and other items. Added COMMON.getFileUpload
 var COMMON = {};
@@ -348,7 +348,9 @@ COMMON.zChangeElementAvailability = function (parentObj, tagName, enable) {
     var disabledByFunctionAttr = "disabledthis";
     var allElems = parentObj.getElementsByTagName(tagName);
     if (allElems.length > 0) {
-        allElems.forEach(function (item) {
+        var keys = Object.keys(allElems);
+        keys.forEach(function (thisKey) {
+            var item = allElems[thisKey];
             var currentlyEnabled = !item.disabled;
             //PDA flag means that the element had been disable previously outside of this function
             var hasPDA = item.hasAttribute(previouslyDisabledAttr);
@@ -939,9 +941,10 @@ COMMON.clearToolTip = function () {
     var objs = bod.getElementsByTagName("span");
     if (objs.length === 0) { return; }
     var toRemove = [];
-    objs.forEach(function (item) {
-        if (item.getAttribute("ctooltip") === "true") {
-            toRemove.push(item);
+    var keys = Object.keys(objs);
+    keys.forEach(function (item) {
+        if (objs[item].getAttribute("ctooltip") === "true") {
+            toRemove.push(objs[item]);
         }
     });
     if (toRemove.length === 0) { return; }
@@ -968,14 +971,12 @@ COMMON.validateForm = function (parentNodeId) {
     keys.forEach(function (oneProperty) {
         var thisFT = tags[oneProperty];
         var allChildren = parentNodeObj.getElementsByTagName(thisFT.tag);
-        if (allChildren.length > 0) {
-            var i;
-            for (i = 0; i < allChildren.length; i += 1) {
-                if (thisFT.type === "" || allChildren[i].getAttribute("type") === thisFT.type) {
-                    hasError = COMMON.checkFieldHasError(allChildren[i], hasError);
-                }
+        var keys = Object.keys(allChildren);
+        keys.forEach(function (i) {
+            if (thisFT.type === "" || allChildren[i].getAttribute("type") === thisFT.type) {
+                hasError = COMMON.checkFieldHasError(allChildren[i], hasError);
             }
-        }
+        });
     });
     return !hasError;//true if form is valid
 };
