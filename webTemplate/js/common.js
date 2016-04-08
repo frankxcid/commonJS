@@ -579,14 +579,13 @@ COMMON.setDDLvalue = function (ddlIdOrObj, ddlValue) {
     ///<param name="ddlValue" type="String">The value of the option to be set</param>
     "use strict";
     var ddlObj = COMMON.getElement(ddlIdOrObj);
-    if (ddlObj.options.length > 0) {
-        ddlObj.options.forEach(function (item, index) {
-            if (item.value === String(ddlValue)) {
-                ddlObj.selectedIndex = index;
-                return;
-            }
-        });
-    }
+    var keys = Object.keys(ddlObj.options);
+    keys.some(function (item, index) {
+        if (ddlObj.options[item].value === String(ddlValue)) {
+            ddlObj.selectedIndex = index;
+            return true;
+        }
+    });
 };
 COMMON.setTxtValue = function (txtIdOrObj, txtValue) {
     ///<summary>Sets the value of a input Object</summary>
@@ -971,8 +970,8 @@ COMMON.validateForm = function (parentNodeId) {
     keys.forEach(function (oneProperty) {
         var thisFT = tags[oneProperty];
         var allChildren = parentNodeObj.getElementsByTagName(thisFT.tag);
-        var keys = Object.keys(allChildren);
-        keys.forEach(function (i) {
+        var childkeys = Object.keys(allChildren);
+        childkeys.forEach(function (i) {
             if (thisFT.type === "" || allChildren[i].getAttribute("type") === thisFT.type) {
                 hasError = COMMON.checkFieldHasError(allChildren[i], hasError);
             }

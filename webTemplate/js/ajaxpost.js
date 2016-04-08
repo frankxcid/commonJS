@@ -212,7 +212,7 @@ AJAXPOST.callQuery = function (StoredProcedureName, Parameters, NoResult, Contin
             {
                 "sp": StoredProcedureName,
                 "noresult": (NoResult === true),
-                "parameters": null
+                "parameters": Parameters
             },
             null,
             OptionalData
@@ -469,7 +469,7 @@ AJAXPOST.customRequest = function (Command, Parameters, Download, OptionalData, 
         );
     AJAXPOST.protectedFunctions.doPost(objectToSend, Listener, ContinuingFunction);
     if (Download === true) {
-        return objectToSend.tokenid
+        return objectToSend.tokenid;
     }
     return AJAXPOST.getResponse(objectToSend.tokenid);
 };

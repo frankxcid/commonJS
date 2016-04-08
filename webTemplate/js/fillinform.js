@@ -108,9 +108,9 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
         fieldsValueObj = { "hasChanged": that.pendingChanges, values: [] };
         var allDescendants = contentBaseObj.getElementsByTagName("*");
         if (allDescendants.length > 0) {
-            var keys = Object.keys(allDescendants)
+            var keys = Object.keys(allDescendants);
             keys.forEach(function (item) {
-                var obj = allDescendants[keys];
+                var obj = allDescendants[item];
                 if (obj.hasAttribute("fieldtype")) {
                     var fieldType = COMMON.fieldTypes[obj.getAttribute("fieldtype")];
                     if (fieldType && fieldType.isField) {
@@ -130,7 +130,7 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
         var allspans = document.getElementsByTagName("span");
         if (allspans.length === 0) { return; }
         var spanToDelete = [];
-        keys = Object.keys(allspans);
+        var keys = Object.keys(allspans);
         keys.forEach(function (thisKey) {
             var item = allspans[thisKey];
             if (item.className === "message0" || item.className === "message1") {

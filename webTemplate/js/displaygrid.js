@@ -2,7 +2,7 @@
 /// <reference path="common.js" />
 /*jslint browser: true, for: true, white: true, this: true*/
 /*global AJAXPOST, FILLIN, COMMON window*/
-//ver 2.1 4/8/2016
+//ver 2.01 1/15/2016
 var DISPLAYGRID = {};
 ///<var>the array that holds all the grid objects of a single page</var>
 DISPLAYGRID.allGrids = [];
@@ -208,6 +208,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     //determine whether to display the up or down arrow
     var setSortIndicator = function () {
         columnNames.forEach(function (item, index) {
+            if (index === 0) { return; }
             var buttonVal = item.replace("@", "\n");
             if (allColDefinitions[index].isVisible) {
                 var thisBtn = document.getElementById(sortButtonId + String(index));
@@ -224,6 +225,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         filterString = "";
         filterObj = {};
         allColDefinitions.forEach(function (item, index) {
+            if (index === 0) { return; }
             if (item.isVisible) {
                 var ddl = document.getElementById(filterDDLId + String(index));
                 if (ddl.selectedIndex > 0) {
@@ -338,6 +340,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         td.style.textAlig = "right";
         tr.appendChild(td);
         columnNames.forEach(function (item, index) {
+            if (index === 0) { return; }
             var buttonVal = (allColDefinitions[index].controlRequired ? "*" : "") + item.replace("@", "tt");
             if (allColDefinitions[index].isVisible) {
                 td = document.createElement("td");
@@ -360,6 +363,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         td.style.textAlig = "right";
         tr.appendChild(td);
         allColDefinitions.forEach(function (item, index) {
+            if (index === 0) { return; }
             if (item.isVisible) {
                 td = document.createElement("td");
                 var ddl = getFilterDDL(index);
@@ -394,7 +398,8 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         td.className = DISPLAYGRID.dataCellClass;
         tr.appendChild(td);
         var thisRow = dataResults[rowIndex];
-        allColDefinitions.forEach(function (item) {
+        allColDefinitions.forEach(function (item, index) {
+            if (index === 0) { return; }
             var thisColDef = item;
             if (thisColDef.isVisible) {
                 td = COMMON.getBasicElement("ttd", null, null, (thisColDef.getCellClass(thisRow)));
@@ -427,10 +432,11 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         //reset all summaries and determin if any columns have a summary definition
         //do display
         var tr = COMMON.getBasicElement("ttr", null, null, summaryTRClass);
-        allColDefinitions.some(function (item) {
-            hasSummary = item.summaryType;
-            tr.appendChild(item.getSummary());
-            return hasSummary; //exits if true
+        allColDefinitions.forEach(function (item, index) {
+            if (index > 0) {
+                hasSummary = COMMON.exists(item.summaryType);
+                tr.appendChild(item.getSummary());
+            }
         });
         if (!hasSummary) { return null; } //no column has a summary so exit
         if (allButtonDefinitions && allButtonDefinitions.length > 0) {
