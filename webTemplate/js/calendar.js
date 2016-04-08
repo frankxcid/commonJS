@@ -1,7 +1,7 @@
 ﻿/// <reference path="common.js" />
-/*jslint browser: true, plusplus:true */
-/*global COMMON*/
-//ver 2.0.1 01/19/2015
+/*jslint browser: true, for: true, white: true, this: true*/
+/*global COMMON, window*/
+//ver 2.1 04/8/2016
 //01/19/2015 - Added code to disable all controls when calendar is displayed (Changed code in CAL.zinitDisplayPosition), changed CAL.zclose to remove the div containing the calendar and to restore control functions, changed document to COMMON.docObj to follow changeable parent document, Changed CAL.zinitDisplayPosition so that the parent's offset is added to fix bug that if parent position was absolute, the parent's position was not added to the display's offset. Possible bug: needs to be aware that if display is off bottom edge, the calendar should display above the control.
 var CAL = {};
 ///<var>id of the display div that shows to the user</var>
@@ -74,10 +74,10 @@ CAL.ZOneDate = function (dateIn) {
     ///<summary>NOT FOR EXTERNAL USE...Class that helps the creation of dates for day calendar</summary>
     ///<param name="dateIn" type="String|Date">(Optional) Either a string representing a date or date object</param>
     "use strict";
-    var initialize, currentDate;
     //private functions
     //Initializes the object
-    initialize = function () {
+    var currentDate;
+    var initialize = function () {
         var offset;
         //if no date set to today
         if (dateIn === undefined || dateIn === null || (typeof dateIn === "string" && dateIn === "")) { dateIn = new Date(); }
@@ -99,11 +99,10 @@ CAL.ZOneDate = function (dateIn) {
     //public methods
     //retrieves an object that contains all neccessary data for a date div in the day selector Calendar
     this.getDateObj = function () {
-        var obj, today, selectedDate;
-        today = new Date();
+        var today = new Date();
         today = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        selectedDate = new Date(CAL.zgetValueEntered());
-        obj = {};
+        var selectedDate = new Date(CAL.zgetValueEntered());
+        var obj = {};
         obj.dt = COMMON.dateToString(currentDate);
         obj.day = String(currentDate.getDate());
         if (selectedDate && selectedDate.getTime() === currentDate.getTime()) {
@@ -152,9 +151,8 @@ CAL.zmonthNameDisplay = function (itemCurrentlyDisplayed) {
     ///<param name="itemCurrentlyDisplayed" type="String">String representation of the date the calendar is showing</param>
     ///<returns type="div:element"></returns>
     "use strict";
-    var obj1, obj2;
-    obj1 = COMMON.getBasicElement("div", null, null, CAL.topCenterClassName);
-    obj2 = COMMON.getLink(null, CAL.zgetMonthName(itemCurrentlyDisplayed), null, "CAL.zmoveToMonthSelector('" + itemCurrentlyDisplayed + "');");
+    var obj1 = COMMON.getBasicElement("div", null, null, CAL.topCenterClassName);
+    var obj2 = COMMON.getLink(null, CAL.zgetMonthName(itemCurrentlyDisplayed), null, "CAL.zmoveToMonthSelector('" + itemCurrentlyDisplayed + "');");
     obj1.appendChild(obj2);
     return obj1;
 };
@@ -163,10 +161,9 @@ CAL.zyearDisplay = function (itemCurrentlyDisplayed) {
     ///<param name="itemCurrentlyDisplayed" type="String">String representation of the date the calendar is showing</param>
     ///<returns type="div:element"></returns> 
     "use strict";
-    var obj1, obj2, thisDate;
-    thisDate = new Date(itemCurrentlyDisplayed);
-    obj1 = COMMON.getBasicElement("div", null, null, CAL.topCenterClassName);
-    obj2 = COMMON.getLink(null, String(thisDate.getFullYear()), null, "CAL.zmoveToEraSelector('" + itemCurrentlyDisplayed + "');");
+    var thisDate = new Date(itemCurrentlyDisplayed);
+    var obj1 = COMMON.getBasicElement("div", null, null, CAL.topCenterClassName);
+    var obj2 = COMMON.getLink(null, String(thisDate.getFullYear()), null, "CAL.zmoveToEraSelector('" + itemCurrentlyDisplayed + "');");
     obj1.appendChild(obj2);
     return obj1;
 };
@@ -175,9 +172,8 @@ CAL.zeraDisplay = function (itemCurrentDisplayed) {
     ///<param name="itemCurrentlyDisplayed" type="String">String representation of the date the calendar is showing</param>
     ///<returns type="div:element"></returns>
     "use strict";
-    var obj1, thisDate;
-    thisDate = new Date(itemCurrentDisplayed);
-    obj1 = COMMON.getBasicElement("div", null, null, CAL.topCenterNoLinkClassName);
+    var thisDate = new Date(itemCurrentDisplayed);
+    var obj1 = COMMON.getBasicElement("div", null, null, CAL.topCenterNoLinkClassName);
     obj1.innerHTML = String(thisDate.getFullYear() - 6) + " - " + String(thisDate.getFullYear() + 5);
     return obj1;
 };
@@ -187,10 +183,9 @@ CAL.zheader = function (itemCurrentlyDisplayed, selectorType, paneObj) {
     ///<param name="selectorType" type="String">the type of selector from CAL.enumSelectorTypes</param>
     ///<param name="paneObj" type="div:element">The pane this header is being added to</param>
     "use strict";
-    var obj1, obj2;
-    obj1 = COMMON.getBasicElement("div", null, null, CAL.selectorClassName);
+    var obj1 = COMMON.getBasicElement("div", null, null, CAL.selectorClassName);
     obj1.style.clear = "both";
-    obj2 = COMMON.getLink(null, "&#8656;", null, "CAL.zmoveLateral('" + itemCurrentlyDisplayed + "', '" + selectorType + "', false);");
+    var obj2 = COMMON.getLink(null, "&#8656;", null, "CAL.zmoveLateral('" + itemCurrentlyDisplayed + "', '" + selectorType + "', false);");
     obj1.appendChild(obj2);
     paneObj.appendChild(obj1);
     //middle
@@ -205,9 +200,8 @@ CAL.zbottom = function () {
     ///<summary>NOT FOR EXTERNAL USE...the bottom of any selector</summary>
     ///<returns type="div:element"></returns>
     "use strict";
-    var obj1, obj2;
-    obj1 = COMMON.getBasicElement("div", null, null, CAL.zbottomDivClassName);
-    obj2 = COMMON.getLink(null, "Close", null, "CAL.zclose(true);");
+    var obj1 = COMMON.getBasicElement("div", null, null, CAL.zbottomDivClassName);
+    var obj2 = COMMON.getLink(null, "Close", null, "CAL.zclose(true);");
     obj1.appendChild(obj2);
     return obj1;
 };
@@ -216,16 +210,18 @@ CAL.zdaySelector = function (monthToDisplay, paneObj) {
     ///<param name="monthToDisplay" type="String">String representation of the date being displayed</param>
     ///<param name="paneObj" type="div:elemen">The div this calendar will appear in.</param>
     "use strict";
-    var thisDate, i, n, dtObj;
+    var i;
+    var n;
+    var dtObj;
     CAL.zclearPane(paneObj);
-    thisDate = new CAL.ZOneDate(monthToDisplay);
+    var thisDate = new CAL.ZOneDate(monthToDisplay);
     //top row
     CAL.zheader(thisDate.strMonthStart, "day", paneObj);
-    for (i = 0; i < 7; i++) {
+    for (i = 0; i < 7; i += 1) {
         paneObj.innerHTML += "<div class=\"" + CAL.weekDayClassName + "\"" + (i === 0 ? " style=\"clear:both;\"" : "") + ">" + thisDate.weekdayAbbv[i] + "</div>";
     }
-    for (n = 0; n < 6; n++) {
-        for (i = 0; i < 7; i++) {
+    for (n = 0; n < 6; n += 1) {
+        for (i = 0; i < 7; i += 1) {
             dtObj = thisDate.getDateObj();
             paneObj.innerHTML += "<div class=\"" + dtObj.className + "\"" + (i === 0 ? " style=\"clear:both;\"" : "") + "><a href=\"#\" onclick=\"CAL.zitemSelected('day', '" + dtObj.dt + "', true); return false;\" title=\"" + dtObj.tag + dtObj.dt + "\">" + dtObj.day + "</a></div>";
             thisDate.increment();
@@ -239,16 +235,20 @@ CAL.zmonthSelector = function (YearToDisplay, paneObj, returnValue) {
     ///<param name="paneObj" type="div:element">The div this calendar will appear in.</param>
     ///<param name="returnValue" type="Boolean">set to true so value selected is returned to the calling script or will show a day selector</param>
     "use strict";
-    var n, i, thisDate, dtSelectedDay, strDisplayDate, tag, className, today, monthCount;
-    thisDate = new Date(YearToDisplay);
-    today = new Date();
-    dtSelectedDay = new Date(CAL.zgetValueEntered());
+    var n;
+    var i;
+    var strDisplayDate;
+    var tag;
+    var className;
+    var thisDate = new Date(YearToDisplay);
+    var today = new Date();
+    var dtSelectedDay = new Date(CAL.zgetValueEntered());
     CAL.zclearPane(paneObj);
     CAL.zheader(YearToDisplay, "month", paneObj);
     paneObj.appendChild(COMMON.getBasicElement("div", null, "&nbsp;", CAL.blankUnderHeaderClassName));
-    monthCount = 0;
-    for (n = 0; n < 4; n++) {
-        for (i = 0; i < 3; i++) {
+    var monthCount = 0;
+    for (n = 0; n < 4; n += 1) {
+        for (i = 0; i < 3; i += 1) {
             strDisplayDate = String(monthCount + 1) + "/01/" + String(thisDate.getFullYear());
             className = CAL.eraSelectorClassName;
             tag = "";
@@ -261,7 +261,7 @@ CAL.zmonthSelector = function (YearToDisplay, paneObj, returnValue) {
                 tag = "Selected - ";
             }
             paneObj.innerHTML += "<div class=\"" + className + "\"" + (i === 0 ? " style=\"clear:both;\"" : "") + "><a href=\"#\" onclick=\"CAL.zitemSelected('month', '" + strDisplayDate + "', " + (returnValue ? "true" : "false") + "); return false;\" title=\"" + tag + CAL.monthNames[monthCount] + " " + String(thisDate.getFullYear()) + "\">" + CAL.monthNames[monthCount] + "</a></div>";
-            monthCount++;
+            monthCount += 1;
         }
     }
     paneObj.appendChild(CAL.zbottom());
@@ -272,16 +272,20 @@ CAL.zyearSelector = function (EraToDisplay, paneObj, returnValue) {
     ///<param name="paneObj" type="div:element">The div this calendar will appear in.</param>
     ///<param name="returnValue" type="Boolean">set to true so value selected is returned to the calling script or will show a day selector</param>
     "use strict";
-    var n, i, thisDate, dtSelectedDate, strDisplayDate, tag, className, today, yearStart;
-    thisDate = new Date(EraToDisplay);
-    today = new Date();
-    dtSelectedDate = new Date(CAL.zgetValueEntered());
+    var n;
+    var i;
+    var strDisplayDate;
+    var tag;
+    var className;
+    var thisDate = new Date(EraToDisplay);
+    var today = new Date();
+    var dtSelectedDate = new Date(CAL.zgetValueEntered());
     CAL.zclearPane(paneObj);
     CAL.zheader(EraToDisplay, "year", paneObj);
     paneObj.appendChild(COMMON.getBasicElement("div", null, "&nbsp;", CAL.blankUnderHeaderClassName));
-    yearStart = thisDate.getFullYear() - 6;
-    for (n = 0; n < 4; n++) {
-        for (i = 0; i < 3; i++) {
+    var yearStart = thisDate.getFullYear() - 6;
+    for (n = 0; n < 4; n += 1) {
+        for (i = 0; i < 3; i += 1) {
             strDisplayDate = "01/01/" + String(yearStart);
             className = CAL.eraSelectorClassName;
             tag = "";
@@ -294,7 +298,7 @@ CAL.zyearSelector = function (EraToDisplay, paneObj, returnValue) {
                 tag = "Selected - ";
             }
             paneObj.innerHTML += "<div class=\"" + className + "\"" + (i === 0 ? " style=\"clear:both;\"" : "") + "><a href=\"#\" onclick=\"CAL.zitemSelected('year', '" + strDisplayDate + "', " + (returnValue ? "true" : "false") + "); return false;\" title=\"" + tag + String(yearStart) + "\">" + String(yearStart) + "</a></div>";
-            yearStart++;
+            yearStart += 1;
         }
     }
     paneObj.appendChild(CAL.zbottom());
@@ -305,8 +309,7 @@ CAL.zchangeMonth = function (currentItemDisplayed, rightArrowClicked) {
     ///<param name="rightArrowClicked" type="Boolean">true if moving to the next month (forward in time)</param>
     ///<returns type="Date"></returns>
     "use strict";
-    var thisDate;
-    thisDate = new Date(currentItemDisplayed);
+    var thisDate = new Date(currentItemDisplayed);
     return COMMON.dateToString(new Date(thisDate.setMonth(thisDate.getMonth() + (rightArrowClicked ? 1 : -1))));
 };
 CAL.zchangeYear = function (currentItemDisplayed, rightArrowClicked) {
@@ -315,8 +318,7 @@ CAL.zchangeYear = function (currentItemDisplayed, rightArrowClicked) {
     ///<param name="rightArrowClicked" type="Boolean">true if moving to the next month (forward in time)</param>
     ///<returns type="Date"></returns>
     "use strict";
-    var thisDate;
-    thisDate = new Date(currentItemDisplayed);
+    var thisDate = new Date(currentItemDisplayed);
     return COMMON.dateToString(thisDate.setFullYear(thisDate.getFullYear() + (rightArrowClicked ? 1 : -1)));
 };
 CAL.zchangeEra = function (currentItemDisplayed, rightArrowClicked) {
@@ -325,8 +327,7 @@ CAL.zchangeEra = function (currentItemDisplayed, rightArrowClicked) {
     ///<param name="rightArrowClicked" type="Boolean">true if moving to the next month (forward in time)</param>
     ///<returns type="Date"></returns>
     "use strict";
-    var thisDate;
-    thisDate = new Date(currentItemDisplayed);
+    var thisDate = new Date(currentItemDisplayed);
     return COMMON.dateToString(thisDate.setFullYear(thisDate.getFullYear() + (rightArrowClicked ? 12 : -12)));
 };
 CAL.zmoveToEraSelector = function (itemCurrentlyDisplayed) {
@@ -373,12 +374,11 @@ CAL.zinitDisplayPosition = function (txtObj) {
     ///<summary>NOT FOR EXTERNAL USE...initializes the display, creates the base of the display on the first use or uses an existing calendar base</summary>
     ///<param name="txtObj" type="input:element">the text box associated with this display</param>
     "use strict";
-    var baseObj, obj1, obj2, posObj, screenHeight, screenWidth;
     //disable all controls
     COMMON.blockInput("body");
-    baseObj = COMMON.getBasicElement("div", CAL.baseDivId);
-    obj1 = COMMON.getBasicElement("div", CAL.envelopeDivId);
-    obj2 = COMMON.getBasicElement("div", CAL.leftDivId, null, CAL.paneClassName);
+    var baseObj = COMMON.getBasicElement("div", CAL.baseDivId);
+    var obj1 = COMMON.getBasicElement("div", CAL.envelopeDivId);
+    var obj2 = COMMON.getBasicElement("div", CAL.leftDivId, null, CAL.paneClassName);
     obj1.appendChild(obj2);
     obj2 = COMMON.getBasicElement("div", CAL.rightDivId, null, CAL.paneClassName);
     obj1.appendChild(obj2);
@@ -389,9 +389,9 @@ CAL.zinitDisplayPosition = function (txtObj) {
     CAL.startPos = 0;
     //initialize positions
     CAL.zpositionPanes(true);
-    screenHeight = (COMMON.exists(window.innerHeight) ? window.innerHeight : document.documentElement.offsetHeight);
-    screenWidth = (COMMON.exists(window.innerWidth) ? window.innerWidth : document.documentElement.offsetWidth);
-    posObj = COMMON.findElementPosition(txtObj);
+    var screenHeight = (COMMON.exists(window.innerHeight) ? window.innerHeight : document.documentElement.offsetHeight);
+    var screenWidth = (COMMON.exists(window.innerWidth) ? window.innerWidth : document.documentElement.offsetWidth);
+    var posObj = COMMON.findElementPosition(txtObj);
     if ((posObj.top + 219) > screenHeight) { posObj.top = screenHeight - 219; }
     if ((posObj.left + 189) > screenWidth) { posObj.left = screenWidth - 189; }
     COMMON.docObj.getElementById(CAL.baseDivId).style.top = String(posObj.top) + "px";
@@ -412,12 +412,12 @@ CAL.zanimateMovement = function (itemToBeDisplayed, selectorType, dtTimeStart, t
     ///<param name="dtTimeStart" type="Date">The time when animation began. used to stop animation after a set time</param>
     ///<param name="topToBottom" type="Boolean">the arrangement of the panes</param>
     "use strict";
-    var animationDuration, timePassed, timeProgress, positionChange, currentPosition, rightArrow;
-    rightArrow = (CAL.startPos === 0);
-    animationDuration = 400; //milliseconds
-    timePassed = new Date() - dtTimeStart;
-    timeProgress = timePassed / animationDuration;
-    positionChange = Math.sin(timeProgress * 1.6);//makes a smooth animation slow and then fast
+    var currentPosition;
+    var rightArrow = (CAL.startPos === 0);
+    var animationDuration = 400; //milliseconds
+    var timePassed = new Date() - dtTimeStart;
+    var timeProgress = timePassed / animationDuration;
+    var positionChange = Math.sin(timeProgress * 1.6);//makes a smooth animation slow and then fast
     if (timeProgress >= 1) {
         timeProgress = 1;
         currentPosition = CAL.endPos;
@@ -443,7 +443,6 @@ CAL.zpaneMovement = function (forward, hiddenPaneSelectorType, itemToDisplay, pa
     ///<param name="itemToDisplay" type="String">The string representation of the date currently being displayed</param>
     ///<param name="panesLateral" type="Boolea">Set whether the panes are side by side if true</param>
     "use strict";
-    var hiddenDivId, startIsLess, dtStart;
     //set Start position
     //forward is rightarrow or down
     if (forward) {
@@ -455,7 +454,8 @@ CAL.zpaneMovement = function (forward, hiddenPaneSelectorType, itemToDisplay, pa
     }
     CAL.zpositionPanes(panesLateral);
     //set hidden item
-    startIsLess = CAL.startPos < CAL.endPos;
+    var startIsLess = CAL.startPos < CAL.endPos;
+    var hiddenDivId;
     if (startIsLess) {
         hiddenDivId = CAL.leftDivId;
     } else {
@@ -465,7 +465,7 @@ CAL.zpaneMovement = function (forward, hiddenPaneSelectorType, itemToDisplay, pa
     //kill anytimeout if available
     CAL.zkillInterval();
     //do animation
-    dtStart = new Date();
+    var dtStart = new Date();
     CAL.intervalHandle = setInterval(function () { CAL.zanimateMovement(itemToDisplay, hiddenPaneSelectorType, dtStart, !panesLateral); }, 10);
 };
 CAL.zmoveLateral = function (itemCurrentlyDisplayed, selectorType, rightArrowClicked) {
@@ -474,9 +474,8 @@ CAL.zmoveLateral = function (itemCurrentlyDisplayed, selectorType, rightArrowCli
     ///<param name="selectorType" type="String">The selector type for the pane to be displayed from CAL.enumSelectorTypes</param>
     ///<param name="rightArrowClicked" type="Boolean">Animating to the right (panes moving left)</param>
     "use strict";
-    var selectorObj;
     //find new item
-    selectorObj = CAL.enumSelectorTypes[selectorType];
+    var selectorObj = CAL.enumSelectorTypes[selectorType];
     itemCurrentlyDisplayed = selectorObj.changeFunction(itemCurrentlyDisplayed, rightArrowClicked);
     CAL.zpaneMovement(rightArrowClicked, selectorType, itemCurrentlyDisplayed, true);
 };
@@ -484,8 +483,8 @@ CAL.zclose = function (nothingSelected) {
     ///<summary>NOT FOR EXTERNAL USE...Closes and hides the base of the calendar control</summary>
     ///<param name="nothingSelected" type="Boolean">if true will not execute the continuing function (CAL.continuingfunction)</param>
     "use strict";
-    var baseObj, obj1;
-    baseObj = COMMON.docObj.getElementById(CAL.baseDivId);
+    var obj1;
+    var baseObj = COMMON.docObj.getElementById(CAL.baseDivId);
     if (baseObj) {
         obj1 = baseObj.parentNode;
         obj1.removeChild(baseObj);
@@ -531,8 +530,7 @@ CAL.zcheckDaysInMonth = function (days, month, year) {
     ///<param name="Years" type="Int">(Optional)</param>
     ///<returns type="Boolean">True if days exceed amount</returns>
     "use strict";
-    var mDays;
-    mDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    var mDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     if (year === undefined || year === null) { year = 2004; }
     if (month === 2 && year % 4 === 0) { mDays[1] = 29; }
     return (days > mDays[month - 1]);
@@ -554,9 +552,8 @@ CAL.zdisplayError = function (obj, errorType, day, month) {
     ///<param name="month" type="Int">(Optional)  Ignored if day is not provided. Used for date error in CAL.errors</param>
     ///<returns type="Boolean">True if there is an error</returns>
     "use strict";
-    var mess, hasError;
-    hasError = false;
-    mess = CAL.errors[errorType];
+    var hasError = false;
+    var mess = CAL.errors[errorType];
     if (day !== undefined || day !== null) {
         mess = mess.replace("$$", String(day));
         mess = mess.replace("##", CAL.monthNames[month - 1]);
@@ -572,22 +569,23 @@ CAL.checkDateEntry = function (event) {
     ///<param name="event" type="Event"></param>
     ///<returns type="Boolean">false if there is an error which removeds the input from the text box</returns>
     "use strict";
-    var obj, value, key, dateParts, days, month, year;
-    obj = COMMON.getTargetObj(event);
-    value = obj.value.trim();
-    key = COMMON.getKeyPressed(event);
+    var obj = COMMON.getTargetObj(event);
+    var value = obj.value.trim();
+    var key = COMMON.getKeyPressed(event);
     //check current entry
     if (key !== undefined && !CAL.zvalidChars(key)) { return CAL.zdisplayError(obj, "chars"); }
     if (key <= 47) { return true; }
     //check complete entry
-    dateParts = value.split('/');
+    var dateParts = value.split('/');
     if (dateParts.length > 3) { return CAL.zdisplayError(obj, "generic"); }
     //check month
+    var month;
     if (dateParts.length > 0) {
         month = parseInt(dateParts[0], 10);
         if (month < 1 || month > 12) { return CAL.zdisplayError(obj, "month"); }
     }
     //check date
+    var days;
     if (dateParts.length > 1) {
         days = parseInt(dateParts[1], 10);
         if (days < 1 || CAL.zcheckDaysInMonth(days, month)) {
@@ -595,6 +593,7 @@ CAL.checkDateEntry = function (event) {
         }
     }
     //check year and check leap year dates
+    var year;
     if (dateParts.length > 2) {
         year = parseInt(dateParts[2], 10);
         if (dateParts[2].length === 2 && year < 50) { year = 2000 + year; }
@@ -610,11 +609,12 @@ CAL.zshowDaySelector = function (txtObj, parentDivId) {
     ///<param name="parentDivId" type="String">Optional) The id of a parent element where this control will be displayed</param>
     ///<returnss type=""></returns>
     "use strict";
-    var valueEntered, parentObj;
     CAL.parentDivId = COMMON.defaultDisplayDiv;
     if (parentDivId) {
         CAL.parentDivId = parentDivId;
     }
+    var valueEntered;
+    var parentObj;
     if (txtObj && txtObj.value !== undefined) {
         if (!CAL.parentDivId) {
             parentObj = txtObj.parentNode;

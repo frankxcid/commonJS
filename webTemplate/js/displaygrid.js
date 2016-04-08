@@ -2,7 +2,7 @@
 /// <reference path="common.js" />
 /*jslint browser: true, for: true, white: true, this: true*/
 /*global AJAXPOST, FILLIN, COMMON window*/
-//ver 2.01 1/15/2016
+//ver 2.1 4/8/2016
 var DISPLAYGRID = {};
 ///<var>the array that holds all the grid objects of a single page</var>
 DISPLAYGRID.allGrids = [];
@@ -23,55 +23,54 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     ///<summary>NOT FOR EXTERNAL USE...Main object, contains all the logic to create the grid, should not be called directly, use DISPLAYGRID.addGrid function to add a new grid</summary>
     ///<param name="gridIndex" type="int">assigned when creating, the index of the grid in DISPLAYGRID.allGrids array</param>
     "use strict";
-    var that, pagination, allColDefinitions, allButtonDefinitions, dataResults, columnNames, searchObj, filterObj, gridIndex, currentPage, currentSortIndex, lastSortIndex, filterString, filterFunctionRecur, gridTableId, titleRowId, titleCellId, headerTRId, sortButtonId, filterTRId, filterDDLId, pageNavDivId, pageNavCntrlId, baseClassName, titleCellClassName, titleHeadlineClassName, titleSubHeadlineClassName, gridTableClass, headerTRClass, headerBtnClass, filterTRClass, filterClass, dataRowClass, buttonColumnClass, summaryTRClass, pageNavDivClass, refreshSearchObj, cloneDataResults, getFilterDDL, setSortIndicator, getFilterString, displayRow, dataOutRow, titleBar, headerRow, filterRow, dataRow, summaryRow, pageNavigationBtns, addGridBody, paginate, currentRowColorClass, alternatingRowColorClass1, alternatingRowColorClass2, printTableClass, getButtonColumnTD, runQuery, setDataObject;
     //*********************Private Variables********************************//
     //********Arrays************************************//
-    pagination = null; //holds the collection of Onepage objects where each element describes the data that should be in each page. Object pattern: {totalPages: Int, pageNumber0 : {start : Int, end : Int}, pageNumber1...}, total pages shows the number of pages, pageNumber is the page with the start and end row indexes of dataResults
-    allColDefinitions = null; //holds the column definition objects
-    allButtonDefinitions = null; //holds button definitions
-    columnNames = null; //holds the data result column names from the primary query that is used to fill the grid
-    dataResults = null; //holds the data results from the primary query that is used to fill the grid
-    searchObj = null; //contains the primary key as a key to search for the row a key is in, object pattern: {primarykey0:{index: Int, hasChanged : Boolean}, primaryKey1...} where primary key is the row key, index is the row index of dataResults and hasChange is true if the user has changed that row
-    filterObj = null; //stores an array of the data in columns that are filter where each element is the data from each row
+    var pagination = null; //holds the collection of Onepage objects where each element describes the data that should be in each page. Object pattern: {totalPages: Int, pageNumber0 : {start : Int, end : Int}, pageNumber1...}, total pages shows the number of pages, pageNumber is the page with the start and end row indexes of dataResults
+    var allColDefinitions = null; //holds the column definition objects
+    var allButtonDefinitions = null; //holds button definitions
+    var columnNames = null; //holds the data result column names from the primary query that is used to fill the grid
+    var dataResults = null; //holds the data results from the primary query that is used to fill the grid
+    var searchObj = null; //contains the primary key as a key to search for the row a key is in, object pattern: {primarykey0:{index: Int, hasChanged : Boolean}, primaryKey1...} where primary key is the row key, index is the row index of dataResults and hasChange is true if the user has changed that row
+    var filterObj = null; //stores an array of the data in columns that are filter where each element is the data from each row
 
     //***********************Private Initializations****//
-    that = this;
-    gridIndex = gridIndexIn; //the index of the grid in DISPLAYGRID.allGrids array
-    currentPage = 1; //holds the current page
-    currentSortIndex = -1; //keeps track of the current sort index
-    lastSortIndex = -1; //keeps track of the last index sorted
-    filterString = ""; //Holds the string that is used to compare with data in the grid when a filter ddl is used
-    filterFunctionRecur = false; //this will be true if there is an error in user editable fields. used to prevent recursing the filterChange function
-    currentRowColorClass = ""; //used by private function when alternate color rows is true
+    var that = this;
+    var gridIndex = gridIndexIn; //the index of the grid in DISPLAYGRID.allGrids array
+    var currentPage = 1; //holds the current page
+    var currentSortIndex = -1; //keeps track of the current sort index
+    var lastSortIndex = -1; //keeps track of the last index sorted
+    var filterString = ""; //Holds the string that is used to compare with data in the grid when a filter ddl is used
+    var filterFunctionRecur = false; //this will be true if there is an error in user editable fields. used to prevent recursing the filterChange function
+    var currentRowColorClass = ""; //used by private function when alternate color rows is true
 
     //*********ControlId Defaults**********************//
-    gridTableId = "ttbGrid"; //the id of the table holding the grid
-    titleRowId = "ttrTitle"; //the id of the title cell row
-    titleCellId = "ttdTitle"; //the id of the div placed at the top of the grid
-    headerTRId = "ttrHead"; //the id of the tr tag for the header row
-    sortButtonId = "btnHead"; //the default id prefix of the sort buttons
-    filterTRId = "ttrFilt"; //the id of the tr tag for the filter row
-    filterDDLId = "ddlFilt"; //the prefix of the control id for filter ddl
-    pageNavDivId = "divPage"; //the id of the div the envelopes the page navigation controls
-    pageNavCntrlId = "Page"; //the id prefix of the page navigation controls
+    var gridTableId = "ttbGrid"; //the id of the table holding the grid
+    var titleRowId = "ttrTitle"; //the id of the title cell row
+    var titleCellId = "ttdTitle"; //the id of the div placed at the top of the grid
+    var headerTRId = "ttrHead"; //the id of the tr tag for the header row
+    var sortButtonId = "btnHead"; //the default id prefix of the sort buttons
+    var filterTRId = "ttrFilt"; //the id of the tr tag for the filter row
+    var filterDDLId = "ddlFilt"; //the prefix of the control id for filter ddl
+    var pageNavDivId = "divPage"; //the id of the div the envelopes the page navigation controls
+    var pageNavCntrlId = "Page"; //the id prefix of the page navigation controls
 
     //***********Constant Class Names*****************//
-    baseClassName = "dvSetupDisplayGrid"; //class of the div envelope that holds the grid
-    titleCellClassName = "tdTitleBar"; //class of the div at the top of the grid
-    titleHeadlineClassName = "dvTitleHeadline"; //class of the headline div (has help link)
-    titleSubHeadlineClassName = "dvTitleSubHeadline"; // class of the sub headline
-    gridTableClass = "tbGrid"; //the class of the grid table
-    headerTRClass = "trHeader"; //the clss of the tr tag for the header row
-    headerBtnClass = "dispGridHeaders"; //the class of the header sort buttons
-    filterTRClass = "trFilter"; //the class of the tr tag for the filter row
-    filterClass = "dispGridFilters"; //the class of the Drop Down List in the filter row
-    dataRowClass = "datarow"; //the class of data rows
-    buttonColumnClass = "buttonColumn"; //class for the button column for row buttons
-    summaryTRClass = "trSummary"; //the class of the tr tag for the summary row (if requested)
-    pageNavDivClass = "dvNavDiv"; //the class of the div that holds the page navigatingcontrols
-    alternatingRowColorClass1 = "trRow1"; //used when alternateColor is true, the CSS class for row one
-    alternatingRowColorClass2 = "trRow2";//used when alternateColor is true, the CSS class for row two
-    printTableClass = "tbPrint";//class of the table in the print window
+    var baseClassName = "dvSetupDisplayGrid"; //class of the div envelope that holds the grid
+    var titleCellClassName = "tdTitleBar"; //class of the div at the top of the grid
+    var titleHeadlineClassName = "dvTitleHeadline"; //class of the headline div (has help link)
+    var titleSubHeadlineClassName = "dvTitleSubHeadline"; // class of the sub headline
+    var gridTableClass = "tbGrid"; //the class of the grid table
+    var headerTRClass = "trHeader"; //the clss of the tr tag for the header row
+    var headerBtnClass = "dispGridHeaders"; //the class of the header sort buttons
+    var filterTRClass = "trFilter"; //the class of the tr tag for the filter row
+    var filterClass = "dispGridFilters"; //the class of the Drop Down List in the filter row
+    var dataRowClass = "datarow"; //the class of data rows
+    var buttonColumnClass = "buttonColumn"; //class for the button column for row buttons
+    var summaryTRClass = "trSummary"; //the class of the tr tag for the summary row (if requested)
+    var pageNavDivClass = "dvNavDiv"; //the class of the div that holds the page navigatingcontrols
+    var alternatingRowColorClass1 = "trRow1"; //used when alternateColor is true, the CSS class for row one
+    var alternatingRowColorClass2 = "trRow2";//used when alternateColor is true, the CSS class for row two
+    var printTableClass = "tbPrint";//class of the table in the print window
 
     //*******************public properties**********************************//
     //initialization
@@ -129,8 +128,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         return dataResults[rowIndex][colIndex];
     };
     this.getDataByKey = function (rowkey, colIndex) {
-        var rowIndex;
-        rowIndex = that.getKeyRow(rowkey);
+        var rowIndex = that.getKeyRow(rowkey);
         if (rowIndex === -1) { return ""; }
         return that.getFieldData(colIndex, rowIndex);
     };
@@ -142,26 +140,23 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     this.getKeyRow = function (keyToSearch) {
         ///<summary>gets the row where a primaryKey is</summary>
         ///<returns type="Int"></returns>
-        var intOut;
-        intOut = searchObj[keyToSearch].index;
+        var intOut = searchObj[keyToSearch].index;
         return (intOut === undefined ? -1 : intOut);
     };
     this.getRowData = function (rowkey) {
         ///<summary>gets the data for the whole row indicated by the key</summary>
         ///<param name="rowkey" type="String">The key of the row</param>
         ///<returns type="String Array">An Array containing the ordered row data</returns>
-        var rowIndex;
-        rowIndex = that.getKeyRow(rowkey);
+        var rowIndex = that.getKeyRow(rowkey);
         return dataResults[rowIndex];
     };
     //***************************Private Methods****************************************//
-    getButtonColumnTD = function () {
-        var td;
-        td = COMMON.getBasicElement("ttd", null, "&nbsp;");
+    var getButtonColumnTD = function () {
+        var td = COMMON.getBasicElement("ttd", null, "&nbsp;");
         if (that.buttonColumnWidth !== undefined && that.buttonColumnWidth !== null) { td.style.width = that.buttonColumnWidth; }
         return td;
     };
-    refreshSearchObj = function () {
+    var refreshSearchObj = function () {
         var i;
         if (searchObj === null) {
             searchObj = {};
@@ -176,26 +171,14 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
             searchObj[dataResults[i][0]].index = i;
         }
     };
-    //copys the data results from the query to a local data so it is a real clone and not a reference object
-    cloneDataResults = function () {
-        var i;
-        if (!AJAXPOST.dataResults) { return; }
-        dataResults = COMMON.cloneDataArray();
-        columnNames = [];
-        for (i = 0; i < AJAXPOST.columnNames.length; i += 1) {
-            columnNames.push(AJAXPOST.columnNames[i].slice());
-        }
-        AJAXPOST.dataResults = null;
-        AJAXPOST.columnNames = null;
-        refreshSearchObj();
-    };
     //used to build the drop down lists used to filter items in the grid
     //Parameters:
     //  index       (int)               The column Index
     //Returns       (element:select)    Drop down list
-    getFilterDDL = function (index) {
-        var DDLOut, currentValue, allValues, i, li, thisValue, displayValue, liObj;
-        allValues = [];
+    var getFilterDDL = function (index) {
+        var allValues = [];
+        var i;
+        var thisValue;
         //gather all values
         for (i = 0; i < dataResults.length; i += 1) {
             thisValue = dataResults[i][index].trim();
@@ -203,9 +186,10 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         }
         //sort them for grouping
         COMMON.sortArray(allValues, null, false);
-        currentValue = "";
-        li = "<option value=\"All\">All</option>";
-        liObj = [{ "text": "All", "value": "All" }];
+        var currentValue = "";
+        var li = "<option value=\"All\">All</option>";
+        var liObj = [{ "text": "All", "value": "All" }];
+        var displayValue;
         //get only unique (group) values
         for (i = 0; i < allValues.length; i += 1) {
             if (currentValue !== allValues[i] || i === 0) {
@@ -216,58 +200,55 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
             }
         }
         //fill the drop down list
-        DDLOut = COMMON.getDDL(filterDDLId + String(index), null, false, String(index), (COMMON.ieVer >= 10 ? null : liObj), filterClass);
+        var DDLOut = COMMON.getDDL(filterDDLId + String(index), null, false, String(index), (COMMON.ieVer >= 10 ? null : liObj), filterClass);
         if (COMMON.ieVer >= 10) { DDLOut.innerHTML = li; }
         DDLOut.setAttribute("onchange", "DISPLAYGRID.zfilterChange(" + gridIndex + ");");
         return DDLOut;
     };
     //determine whether to display the up or down arrow
-    setSortIndicator = function () {
-        var i, thisBtn, buttonVal;
-        for (i = 1; i < columnNames.length; i += 1) {
-            buttonVal = columnNames[i].replace("@", "\n");
-            if (allColDefinitions[i].isVisible) {
-                thisBtn = document.getElementById(sortButtonId + String(i));
-                if (i === currentSortIndex) {
+    var setSortIndicator = function () {
+        columnNames.forEach(function (item, index) {
+            var buttonVal = item.replace("@", "\n");
+            if (allColDefinitions[index].isVisible) {
+                var thisBtn = document.getElementById(sortButtonId + String(index));
+                if (index === currentSortIndex) {
                     thisBtn.setAttribute("value", buttonVal + "\u0020" + (that.reverseSort ? "\u2191" : "\u2193"));
                 } else {
                     thisBtn.setAttribute("value", buttonVal + "\u0020\u0020");
                 }
             }
-        }
+        });
     };
     //based on the settings of the filter ddl's construct the filter string
-    getFilterString = function () {
-        var ddl, i;
+    var getFilterString = function () {
         filterString = "";
         filterObj = {};
-        for (i = 1; i < columnNames.length; i += 1) {
-            if (allColDefinitions[i].isVisible) {
-                ddl = document.getElementById(filterDDLId + String(i));
+        allColDefinitions.forEach(function (item, index) {
+            if (item.isVisible) {
+                var ddl = document.getElementById(filterDDLId + String(index));
                 if (ddl.selectedIndex > 0) {
                     filterString += ddl.options[ddl.selectedIndex].text;
-                    filterObj[i] = true;
+                    filterObj[index] = true;
                 }
             }
-        }
+        });
     };
     //checks if a row matches filter criteria (even if all is selected)
     //Parameters:
     //  rowArray    (Array:String)  the row array of data to examine
     //Returns       (Boolean)       true if the row should be displayed
-    displayRow = function (rowArray) {
+    var displayRow = function (rowArray) {
         //filter string is a concatenation of all filter selections
         //only columns which have a filter selected will be concatenated and checked with the concatenation of the filter selections
-        var checkString, i, lFilterString;
         //no filters selected return true
         if (filterString === "") { return true; }
-        checkString = "";
-        for (i = 1; i < rowArray.length; i += 1) {
-            rowArray[i] = rowArray[i].trim();
-            if (filterObj.hasOwnProperty(i)) { checkString += (rowArray[i] === "" ? "!@#$%^" : rowArray[i]); }
-        }
+        var checkString = "";
+        rowArray.forEach(function (item, index) {
+            item = item.trim();
+            if (filterObj.hasOwnProperty(index)) { checkString += (item === "" ? "!@#$%^" : item); }
+        });
         //match the filter selections with the concatenation of the data
-        lFilterString = filterString.replace("[Blank]", "!@#$%^");
+        var lFilterString = filterString.replace("[Blank]", "!@#$%^");
         return lFilterString === checkString;
     };
     //returns a single row object to be sent to another script or to c# code
@@ -275,25 +256,25 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     //  primaryKey      (String)                The primary key value
     //  forCSharp       (Boolean)               If true will format for c# code
     //Returns           (Array|object literal)  if forCSharp is true will return an array of objects
-    dataOutRow = function (primaryKey, forCSharp) {
-        var rowIndex, dataOut, thisRow, i, oneItem;
-        rowIndex = searchObj[primaryKey].index;
-        thisRow = dataResults[rowIndex];
+    var dataOutRow = function (primaryKey, forCSharp) {
+        var rowIndex = searchObj[primaryKey].index;
+        var dataOut;
+        var thisRow = dataResults[rowIndex];
         if (forCSharp) {
             dataOut = [];
-            for (i = 0; i < thisRow.length; i += 1) {
-                oneItem = {
-                    columnName: columnNames[i],
-                    value: thisRow[i],
-                    colIndex: i
+            thisRow.forEach(function (item, index) {
+                var oneItem = {
+                    columnName: columnNames[index],
+                    value: item,
+                    colIndex: index
                 };
                 dataOut.push(oneItem);
-            }
+            });
         } else {
             dataOut = {};
-            for (i = 0; i < thisRow.length; i += 1) {
-                dataOut[i] = thisRow[i];
-            }
+            thisRow.forEach(function (item, index) {
+                dataOut[index] = item;
+            });
         }
         return dataOut;
     };
@@ -301,17 +282,17 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
 
     //constructs the title bar
     //Returns       (element:div)
-    titleBar = function () {
-        var tr, td, obj1, obj2, totalColumns;
-        totalColumns = columnNames.length;
+    var titleBar = function () {
+        var totalColumns = columnNames.length;
         if (allButtonDefinitions.length > 0) { totalColumns += 1; }
         //create row
-        tr = COMMON.getBasicElement("ttr", titleRowId);
+        var tr = COMMON.getBasicElement("ttr", titleRowId);
         //create cell
-        td = COMMON.getBasicElement("ttd", titleCellId, null, titleCellClassName);
+        var td = COMMON.getBasicElement("ttd", titleCellId, null, titleCellClassName);
         td.setAttribute("colspan", String(totalColumns));
         //create headline div
-        obj1 = COMMON.getBasicElement("div", null, null, titleHeadlineClassName);
+        var obj1 = COMMON.getBasicElement("div", null, null, titleHeadlineClassName);
+        var obj2;
         //add headline if present
         if (that.title !== undefined && that.title !== null) {
             obj2 = COMMON.getBasicElement("div", null, that.title);
@@ -348,24 +329,23 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     };
     //contructing the header buttons that will change sorting
     //Returns       (element:tr)
-    headerRow = function () {
-        var tr, td, btn, i, buttonVal;
+    var headerRow = function () {
         //sortChar = "";
         //if (sorted) { sortChar = "&nbsp;" + (reverse ? "&#8657;" : "&#8659"); }
-        tr = COMMON.getBasicElement("ttr", headerTRId, null, headerTRClass);
-        td = COMMON.getBasicElement("ttd", null, "Sort By:");
+        var tr = COMMON.getBasicElement("ttr", headerTRId, null, headerTRClass);
+        var td = COMMON.getBasicElement("ttd", null, "Sort By:");
         td.style.width = "38px";
         td.style.textAlig = "right";
         tr.appendChild(td);
-        for (i = 1; i < columnNames.length; i += 1) {
-            buttonVal = (allColDefinitions[i].controlRequired ? "*" : "") + columnNames[i].replace("@", "tt");
-            if (allColDefinitions[i].isVisible) {
+        columnNames.forEach(function (item, index) {
+            var buttonVal = (allColDefinitions[index].controlRequired ? "*" : "") + item.replace("@", "tt");
+            if (allColDefinitions[index].isVisible) {
                 td = document.createElement("td");
-                btn = COMMON.getButton(sortButtonId + String(i), buttonVal, "DISPLAYGRID.zsortChange(" + String(i) + ", " + String(gridIndex) + ");", String(i), headerBtnClass);
+                var btn = COMMON.getButton(sortButtonId + String(index), buttonVal, "DISPLAYGRID.zsortChange(" + String(index) + ", " + String(gridIndex) + ");", String(index), headerBtnClass);
                 td.appendChild(btn);
                 tr.appendChild(td);
             }
-        }
+        });
         if (allButtonDefinitions.length > 0) {
             td = getButtonColumnTD();
             tr.appendChild(td);
@@ -374,20 +354,19 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     };
     //the logic to construct the row containing filter DDL's
     //Returns       (element:tr)
-    filterRow = function () {
-        var tr, td, ddl, i;
-        tr = COMMON.getBasicElement("ttr", filterTRId, null, filterTRClass);
-        td = COMMON.getBasicElement("ttd", null, "Filter:");
+    var filterRow = function () {
+        var tr = COMMON.getBasicElement("ttr", filterTRId, null, filterTRClass);
+        var td = COMMON.getBasicElement("ttd", null, "Filter:");
         td.style.textAlig = "right";
         tr.appendChild(td);
-        for (i = 1; i < columnNames.length; i += 1) {
-            if (allColDefinitions[i].isVisible) {
+        allColDefinitions.forEach(function (item, index) {
+            if (item.isVisible) {
                 td = document.createElement("td");
-                ddl = getFilterDDL(i);
+                var ddl = getFilterDDL(index);
                 td.appendChild(ddl);
                 tr.appendChild(td);
             }
-        }
+        });
         if (allButtonDefinitions.length > 0) {
             td = getButtonColumnTD();
             tr.appendChild(td);
@@ -396,94 +375,88 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     };
     //construct data rows
     //Returns       (element:tr)
-    dataRow = function (rowIndex, isFirstRow) {
-        var tr, td, printLink, thisColDef, thisRow, i, thisBtn, styleDef, obj;
+    var dataRow = function (rowIndex, isFirstRow) {
         if (currentRowColorClass === "" || currentRowColorClass === alternatingRowColorClass2) {
             currentRowColorClass = alternatingRowColorClass1;
         } else {
             currentRowColorClass = alternatingRowColorClass2;
         }
         if (!that.alternateColor) { currentRowColorClass = dataRowClass; }
-        tr = COMMON.getBasicElement("ttr", null, null, currentRowColorClass);
-        td = document.createElement("td");
+        var tr = COMMON.getBasicElement("ttr", null, null, currentRowColorClass);
+        var td = document.createElement("td");
         if (isFirstRow && that.getRowCount() > that.rowsPerPage) {
             //Print Link
-            printLink = COMMON.getLink(null, "Print", null, "DISPLAYGRID.zassemblePrint(" + String(gridIndex) + "); return false;");
+            var printLink = COMMON.getLink(null, "Print", null, "DISPLAYGRID.zassemblePrint(" + String(gridIndex) + "); return false;");
             td.appendChild(printLink);
         } else {
             td.innerHTML = "&nbsp;";
         }
         td.className = DISPLAYGRID.dataCellClass;
         tr.appendChild(td);
-        thisRow = dataResults[rowIndex];
-        for (i = 1; i < thisRow.length; i += 1) {
-            thisColDef = allColDefinitions[i];
+        var thisRow = dataResults[rowIndex];
+        allColDefinitions.forEach(function (item) {
+            var thisColDef = item;
             if (thisColDef.isVisible) {
                 td = COMMON.getBasicElement("ttd", null, null, (thisColDef.getCellClass(thisRow)));
                 td.style.backgroundColor = thisColDef.getColor(thisRow);
-                styleDef = thisColDef.getStyle(thisRow);
-                obj = thisColDef.getObj(thisRow);
+                var styleDef = thisColDef.getStyle(thisRow);
+                var obj = thisColDef.getObj(thisRow);
                 if (styleDef !== "") { COMMON.addAttribute(obj, "style", styleDef, true); }
                 td.appendChild(obj);
                 tr.appendChild(td);
             }
-        }
+        });
         if (allButtonDefinitions && allButtonDefinitions.length > 0) {
             td = getButtonColumnTD();
             td.innerHTML = "";
             td.className = buttonColumnClass;
-            for (i = 0; i < allButtonDefinitions.length; i += 1) {
-                thisBtn = allButtonDefinitions[i].getObject(thisRow);
+            allButtonDefinitions.forEach(function (item) {
+                var thisBtn = item.getObject(thisRow);
                 if (thisBtn) {
                     td.appendChild(thisBtn);
                 }
-            }
+            });
             tr.appendChild(td);
         }
         return tr;
     };
     //Gets the summary row if any
     //Returns       (element:tr)
-    summaryRow = function () {
-        var tr, hasSummary, i, td;
-        hasSummary = false;
+    var summaryRow = function () {
+        var hasSummary = false;
         //reset all summaries and determin if any columns have a summary definition
-        for (i = 1; i < allColDefinitions.length; i += 1) {
-            //allColDefinitions[i].initSummary();
-            if (allColDefinitions[i].summaryType) { hasSummary = true; break; }
-        }
-        if (!hasSummary) { return null; } //no column has a summary so exit
-
         //do display
-        tr = COMMON.getBasicElement("ttr", null, null, summaryTRClass);
-        for (i = 0; i < allColDefinitions.length; i += 1) {
-            tr.appendChild(allColDefinitions[i].getSummary());
-        }
+        var tr = COMMON.getBasicElement("ttr", null, null, summaryTRClass);
+        allColDefinitions.some(function (item) {
+            hasSummary = item.summaryType;
+            tr.appendChild(item.getSummary());
+            return hasSummary; //exits if true
+        });
+        if (!hasSummary) { return null; } //no column has a summary so exit
         if (allButtonDefinitions && allButtonDefinitions.length > 0) {
-            td = getButtonColumnTD();
+            var td = getButtonColumnTD();
             tr.appendChild(td);
         }
         return tr;
     };
     //construct the page navigation buttons, do not go into this function unless there is more than one page
-    pageNavigationBtns = function () {
-        var baseDiv, navDiv, obj, tab;
+    var pageNavigationBtns = function () {
         if (pagination === null) { return; }
-        baseDiv = document.getElementById(that.baseDivId);
-        navDiv = document.getElementById(pageNavDivId);
+        var baseDiv = document.getElementById(that.baseDivId);
+        var navDiv = document.getElementById(pageNavDivId);
         if (!navDiv) {
             navDiv = COMMON.getBasicElement("div", pageNavDivId, null, pageNavDivClass);
             baseDiv.appendChild(navDiv);
         }
         //Places the page navigation buttons in place directly under table
-        tab = document.getElementById(gridTableId);
+        var tab = document.getElementById(gridTableId);
         navDiv.style.position = "relative";
         navDiv.style.left = String(tab.offsetLeft) + "px";
         navDiv.style.width = String(tab.offsetWidth) + "px";
         while (navDiv.firstChild) {
             navDiv.removeChild(navDiv.firstChild);
         }
-        obj = COMMON.getBasicElement("div", null, "Page " + String(currentPage) + " of " + String(pagination.totalPages) + "&nbsp;");
+        var obj = COMMON.getBasicElement("div", null, "Page " + String(currentPage) + " of " + String(pagination.totalPages) + "&nbsp;");
         navDiv.appendChild(obj);
         obj = COMMON.getButton(pageNavCntrlId + "0", "Previous Page", "DISPLAYGRID.zpageChange(0, " + String(gridIndex) + ");");
         obj.disabled = (currentPage === 1);
@@ -501,11 +474,12 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         baseDiv.appendChild(navDiv);
     };
     //assembles all the parts of the grid after headers and filters
-    addGridBody = function () {
+    var addGridBody = function () {
         //assembles all the parts of the grid
-        var tab, tabChildren, i, lcurrentPage, tr, navDiv, isFirstRow;
-        tab = document.getElementById(gridTableId);
+        var tab = document.getElementById(gridTableId);
         //clear table children except for filter and header rows
+        var tabChildren;
+        var i;
         while (tab.childNodes.length > 3) {
             tabChildren = tab.childNodes;
             for (i = 0; i < tabChildren.length; i += 1) {
@@ -516,17 +490,17 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         }
         if (currentPage < 1) { currentPage = 1; }
         if (currentPage > pagination.totalPages) { currentPage = pagination.totalPages; }
-        lcurrentPage = pagination[currentPage];
-        isFirstRow = true;
+        var lcurrentPage = pagination[currentPage];
+        var isFirstRow = true;
         for (i = lcurrentPage.start; i <= lcurrentPage.end; i += 1) {
             if (displayRow(dataResults[i])) {
                 tab.appendChild(dataRow(i, isFirstRow));
                 isFirstRow = false;
             }
         }
-        tr = summaryRow();
+        var tr = summaryRow();
         if (tr) { tab.appendChild(tr); }
-        navDiv = document.getElementById(pageNavDivId);
+        var navDiv = document.getElementById(pageNavDivId);
         if (navDiv) {
             document.getElementById(that.baseDivId).removeChild(navDiv);
         }
@@ -535,16 +509,19 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         }
     };
     //breaks up data rows into pages based on RowsPerPage property, gathers filter selections, does summary
-    paginate = function () {
-        var i, rppCount, oneRowData, n, thisValue;
+    var paginate = function () {
         pagination = { totalPages: 1 };
         //gather filter selections
         getFilterString();
-        rppCount = 0;
+        var rppCount = 0;
         pagination[1] = { start: 0, end: 0 };
-        for (n = 1; n < allColDefinitions.length; n += 1) {
-            allColDefinitions[n].initSummary();
-        }
+        allColDefinitions.forEach(function (item) {
+            item.initSummary();
+        });
+        var i;
+        var n;
+        var oneRowData;
+        var thisValue;
         for (i = 0; i < dataResults.length; i += 1) {
             oneRowData = dataResults[i];
             if (displayRow(oneRowData)) {
@@ -573,27 +550,28 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         }
         pagination[pagination.totalPages].end = dataResults.length - 1;
     };
-    runQuery = function () {
+    var runQuery = function () {
         dataResults = null;
         columnNames = null;
         if (that.queryId === undefined || that.queryId === null || that.queryId === -1) { return; }
-        AJAXPOST.callQuery(that.queryId, that.params);
+        var res = AJAXPOST.callQuery(that.queryId, that.params);
 
-        if (!AJAXPOST.dataResults || AJAXPOST.dataResults.length === 0) { return; }
-        //copy results data to local variable
-        cloneDataResults(that.gridIndex);
+        if (!COMMON.exists(res.payload.rows) || res.payload.rows.length === 0) { return; }
+        dataResults = res.payload.rows;
+        columnNames = res.payload.columns;
     };
-    setDataObject = function (dataObj) {
+    var setDataObject = function (dataObj) {
         //assumes dataobj is an array of literal object and that each element has the same property names throughout
-        var i, n, oneProp, thisRow;
         if (!dataObj || dataObj.length === 0) { return; }
         dataResults = [];
         columnNames = [];
-        for (oneProp in dataObj[0]) {
-            if (dataObj[0].hasOwnProperty(oneProp)) {
-                columnNames.push(oneProp);
-            }
-        }
+        var keys = Object.keys(dataObj[0]);
+        keys.forEach(function (oneProp) {
+            columnNames.push(oneProp);
+        });
+        var i;
+        var n;
+        var thisRow;
         for (i = 0; i < dataObj.length; i += 1) {
             thisRow = [];
             for (n = 0; n < columnNames.length; n += 1) {
@@ -723,9 +701,8 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     //*******************Execute****************************************//
     //this will display the assembled grid
     this.display = function (dataObj) {
-        var div, i, thisCol, tab, alternateSortIndex;
         //construct the base of the grid in the document object
-        div = document.getElementById(that.baseDivId);
+        var div = document.getElementById(that.baseDivId);
         if (div === null || !div) {
             div = COMMON.getBasicElement("div", that.baseDivId, null, baseClassName);
             if (that.leftPosition !== undefined && that.leftPosition !== null) {
@@ -742,7 +719,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         }
 
         //display Loading Message
-        tab = document.createElement("h2");
+        var tab = document.createElement("h2");
         tab.innerHTML = "Loading... Please Wait.";
         div.appendChild(tab);
 
@@ -775,6 +752,8 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         }
 
         //fill out all definitions because every column needs a definition
+        var i;
+        var thisCol;
         for (i = 0; i < columnNames.length; i += 1) {
             thisCol = that.initializeColumnDefinitions(i);
         }
@@ -787,15 +766,15 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         }
 
         //hide alternatesort columns and linkValueColumn
-        for (i = 0; i < columnNames.length; i += 1) {
-            thisCol = allColDefinitions[i];
-            if (thisCol.alternateSortColumn !== i) { allColDefinitions[thisCol.alternateSortColumn].isVisible = false; }
-            if (thisCol.linkValueColumn !== i) { allColDefinitions[thisCol.linkValueColumn].isVisible = false; }
-        }
+        allColDefinitions.forEach(function (item, index) {
+            thisCol = item;
+            if (thisCol.alternateSortColumn !== index) { allColDefinitions[thisCol.alternateSortColumn].isVisible = false; }
+            if (thisCol.linkValueColumn !== index) { allColDefinitions[thisCol.linkValueColumn].isVisible = false; }
+        });
 
 
         //initial sort
-        alternateSortIndex = allColDefinitions[that.defaultFirstSortIndex].alternateSortColumn;
+        var alternateSortIndex = allColDefinitions[that.defaultFirstSortIndex].alternateSortColumn;
         COMMON.sortArray(dataResults, alternateSortIndex, that.reverseSort);
         refreshSearchObj();
 
@@ -825,19 +804,24 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     //  newWindow   (object:window)     the window object created on which the data will be displayed
     this.getDataToPrint = function (newWindow) {
         //used for printer friendly document
-        var i, n, thisColDefinition, titleObj, thisValue, thisSummaryRow, iHTML, cellStyle, thisRow, today, adjHours, ampm;
         if (currentPage < 1) { currentPage = 1; }
         if (currentPage > pagination.totalPages) { currentPage = pagination.totalPages; }
-        titleObj = newWindow.document.createElement("h1");
+        var titleObj = newWindow.document.createElement("h1");
         titleObj.innerHTML = that.title;
-        iHTML = "<table style=\"clear:both\" class=\"" + printTableClass + "\" id=\"printTable\"><tr>";
-        for (i = 1; i < columnNames.length; i += 1) {
-            thisColDefinition = allColDefinitions[i];
+        var iHTML = "<table style=\"clear:both\" class=\"" + printTableClass + "\" id=\"printTable\"><tr>";
+        var thisColDefinition;
+        allColDefinitions.forEach(function (item, index) {
+            thisColDefinition = item;
             if (thisColDefinition.isVisible) {
-                iHTML += "<th>" + columnNames[i] + "</th>";
+                iHTML += "<th>" + columnNames[index] + "</th>";
             }
-        }
+        });
         iHTML += "</tr>";
+        var i;
+        var n;
+        var thisValue;
+        var cellStyle;
+        var thisRow;
         for (i = 0; i < dataResults.length; i += 1) {
             thisRow = dataResults[i];
             if (displayRow(dataResults[i])) {
@@ -862,9 +846,9 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         //add title
         if (that.title !== undefined && that.title !== null && that.title !== "") { newWindow.document.body.appendChild(titleObj); }
         //add print time
-        today = new Date();
-        adjHours = today.getHours();
-        ampm = "A.M.";
+        var today = new Date();
+        var adjHours = today.getHours();
+        var ampm = "A.M.";
         if (adjHours > 12) {
             adjHours -= 12;
             ampm = "P.M.";
@@ -877,13 +861,14 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         //add table to window
         newWindow.document.body.innerHTML += iHTML;
         //add summary
-        thisSummaryRow = summaryRow();
+        var thisSummaryRow = summaryRow();
         if (thisSummaryRow) { newWindow.document.getElementById("printTable").appendChild(thisSummaryRow); }
     };
     this.downloadExcel = function () {
-        var i, n, columnnames, title, data, numbercolumns, thisColDef, row, colHasNumbers, val, sr;
-        columnnames = [];
-        colHasNumbers = [];
+        var columnnames = [];
+        var colHasNumbers = [];
+        var thisColDef;
+        var i;
         for (i = 1; i < columnNames.length; i += 1) {
             thisColDef = allColDefinitions[i];
             if (thisColDef.isVisible) {
@@ -891,7 +876,10 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
                 colHasNumbers.push(false);
             }
         }
-        data = [];
+        var n;
+        var data = [];
+        var row;
+        var val;
         for (i = 0; i < dataResults.length; i += 1) {
             if (displayRow(dataResults[i])) {
                 row = [];
@@ -906,7 +894,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
                 data.push(row);
             }
         }
-        sr = summaryRow();
+        var sr = summaryRow();
         if (COMMON.exists(sr)) {
             row = [];
             for (i = 0; i < sr.childNodes.length; i += 1) {
@@ -914,18 +902,19 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
             }
             data.push(row);
         }
+        var title;
         if (COMMON.exists(that.title) && that.title !== "") {
             title = that.title;
         } else {
             title = "Grid Data";
         }
-        numbercolumns = [];
+        var numbercolumns = [];
         for (i = 0; i < colHasNumbers.length; i += 1) {
             if (colHasNumbers[i]) {
                 numbercolumns.push(i);
             }
         }
-        AJAXPOST.commonExcel(data, title, columnnames, numbercolumns);
+        AJAXPOST.protectedFunctions.gridExcel(data, title, columnnames, numbercolumns);
     };
     //occurs when a user editable field's value has changed
     //Parameters
@@ -941,12 +930,10 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     };
     //resets pending changes for example after saving
     this.resetChange = function () {
-        var oneProp;
-        for (oneProp in searchObj) {
-            if (searchObj.hasOwnProperty(oneProp)) {
-                searchObj[oneProp].hasChanged = false; //reset
-            }
-        }
+        var keys = Object.keys(searchObj);
+        keys.forEach(function (item) {
+            searchObj[item].hasChanged = false; //reset
+        });
         that.pendingChanges = false;
     };
     //returns data from grid
@@ -956,21 +943,21 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     //Returns           (Literal Object)    Pattern if forCSharp is true:  {data : [[{ColumnName : (String), Value : (String), ColIndex : (Int)},{column 2}...],[row 2]...]}
     //                                      Pattern if forCSharp is false: {primaryKey0 : { 0 : column0Value(String), 1 : column1Value(String), ...}, primaryKey1 : { 0: column0Value, 1: column1Value, ...}, ...}
     this.getData = function (forCSharp, showAll) {
-        var dataOut, oneProp, oneRow, arrayOut;
-        dataOut = {};
-        arrayOut = [];
-        for (oneProp in searchObj) {
+        var dataOut = {};
+        var arrayOut = [];
+        var keys = Object.keys(searchObj);
+        keys.forEach(function (item) {
             //determine if showing all data (showAll) or else if the line has changes 
-            if (searchObj.hasOwnProperty(oneProp) && (searchObj[oneProp].hasChanged || showAll)) {
+            if (searchObj[item].hasChanged || showAll) {
                 //this.dataOutRow = function (primaryKey, forCSharp)
-                oneRow = dataOutRow(oneProp, forCSharp);
+                var oneRow = dataOutRow(item, forCSharp);
                 if (forCSharp) {
                     arrayOut.push(oneRow);
                 } else {
-                    dataOut[oneProp] = oneRow;
+                    dataOut[item] = oneRow;
                 }
             }
-        }
+        });
         if (forCSharp) {
             dataOut.data = arrayOut;
         }
@@ -987,11 +974,10 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
     ///<summary>NOT FOR EXTERNAL USE...Holds the properties of a column, every column needs to have a column definition</summary>
     ///<param name="colIndex" type="int">the index of the column this definition represents</param>
     "use strict";
-    var that, colIndex, fieldType;
-    that = this;
+    var that = this;
     //Constructor
-    colIndex = cIndex; // the index of this column
-    fieldType = COMMON.fieldTypes.spa; //the type of control to display, controltype definitions are in common.js (see object COMMON.fieldTypes)
+    var colIndex = cIndex; // the index of this column
+    var fieldType = COMMON.fieldTypes.spa; //the type of control to display, controltype definitions are in common.js (see object COMMON.fieldTypes)
     //optional properties
     this.isVisible = true; //determine whether this column will be visible
     this.alternateSortColumn = colIndex; //set this property so that when this columns is sorted it is sorted based on the alternate column.  If alternateSortColumn is not the same as colIndex then it will hide the alternate column
@@ -1035,12 +1021,11 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
     //gets the 2 character Column Letter so that column index 0 = 0A, 1 = 0B, 26 = AA
     //Returns   (String)
     this.getColumnLetter = function () {
-        var num0, num1, let0, let1;
-        num0 = Math.floor((colIndex + 1) / 26);
-        num1 = parseInt((colIndex + 1) % 26, 10);
-        let0 = "0";
+        var num0 = Math.floor((colIndex + 1) / 26);
+        var num1 = parseInt((colIndex + 1) % 26, 10);
+        var let0 = "0";
         if (num0 > 0) { let0 = String.fromCharCode(num0 + 64); }
-        let1 = String.fromCharCode(num1 + 64);
+        var let1 = String.fromCharCode(num1 + 64);
         return let0 + let1;
     };
     //Gets the object of the column for a particular row
@@ -1049,19 +1034,18 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
     //  primaryKey  (String)            The primary key of the row column 0 of dataResults
     //Returns       (obj:Element)       HTML element
     this.getObj = function (dataRow) {
-        var dVal, localType, obj, id, attrib, value, localHref, localOnclick, primaryKey;
-        localType = fieldType;
+        var localType = fieldType;
         if (that.readOnlyDefinition) {
-            dVal = dataRow[that.readOnlyDefinition.determinationColumn];
+            var dVal = dataRow[that.readOnlyDefinition.determinationColumn];
             if (that.readOnlyDefinition.valueFunction(dVal)) { localType = COMMON.fieldTypes.spa; }
         }
-        primaryKey = dataRow[0];
-        id = String(gridIndex) + "GRID" + that.getColumnLetter() + primaryKey;
-        value = dataRow[colIndex];
+        var primaryKey = dataRow[0];
+        var id = String(gridIndex) + "GRID" + that.getColumnLetter() + primaryKey;
+        var value = dataRow[colIndex];
         if (that.formatNumber && that.formatNumber.format === true) {
             value = COMMON.formatCurrency(value, (that.formatNumber.currencysymbol ? "$" : ""), that.formatNumber.decimals, that.formatNumber.parens);
         }
-        attrib = { "pkey": primaryKey, "column": String(colIndex), "gridindex": String(gridIndex) };
+        var attrib = { "pkey": primaryKey, "column": String(colIndex), "gridindex": String(gridIndex) };
         //add onchange to keep track of what fields have changed
         if (localType.isField) {
             attrib.onchange = "DISPLAYGRID.zfieldChanged(" + String(gridIndex) + ", this);";
@@ -1069,6 +1053,9 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
         if (localType.id === "txt" || localType.id === "txa") {
             attrib.onkeyup = "DISPLAYGRID.zfieldChanged(" + String(gridIndex) + ", this);";
         }
+        var obj;
+        var localHref;
+        var localOnclick;
         switch (localType.id) {
             case "cal":
                 obj = COMMON.getCalendar(id, value, that.controlRequired, null, COMMON.pageMessageDivId, null, that.onkeypressAction, that.onchangeAction, attrib);
@@ -1105,13 +1092,12 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
     //  dataRow     (Array:String)      The dataResult Row
     //Returns       (String)            css classname
     this.getCellClass = function (dataRow) {
-        var dVal, localType, value;
-        localType = fieldType.id;
+        var localType = fieldType.id;
         if (that.readOnlyDefinition) {
-            dVal = dataRow[that.readOnlyDefinition.determinationColumn];
+            var dVal = dataRow[that.readOnlyDefinition.determinationColumn];
             if (that.readOnlyDefinition.valueFunction(dVal)) { localType = "spa"; }
         }
-        value = dataRow[colIndex];
+        var value = dataRow[colIndex];
         if (localType === "lnk") { return DISPLAYGRID.dataCellClass; }
         if (localType === "spa") {
             if (isNaN(value)) { return DISPLAYGRID.dataCellClass; }
@@ -1124,10 +1110,9 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
     //  dataRow     (Array:String)      The dataResult Row
     //Returns       (String)            css color
     this.getColor = function (dataRow) {
-        var dColVal, color;
         if (!that.colorDefinition) { return "transparent"; }
-        dColVal = dataRow[that.colorDefinition.determinationColumn];
-        color = that.colorDefinition.valueFunction(dColVal);
+        var dColVal = dataRow[that.colorDefinition.determinationColumn];
+        var color = that.colorDefinition.valueFunction(dColVal);
         return color || "transparent";
     };
     //Gets the style to assign to a cell (td element) based on the style definition
@@ -1135,23 +1120,22 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
     //  dataRow     (Array:String)      The dataResult Row
     //Returns       (String)            in-line style string
     this.getStyle = function (dataRow) {
-        var dColVal, style, i;
         if (!that.styleDefinition) { return ""; }
-        style = "";
-        for (i = 0; i < that.styleDefinition.length; i += 1) {
-            dColVal = dataRow[that.styleDefinition[i].determinationColumn];
-            style += that.styleDefinition[i].valueFunction(dColVal);
-        }
+        var style = "";
+        that.styleDefinition.forEach(function (item) {
+            var dColVal = dataRow[item.determinationColumn];
+            style += item.valueFunction(dColVal);
+        });
         return style || "";
     };
     //Returns the value of the summary
     //Returns       (element:td)
     this.getSummary = function () {
-        var td, thisVal, intPart, decPart;
-        td = document.createElement("td");
+        var td = document.createElement("td");
         if (!that.summaryType) {
             td.innerHTML = "&nbsp;";
         } else {
+            var thisVal;
             switch (that.summaryType) {
                 case DISPLAYGRID.summaryTypes.sum:
                     thisVal = that.summarySum;
@@ -1166,8 +1150,8 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
                     thisVal = (that.summaryRowCount === 0 ? 0 : that.summarySum / that.summaryRowCount);
                     break;
             }
-            decPart = String(Math.round(Math.round(thisVal * Math.pow(10, that.summaryPrecision))) - (Math.floor(thisVal) * Math.pow(10, that.summaryPrecision)));
-            intPart = String(Math.floor(thisVal));
+            var decPart = String(Math.round(Math.round(thisVal * Math.pow(10, that.summaryPrecision))) - (Math.floor(thisVal) * Math.pow(10, that.summaryPrecision)));
+            var intPart = String(Math.floor(thisVal));
             if (decPart.length > that.summaryPrecision && that.summaryPrecision > 0) { decPart = decPart.substring(0, that.summaryPrecision); }
             decPart = "." + decPart.padRight("0", that.summaryPrecision);
             if (that.summaryPrecision === 0) { decPart = ""; }
@@ -1217,19 +1201,17 @@ DISPLAYGRID.zgetColumnDef = function (gridIndex, colIndex) {
     ///<param name="colIndex" type="int">The index of the column</param>
     ///<returns type="object:OneColumnDefinition"></returns>
     "use strict";
-    var thisGrid;
-    thisGrid = DISPLAYGRID.allGrids[gridIndex];
+    var thisGrid = DISPLAYGRID.allGrids[gridIndex];
     return thisGrid.initializeColumnDefinitions(colIndex);
 };
 DISPLAYGRID.zassemblePrint = function (gridIndex) {
     ///<summary>NOT FOR EXTERNAL USE...creates a pop up window for printer friendly HTML of grid Contents</summary>
     ///<param name="gridIndex" type="int">The index of the grid</param>
     "use strict";
-    var thisGrid, obj1, obj2, obj3, newWindowObj, dvWaitingObj;
-    thisGrid = DISPLAYGRID.allGrids[gridIndex];
+    var thisGrid = DISPLAYGRID.allGrids[gridIndex];
     //create window
-    newWindowObj = window.open("", "newWindowObj", "menubar=no, scrollbars=yes, status=no, titlebar=no, toolbar=no");
-    obj1 = newWindowObj.document.createElement("style");
+    var newWindowObj = window.open("", "newWindowObj", "menubar=no, scrollbars=yes, status=no, titlebar=no, toolbar=no");
+    var obj1 = newWindowObj.document.createElement("style");
     obj1.type = "text/css";
     obj1.media = "print";
     obj1.innerHTML = ".hideDiv{display:none;}";
@@ -1240,7 +1222,7 @@ DISPLAYGRID.zassemblePrint = function (gridIndex) {
     newWindowObj.document.body.appendChild(obj1);
     obj1 = newWindowObj.document.createElement("div");
     obj1.className = "hideDiv";
-    obj2 = newWindowObj.document.createElement("input");
+    var obj2 = newWindowObj.document.createElement("input");
     obj2.type = "button";
     obj2.value = "Print";
     obj2.setAttribute("style", "float:left;");
@@ -1260,7 +1242,7 @@ DISPLAYGRID.zassemblePrint = function (gridIndex) {
     obj2.innerHTML = "Loading...Please Wait.";
     obj1.appendChild(obj2);
     obj2 = newWindowObj.document.createElement("div");
-    obj3 = newWindowObj.document.createElement("img");
+    var obj3 = newWindowObj.document.createElement("img");
     obj3.src = "jpg/waiting.gif";
     obj3.width = "64";
     obj3.height = "64";
@@ -1269,7 +1251,7 @@ DISPLAYGRID.zassemblePrint = function (gridIndex) {
     obj1.appendChild(obj2);
     newWindowObj.document.body.appendChild(obj1);
     thisGrid.getDataToPrint(newWindowObj);
-    dvWaitingObj = newWindowObj.document.getElementById("dvWaiting");
+    var dvWaitingObj = newWindowObj.document.getElementById("dvWaiting");
     while (dvWaitingObj.firstChild) {
         dvWaitingObj.removeChild(dvWaitingObj.firstChild);
     }
@@ -1280,11 +1262,10 @@ DISPLAYGRID.zfieldChanged = function (gridIndex, obj) {
     ///<param name="gridIndex" type="int">the index of the grid</param>
     ///<param name="obj" type="element">the field element that has the onchange event</param>
     "use strict";
-    var fieldType, pkey, col, val;
-    fieldType = COMMON.fieldTypes[obj.getAttribute("fieldtype")];//the fieldType object
-    pkey = obj.getAttribute("pkey"); //get the primary key
-    col = obj.getAttribute("column"); //get the column Index
-    val = fieldType.getValueFunction(obj);//get the value
+    var fieldType = COMMON.fieldTypes[obj.getAttribute("fieldtype")];//the fieldType object
+    var pkey = obj.getAttribute("pkey"); //get the primary key
+    var col = obj.getAttribute("column"); //get the column Index
+    var val = fieldType.getValueFunction(obj);//get the value
     //remove any formating from numbers
     val = COMMON.unformatNumber(val);
     //change the value and set hasChanged flag
@@ -1317,11 +1298,12 @@ DISPLAYGRID.zjmpTxt = function (e, gridIndex) {
     ///<param name="gridIndex" type="int">the index of the grid</param>
     ///<returns type="Boolean"></returns>
     "use strict";
-    var target, keycode, charToCheck;
-    charToCheck = "";
+    var charToCheck = "";
     if (e.key) {
         charToCheck = e.key;
     }
+    var target;
+    var keycode;
     if (e.srcElement) {
         target = e.srcElement;
         keycode = (e.keycode || e.which);
@@ -1357,8 +1339,7 @@ DISPLAYGRID.ZOneButtonDefinition = function (gIndex, id, value, onclickAction, d
     ///<param name="logicCheckFunction" type="function object">(optional) Ignored if determinantColumn is not provided. the Function to run to determine if to display or enable this button.  The function will have the pattern "function (val) { return Boolean }" where val is the value of the determinant column for a particular row. If the result of the function is true, the button will be displayed or enabled</param>
     ///<param name="isButtonToBeDisabled" type="Boolean">(optional) Ignored if determinantColumn is not provided, if true then button will be disabled and not omitted from the row if the logicCheckFunction returns false</param>
     "use strict";
-    var that;
-    that = this;
+    var that = this;
     this.gridIndex = gIndex; // The Grid Index of the Grid this definition belongs to
     this.id = id; //The id of the button
     this.value = value; //The value of the button
@@ -1372,18 +1353,17 @@ DISPLAYGRID.ZOneButtonDefinition = function (gIndex, id, value, onclickAction, d
     //gets the button object for a row
     //Returns       (element:input[type:button])
     this.getObject = function (dataRow) {
-        var dVal, showButton, attrib, localId, primaryKey, btn;
-        primaryKey = dataRow[0];
-        showButton = true;
-        localId = id + String(primaryKey);
+        var primaryKey = dataRow[0];
+        var showButton = true;
+        var localId = id + String(primaryKey);
         if (that.genericDefinition) {
-            dVal = dataRow[that.genericDefinition.determinationColumn];
+            var dVal = dataRow[that.genericDefinition.determinationColumn];
             showButton = that.genericDefinition.valueFunction(dVal);
         }
         if (showButton || isButtonToBeDisabled) {
-            attrib = { "pkey": String(primaryKey), "gridindex": String(gIndex) };
+            var attrib = { "pkey": String(primaryKey), "gridindex": String(gIndex) };
             if (!showButton) { attrib.disabled = "disabled"; }
-            btn = COMMON.getButton(localId, value, that.onclickAction, "", null, attrib);
+            var btn = COMMON.getButton(localId, value, that.onclickAction, "", null, attrib);
             if (that.width !== undefined && that.width !== null) { btn.style.width = that.width; }
             return btn;
         }
@@ -1399,9 +1379,8 @@ DISPLAYGRID.resetGrid = function () {
 };
 DISPLAYGRID.allignGrid = function (gridIndex, idOrObject) {
     "use strict";
-    var thisGrid, obj;
-    thisGrid = DISPLAYGRID.allGrids[gridIndex];
-    obj = idOrObject;
+    var thisGrid = DISPLAYGRID.allGrids[gridIndex];
+    var obj = idOrObject;
     if (typeof idOrObject === "string") {
         obj = document.getElementById(idOrObject);
     }
@@ -1421,10 +1400,9 @@ DISPLAYGRID.addGrid = function (displayDivId, baseDivId, queryId, params, rowsPe
     ///<param name="noResultsAction" type="Function Object">(Optional) the function to run if there are no results. with the pattern "function(){code...}"</param>
     ///<returns type="int">The index of the grid object in DISPLAYGRID.allGrids</returns>
     "use strict";
-    var newGrid, gridIndex;
     if (!DISPLAYGRID.allGrids) { DISPLAYGRID.allGrids = []; }
-    gridIndex = DISPLAYGRID.allGrids.length;
-    newGrid = new DISPLAYGRID.DisplayGrid(gridIndex);
+    var gridIndex = DISPLAYGRID.allGrids.length;
+    var newGrid = new DISPLAYGRID.DisplayGrid(gridIndex);
     newGrid.displayDivId = displayDivId;
     newGrid.baseDivId = baseDivId;
     newGrid.queryId = queryId;
@@ -1485,13 +1463,12 @@ DISPLAYGRID.addNumberFormating = function (gridIndex, colIndex, decimalPlaces, u
     ///<param name="useParens" type="Boolean">(Optional) if set to true will indicate negative numbers by surrounding the number with parenthesis</param>
     ///<param name="currencySymbol" type="Boolean">(Optional) if provided will add a currency symbol to the number</param>
     "use strict";
-    var thisColumnDefinition;
     //{ "format": false, "decimals": 0, "parens": false, "currencysymbol": false }
-    thisColumnDefinition = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
+    var thisColumnDefinition = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
     thisColumnDefinition.formatNumber.format = true;
     thisColumnDefinition.formatNumber.decimals = decimalPlaces;
-    thisColumnDefinition.formatNumber.parens = (useParens === true ? true : false);
-    thisColumnDefinition.formatNumber.currencysymbol = (currencySymbol === true ? true : false);
+    thisColumnDefinition.formatNumber.parens = (useParens === true);
+    thisColumnDefinition.formatNumber.currencysymbol = (currencySymbol === true);
 };
 DISPLAYGRID.addColorDefinition = function (gridIndex, colindex, determinationColumn, colorValueFunction) {
     ///<summary>adds a Color Definitions for a column</summary>
@@ -1500,8 +1477,7 @@ DISPLAYGRID.addColorDefinition = function (gridIndex, colindex, determinationCol
     ///<param name="determinationColumn" type="int">the index of the column whose value will determine what color to shade the data cell</param>
     ///<param name="colorValueFunction" type="function object">The function to determine the color to display, The function will be in the pattern "function (val) {return Color}" where val is the value of the determinationColumn. The color to return will be any valid css color value (#RRGGBB or common name).  If no color is return as in the case of null or undefined, then the default color white will be used</param>
     "use strict";
-    var thisColumnDefinition;
-    thisColumnDefinition = DISPLAYGRID.zgetColumnDef(gridIndex, colindex);
+    var thisColumnDefinition = DISPLAYGRID.zgetColumnDef(gridIndex, colindex);
     thisColumnDefinition.colorDefinition = { determinationColumn: determinationColumn, valueFunction: colorValueFunction };
 };
 DISPLAYGRID.addStyleDefinition = function (gridIndex, colIndex, determinationColumn, styleValueFunction) {
@@ -1511,8 +1487,7 @@ DISPLAYGRID.addStyleDefinition = function (gridIndex, colIndex, determinationCol
     ///<param name="determinationColumn" type="int">the index of the column whose value will determine what color to shade the data cell</param>
     ///<param name="styleValueFunction" type="function object">The function that returns a in-line style string, The function will be in the pattern "function (val) {return String in-line style}" where val is the value of the determinationColumn. The style to return will be any valid css style string (e.g. color:white;border: 1px solid red; etc).  If no string is return as in the case of null or undefined, then no style will be applied</param>
     "use strict";
-    var thisColumnDefinition;
-    thisColumnDefinition = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
+    var thisColumnDefinition = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
     if (thisColumnDefinition.styleDefinition === undefined || thisColumnDefinition.styleDefinition === null) { thisColumnDefinition.styleDefinition = []; }
     thisColumnDefinition.styleDefinition.push({ "determinationColumn": determinationColumn, "valueFunction": styleValueFunction });
 };
@@ -1526,8 +1501,7 @@ DISPLAYGRID.addTextBox = function (gridIndex, colIndex, isRequired, COMMONvalTyp
     ///<param name="onchangeAction" type="String:Script">(Optional) function to run onchange</param>
     ///<param name="onkeypressAction" type="String:Script">(Optional) function to run onkeypress</param>
     "use strict";
-    var thisColDef;
-    thisColDef = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
+    var thisColDef = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
     thisColDef.setControlType("txt");
     thisColDef.controlRequired = isRequired;
     if (COMMONvalType) { thisColDef.numberValidationType = COMMONvalType; }
@@ -1544,8 +1518,7 @@ DISPLAYGRID.addDDL = function (gridIndex, colIndex, isRequired, queryIdOrArray, 
     ///<param name="params" type="StringArray">(Optional) Ignored if queryIdOrArray is not a String. The parameters of the query</param>
     ///<param name="onchangeAction" type="String:Script">(Optional) function to run onchange</param>
     "use strict";
-    var thisColDef;
-    thisColDef = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
+    var thisColDef = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
     thisColDef.setControlType("ddl");
     thisColDef.controlRequired = isRequired;
     if (typeof queryIdOrArray === "string") {
@@ -1562,8 +1535,7 @@ DISPLAYGRID.addYesNo = function (gridIndex, colIndex, onchangeAction) {
     ///<param name="colIndex" type="int">The index of the column to affect</param>
     ///<param name="onchangeAction" type="String:Script">(Optional) function to run onchange</param>
     "use strict";
-    var listItems;
-    listItems = [];
+    var listItems = [];
     listItems.push({ text: "Yes", value: "1" });
     listItems.push({ text: "No", value: "0" });
     DISPLAYGRID.addDDL(gridIndex, colIndex, false, listItems, null, onchangeAction);
@@ -1574,8 +1546,7 @@ DISPLAYGRID.addCheckBox = function (gridIndex, colIndex, onchangeAction) {
     ///<param name="colIndex" type="int">The index of the column to affect</param>
     ///<param name="onchangeAction" type="String:Script">(Optional) function to run onchange</param>
     "use strict";
-    var thisColDef;
-    thisColDef = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
+    var thisColDef = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
     thisColDef.setControlType("chk");
     thisColDef.onchangeAction = onchangeAction;
 };
@@ -1587,8 +1558,7 @@ DISPLAYGRID.addLink = function (gridIndex, colIndex, linkValueColumn, href, oncl
     ///<param name="href" type="string">The href attribute of the link. If a "~" is inserted in the code then it will be replaces with the value from the linkValueColumn for this row</param>
     ///<param name="onclick" type="string:script">The onclick attribute of the link. If a "~" is inserted in the code then it will be replaces with the value from the linkValueColumn for this row</param>
     "use strict";
-    var thisColDef;
-    thisColDef = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
+    var thisColDef = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
     thisColDef.setControlType("lnk");
     thisColDef.linkValueColumn = linkValueColumn;
     thisColDef.toolTip = toolTip;
@@ -1603,8 +1573,7 @@ DISPLAYGRID.addCalendar = function (gridIndex, colIndex, isRequired, onchangeAct
     ///<param name="onchangeAction" type="String:Script">(Optional) function to run onchange</param>
     ///<param name="onkeypressAction" type="String:Script">(Optional) function to run onkeypress</param>
     "use strict";
-    var thisColDef;
-    thisColDef = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
+    var thisColDef = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
     thisColDef.setControlType("cal");
     thisColDef.controlRequired = isRequired;
     if (onchangeAction) { thisColDef.onchangeAction = onchangeAction; }
@@ -1616,8 +1585,7 @@ DISPLAYGRID.addSummary = function (gridIndex, colIndex, summaryType) {
     ///<param name="colIndex " type="int">The index of the column to affect</param>
     ///<param name="summaryType" type="DISPLAYGRID.summaryTypes">Use a value from DISPLAYGRID.summaryTypes</param>
     "use strict";
-    var thisColDef;
-    thisColDef = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
+    var thisColDef = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
     thisColDef.summaryType = summaryType;
 };
 DISPLAYGRID.setAlternateSortColumn = function (gridIndex, colIndex, alternateSortColumn) {
@@ -1626,8 +1594,7 @@ DISPLAYGRID.setAlternateSortColumn = function (gridIndex, colIndex, alternateSor
     ///<param name="colIndex" type="int">The index of the column to affect</param>
     ///<param name="alternateSortColumn" type="int">THe index of the column to use for sorting</param>
     "use strict";
-    var thisColDef;
-    thisColDef = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
+    var thisColDef = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
     thisColDef.alternateSortColumn = alternateSortColumn;
 };
 DISPLAYGRID.hideColumn = function (gridIndex, colIndex) {
@@ -1635,8 +1602,7 @@ DISPLAYGRID.hideColumn = function (gridIndex, colIndex) {
     ///<param name="gridIndex" type="int">The index of the grid</param>
     ///<param name="colIndex" type="int">The index of the column to hide</param>
     "use strict";
-    var thisColDef;
-    thisColDef = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
+    var thisColDef = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
     thisColDef.isVisible = false;
 };
 DISPLAYGRID.addRowButton = function (gridIndex, id, value, onclick, width, determinationColumn, logicFunction, isButtonToBeDisabled) {
@@ -1649,9 +1615,8 @@ DISPLAYGRID.addRowButton = function (gridIndex, id, value, onclick, width, deter
     ///<param name="logicFunction" type="function">(Optional) Ignored if the determinationColumn is not set. A function that will display or enable the button.  The pattern is "function (val) { return boolean }" where val is the value found in the determination column for this row. The function will return true if the button is to be shown or enabled, otherwise the button will not be shown or will be disabled</param>
     ///<param name="isButtonToBeDisabled" type="boolean">(Optional) Ignored if the determiniationColumn is not set. If true, the button will be disabled instead of hidden when the logicFunction returns false</param>
     "use strict";
-    var thisGrid, btnDef;
-    thisGrid = DISPLAYGRID.allGrids[gridIndex];
-    btnDef = new DISPLAYGRID.ZOneButtonDefinition(gridIndex, id, value, onclick, determinationColumn, logicFunction, isButtonToBeDisabled);
+    var thisGrid = DISPLAYGRID.allGrids[gridIndex];
+    var btnDef = new DISPLAYGRID.ZOneButtonDefinition(gridIndex, id, value, onclick, determinationColumn, logicFunction, isButtonToBeDisabled);
     btnDef.width = width;
     thisGrid.addRowButton(btnDef);
 };
@@ -1662,8 +1627,7 @@ DISPLAYGRID.addReadOnlyDefinition = function (gridIndex, colIndex, determination
     ///<param name="determinationColumn" type="int">The column that provides the value for the logic function</param>
     ///<param name="logicFunction" type="function">A function whose result will determine if the field is not editable.  The pattern is "function (val) { return boolean }" where val is the value found in the determination column for this row. The function will return true if the user editable field is to be read-only</param>
     "use strict";
-    var thisColDef;
-    thisColDef = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
+    var thisColDef = DISPLAYGRID.zgetColumnDef(gridIndex, colIndex);
     thisColDef.readOnlyDefinition = { determinationColumn: determinationColumn, valueFunction: logicFunction };
 };
 DISPLAYGRID.display = function (gridIndex, dataObj) {

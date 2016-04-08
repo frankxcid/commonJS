@@ -1,7 +1,7 @@
-﻿/*jslint browser: true, plusplus: true */
+﻿/*jslint browser: true, for: true, white: true, this: true*/
 /*global XMLQuery, COMMON, fxCalendar*/
 /// <reference path="common.js" />
-//ver 1.1 03/28/2016
+//ver 1.1 4/8/2016
 var FILLIN = {};
 ///<var>an array containing form objects for a page
 FILLIN.allForms = [];
@@ -60,10 +60,9 @@ FILLIN.zaddForm = function (formObj) {
     ///<param name="formObj" type="FILLIN.Form Object">The Form object to add</param>
     ///<returns type="Int">The index of the form in FILLIN.allForms</returns>
     "use strict";
-    var formIndex;
-    formIndex = FILLIN.maxFormIndex;
+    var formIndex = FILLIN.maxFormIndex;
     while (FILLIN.allForms[formIndex] !== undefined) {
-        formIndex++;
+        formIndex += 1;
     }
     formObj.formIndex = formIndex;
     FILLIN.allForms[formIndex] = formObj;
@@ -77,19 +76,18 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
     ///<param name="width" type="String">Any valid css width value</param>
     ///<param name="message" type="String|Element">(Optional) message at the top of the form main area. if String adds a div with string as content. If object, appends as child</param>
     "use strict";
-    var that, baseObjId, contentBaseObjId, errorDivId, baseObjClassName, titleObjClassName, contentBaseClassName, errorDivClassName, init, getFieldValues, fieldsValueObj, cleanmessages;
-    that = this;
+    var that = this;
     //Private values
-    baseObjId = "divformBase";
-    contentBaseObjId = "divContentBase";
-    errorDivId = "divErrMess";
+    var baseObjId = "divformBase";
+    var contentBaseObjId = "divContentBase";
+    var errorDivId = "divErrMess";
     //css class
-    baseObjClassName = "dvCDBase";
-    titleObjClassName = "dvCDTitle";
-    contentBaseClassName = "dvCDContentBase";
-    errorDivClassName = "dvCDErr";
+    var baseObjClassName = "dvCDBase";
+    var titleObjClassName = "dvCDTitle";
+    var contentBaseClassName = "dvCDContentBase";
+    var errorDivClassName = "dvCDErr";
     //private methods
-    init = function () {
+    var init = function () {
         baseObjId += String(that.formIndex);
         contentBaseObjId += String(that.formIndex);
         errorDivId += String(that.formIndex);
@@ -102,46 +100,44 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
         }
 
     };
+    var fieldsValueObj;
     //gets the value from fields object pattern: {fieldIndexOfField1: {id: idOfField1, value: valuefromfield1, hasChanged: Boolean},fieldIndexOfField2: {id: idOfField2, value: valueFromField2, hasChanged: Boolean},...}
-    getFieldValues = function (setIdAsIndex) {
-        var contentBaseObj, obj, allDescendants, fieldType, fieldIndex, value, i, hasFields;
-        hasFields = false;
-        contentBaseObj = document.getElementById(contentBaseObjId);
+    var getFieldValues = function (setIdAsIndex) {
+        var hasFields = false;
+        var contentBaseObj = document.getElementById(contentBaseObjId);
         fieldsValueObj = { "hasChanged": that.pendingChanges, values: [] };
-        allDescendants = contentBaseObj.getElementsByTagName("*");
+        var allDescendants = contentBaseObj.getElementsByTagName("*");
         if (allDescendants.length > 0) {
-            for (i = 0; i < allDescendants.length; i++) {
-                obj = allDescendants[i];
+            allDescendants.forEach(function (item) {
+                var obj = item;
                 if (obj.hasAttribute("fieldtype")) {
-                    fieldType = COMMON.fieldTypes[obj.getAttribute("fieldtype")];
+                    var fieldType = COMMON.fieldTypes[obj.getAttribute("fieldtype")];
                     if (fieldType && fieldType.isField) {
                         hasFields = true;
-                        value = fieldType.getValueFunction(obj.id);
-                        fieldIndex = obj.getAttribute("fieldindex");
+                        var value = fieldType.getValueFunction(obj.id);
+                        var fieldIndex = obj.getAttribute("fieldindex");
                         if (!fieldIndex) { fieldIndex = obj.id; }
                         fieldsValueObj[(setIdAsIndex ? obj.id : fieldIndex)] = { "id": obj.id, "value": value, "hasChanged": that.pendingChanges };
                         fieldsValueObj.values.push(value);
                     }
                 }
-            }
+            });
         }
         if (!hasFields) { fieldsValueObj = null; }
     };
-    cleanmessages = function () {
-        "use strict";
-        var allspans, i, spanToDelete;
-        allspans = document.getElementsByTagName("span");
+    var cleanmessages = function () {
+        var allspans = document.getElementsByTagName("span");
         if (allspans.length === 0) { return; }
-        spanToDelete = []
-        for (i = 0; i < allspans.length; i += 1) {
-            if (allspans[i].className === "message0" || allspans[i].className === "message1") {
-                spanToDelete.push(allspans[i]);
+        var spanToDelete = [];
+        allspans.forEach(function (item) {
+            if (item.className === "message0" || item.className === "message1") {
+                spanToDelete.push(item);
             }
-        }
+        });
         if (spanToDelete.length > 0) {
-            for (i = 0; i < spanToDelete.length; i += 1) {
-                spanToDelete[i].offsetParent.removeChild(spanToDelete[i]);
-            }
+            spanToDelete.forEach(function (item) {
+                item.offsetParent.removeChild(item);
+            });
         }
     };
     //arrays
@@ -168,19 +164,18 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
     };
     //displays the form
     this.display = function () {
-        var parentDivObj, baseDivObj, obj1, obj2, i, leftPosition, topPosition, hasEditableField, firstEditableField;
         init();
-        hasEditableField = false;
+        var hasEditableField = false;
         if (!that.isForm) { FILLIN.zsetButtons(parentDivId, false, that.formIndex); }
-        parentDivObj = document.getElementById(parentDivId);
-        baseDivObj = document.getElementById(FILLIN.baseObjId + String(that.formIndex));
+        var parentDivObj = document.getElementById(parentDivId);
+        var baseDivObj = document.getElementById(FILLIN.baseObjId + String(that.formIndex));
         if (baseDivObj) { parentDivObj.removeChild(baseDivObj); }
         baseDivObj = COMMON.getBasicElement("div", baseObjId, null, baseObjClassName);
         if (width !== undefined && width !== null) { baseDivObj.style.width = width; }
         //add headline
         if (headLine === undefined || headLine === null) { headLine = "&nbsp;"; }
-        obj1 = COMMON.getBasicElement("div", null, headLine, titleObjClassName);
-        obj2 = COMMON.getLink(null, "X", null, "FILLIN.allForms[" + that.formIndex + "].continueClose(true, 0);");
+        var obj1 = COMMON.getBasicElement("div", null, headLine, titleObjClassName);
+        var obj2 = COMMON.getLink(null, "X", null, "FILLIN.allForms[" + that.formIndex + "].continueClose(true, 0);");
         obj2.className = "toolClose";
         if (that.allButtons.length <= 1 && !that.isForm) {
             obj1.appendChild(obj2);
@@ -192,7 +187,7 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
         //add the message div
         if (message !== undefined && message !== null) {
             if (typeof message === "string") {
-                obj2 = COMMON.getBasicElement("div", null, message, (that.allControls.length === 0 && !that.isForm ? FILLIN.subHeadClassName2 : FILLIN.subHeadClassName));
+                obj2 = COMMON.getBasicElement("div", null, message, ((that.allControls.length === 0 && !that.isForm) ? FILLIN.subHeadClassName2 : FILLIN.subHeadClassName));
                 obj1.appendChild(obj2);
             }
             if (typeof message === "object") {
@@ -205,14 +200,15 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
             obj2.id = errorDivId;
             obj1.appendChild(obj2);
         }
+        var firstEditableField;
         if (that.allControls.length > 0) {
-            for (i = 0; i < that.allControls.length; i++) {
-                if (!hasEditableField && that.allControls[i].isEditable) {
-                    firstEditableField = i;
+            that.allControls.forEach(function (item, index) {
+                if (!hasEditableField && item.isEditable) {
+                    firstEditableField = index;
                     hasEditableField = true;
                 }
-                obj1.appendChild(that.allControls[i].getObject());
-            }
+                obj1.appendChild(item.getObject());
+            });
         }
         obj2 = document.createElement("div");
         obj2.style.clear = "both";
@@ -221,9 +217,9 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
         if (that.allButtons.length > 0) {
             obj2 = document.createElement("div");
             obj2.className = FILLIN.buttondivClassName;
-            for (i = 0; i < that.allButtons.length; i++) {
-                obj2.appendChild(that.allButtons[i].getObject(that.allButtons.length === 1, that.isForm));
-            }
+            that.allButtons.forEach(function (item) {
+                obj2.appendChild(item.getObject(that.allButtons.length === 1, that.isForm));
+            });
             obj1.appendChild(obj2);
         }
         baseDivObj.appendChild(obj1);
@@ -231,11 +227,11 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
         parentDivObj.appendChild(baseDivObj);
         //set position of the form when it is a dialog
         if (!that.isForm) {
-            baseDivObj.style.position = "fixed";
-            leftPosition = ((parentDivObj.offsetWidth - baseDivObj.offsetWidth) / 2);
+            baseDivObj.style.position = "absolute";
+            var leftPosition = ((parentDivObj.offsetWidth - baseDivObj.offsetWidth) / 2);
             if (leftPosition < 0) { leftPosition = 0; }
             baseDivObj.style.left = String(leftPosition) + "px";
-            topPosition = parentDivObj.offsetTop;
+            var topPosition = parentDivObj.offsetTop;
             if (parentDivObj.style.position && parentDivObj.style.position === "absolute") { topPosition = 0; }
             topPosition = that.manualOffset || (parentDivObj.offsetHeight * 0.1 + topPosition);
             baseDivObj.style.top = String(topPosition) + "px";
@@ -285,10 +281,9 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
     //  dialogResult        (Boolean)       Determine if user pick yes to continue closing or continue the action of the button
     //  btnIndex            (String)        The index of the button from allButtons array
     this.continueClose = function (dialogResult, btnIndex) {
-        var contDialogResult, parentObj, baseObj;
         if (!dialogResult) { return; }
-        parentObj = document.getElementById(baseObjId).parentElement;
-        fieldsValueObj = null
+        var parentObj = document.getElementById(baseObjId).parentElement;
+        fieldsValueObj = null;
         //Validation
         if (that.allButtons[btnIndex] && that.allButtons[btnIndex].doValidation === true) {
             if (!that.validateForm()) {
@@ -304,7 +299,7 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
         that.pendingChanges = false;
         //remove the form when it is a dialog
         if (!that.isForm) {
-            baseObj = document.getElementById(baseObjId);
+            var baseObj = document.getElementById(baseObjId);
             while (baseObj.firstChild) {
                 baseObj.removeChild(baseObj.firstChild);
             }
@@ -315,7 +310,7 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
         }
         //call continuing function
         if (that.allButtons[btnIndex] && that.continuingFunction !== undefined && that.continuingFunction !== null) {
-            contDialogResult = that.allButtons[btnIndex].dialogResult;
+            var contDialogResult = that.allButtons[btnIndex].dialogResult;
             that.continuingFunction(contDialogResult, fieldsValueObj, that.optionalData);
         }
     };
@@ -346,10 +341,9 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
     ///<param name="maxLen" type="Int">(Optional) the maximum number of characters that can be entered in a text type field</param>
     ///<param name="newLine" type="Boolean">(Optional) set to true so that this control will be placed in a new line</param>
     "use strict";
-    var that, fieldType;
-    that = this;
+    var that = this;
     //constructors
-    fieldType = COMMON.fieldTypes[controlType]; //the type of control to display (see COMMON.fieldTypes)
+    var fieldType = COMMON.fieldTypes[controlType]; //the type of control to display (see COMMON.fieldTypes)
     //public properties
     this.id = id; //the element's id
     this.fieldIndex = null; //the index of this control in the allControls array
@@ -382,9 +376,9 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
     //Parameters:
     //Returns       (Element)
     this.getObject = function () {
-        var objOut, obj1, fieldChangeScript, attrib, i, thisFieldtype;
         //create envelope and label
-        objOut = document.createElement("div");
+        var objOut = document.createElement("div");
+        var obj1;
         objOut.className = FILLIN.ControlEnvelopeClassName;
         objOut.id = "divCD" + id;
         //if (that.height === "auto") {
@@ -403,25 +397,24 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
             }
             objOut.appendChild(obj1);
         }
-        fieldChangeScript = "FILLIN.zfieldChanged(" + formIndex + ", this);" + (that.fieldChangeScript !== undefined && that.fieldChangeScript !== null ? that.fieldChangeScript : "");
+        var fieldChangeScript = "FILLIN.zfieldChanged(" + formIndex + ", this);" + ((that.fieldChangeScript !== undefined && that.fieldChangeScript !== null) ? that.fieldChangeScript : "");
         //if the controls are preconfigured then process this and exit
         if (that.preconfiguredContainer !== undefined && that.preconfiguredContainer !== null) {
             //make sure all controls have onchange with the fieldChangeScript
             if (that.preconfiguredContainer.childNodes.length > 0) {
-                for (i = 0; i < that.preconfiguredContainer.childNodes.length; i++) {
-                    obj1 = that.preconfiguredContainer.childNodes[i];
-                    if (obj1.hasAttribute("fieldtype")) {
-                        thisFieldtype = COMMON.fieldTypes[obj1.getAttribute("fieldtype")];
+                that.preconfiguredContainer.childNodes.forEach(function (item) {
+                    if (item.hasAttribute("fieldtype")) {
+                        var thisFieldtype = COMMON.fieldTypes[item.getAttribute("fieldtype")];
                         if (thisFieldtype.isField) {
-                            COMMON.addAttribute(obj1, "onchange", fieldChangeScript, true);
+                            COMMON.addAttribute(item, "onchange", fieldChangeScript, true);
                         }
                     }
-                }
+                });
             }
             objOut.appendChild(that.preconfiguredContainer);
             return objOut;
         }
-        attrib = { "fieldindex": String(that.fieldIndex) };
+        var attrib = { "fieldindex": String(that.fieldIndex) };
         if (COMMON.exists(that.width) && that.width !== "") {
             COMMON.addAttribute(attrib, "style", "width:" + that.width + ";");
         }
@@ -635,10 +628,9 @@ FILLIN.addNumberBox = function (formIndex, id, value, title, isRequired, COMMONv
     ///<param name="placeholder" type="Strin">(Optional) Adds a visible text on fields when field is empty HTML5</param>
     ///<param name="helpText" type="String">(Optional) Ignored if title is not provided. if provided will add an "i" to the label where user can hover to get this tool tip</param>
     "use strict";
-    var fieldIndex, fType;
-    fType = "num";
+    var fType = "num";
     if (COMMON.ieVer < 10) { fType = "txt"; }
-    fieldIndex = FILLIN.zaddControl(formIndex, new FILLIN.ZOneControl(fType, formIndex, id, value, title, isRequired, COMMONvalType, null, newline));
+    var fieldIndex = FILLIN.zaddControl(formIndex, new FILLIN.ZOneControl(fType, formIndex, id, value, title, isRequired, COMMONvalType, null, newline));
     FILLIN.allForms[formIndex].allControls[fieldIndex].numFieldData = { "min": min, "max": max, "step": step };
     FILLIN.allForms[formIndex].allControls[fieldIndex].placeholder = placeholder;
     FILLIN.allForms[formIndex].allControls[fieldIndex].width = width;
@@ -701,8 +693,7 @@ FILLIN.addDDL = function (formIndex, id, value, title, isRequired, queryIdOrArra
     ///<param name="fieldChangeScript" type="String">(Optional) script to run if the selection is changed</param>
     ///<param name="helpText" type="String">(Optional) Ignored if title is not provided. if provided will add an "i" to the label where user can hover to get this tool tip</param>
     "use strict";
-    var thisControl, fieldIndex;
-    thisControl = new FILLIN.ZOneControl("ddl", formIndex, id, value, title, isRequired, null, null, newLine);
+    var thisControl = new FILLIN.ZOneControl("ddl", formIndex, id, value, title, isRequired, null, null, newLine);
     if (fieldChangeScript) {
         thisControl.fieldChangeScript = fieldChangeScript;
     }
@@ -713,7 +704,7 @@ FILLIN.addDDL = function (formIndex, id, value, title, isRequired, queryIdOrArra
     } else {
         thisControl.listItem = queryIdOrArray;
     }
-    fieldIndex = FILLIN.zaddControl(formIndex, thisControl);
+    var fieldIndex = FILLIN.zaddControl(formIndex, thisControl);
     FILLIN.allForms[formIndex].allControls[fieldIndex].helpText = helpText;
 };
 FILLIN.addYesNoDDL = function (formIndex, id, value, title, width, newLine, helpText) {
@@ -757,13 +748,12 @@ FILLIN.addLink = function (formIndex, id, value, title, href, onclick, newLine, 
     ///<param name="target" type="String">(Optional) Ignored unless HREF is provided. The HREF Target</param>
     ///<param name="helpText" type="String">(Optional) Ignored if title is not provided. if provided will add an "i" to the label where user can hover to get this tool tip</param>
     "use strict";
-    var thisControl, fieldIndex;
-    thisControl = new FILLIN.ZOneControl("lnk", formIndex, id, value, title);
+    var thisControl = new FILLIN.ZOneControl("lnk", formIndex, id, value, title);
     thisControl.href = href;
     thisControl.linkOnClick = onclick;
     thisControl.newLine = newLine;
     thisControl.target = target;
-    fieldIndex = FILLIN.zaddControl(formIndex, thisControl);
+    var fieldIndex = FILLIN.zaddControl(formIndex, thisControl);
     FILLIN.allForms[formIndex].allControls[fieldIndex].helpText = helpText;
 };
 FILLIN.addCalendar = function (formIndex, id, value, title, isRequired, newLine, onchangeScript, itemSelectedFunction, itemSelectedOptionalData, helpText) {
@@ -779,12 +769,11 @@ FILLIN.addCalendar = function (formIndex, id, value, title, isRequired, newLine,
     ///<param name="itemSelectedOptionalData" type="Object">(Optional) Ignored if itemSelectedFunction is not provided. Optional data to send to the itemSelected function</param>
     ///<param name="helpText" type="String">(Optional) Ignored if title is not provided. if provided will add an "i" to the label where user can hover to get this tool tip</param>
     "use strict";
-    var thisControl, fieldIndex;
-    thisControl = new FILLIN.ZOneControl("cal", formIndex, id, value, title, isRequired, null, null, newLine);
+    var thisControl = new FILLIN.ZOneControl("cal", formIndex, id, value, title, isRequired, null, null, newLine);
     thisControl.fieldChangeScript = onchangeScript;
     thisControl.calendarCloseFunction = itemSelectedFunction;
     thisControl.calendarOptionalData = itemSelectedOptionalData;
-    fieldIndex = FILLIN.zaddControl(formIndex, thisControl);
+    var fieldIndex = FILLIN.zaddControl(formIndex, thisControl);
     FILLIN.allForms[formIndex].allControls[fieldIndex].helpText = helpText;
 };
 FILLIN.addGenericControl = function (formIndex, preconfiguredControl, title, newLine, helpText) {
@@ -795,11 +784,10 @@ FILLIN.addGenericControl = function (formIndex, preconfiguredControl, title, new
     ///<param name="newLine" type="Boolean">(Optional) if true, this field will start a new row on the form.  </param>
     ///<param name="helpText" type="String">(Optional) Ignored if title is not provided. if provided will add an "i" to the label where user can hover to get this tool tip</param>
     "use strict";
-    var thisControl, fieldIndex;
-    thisControl = new FILLIN.ZOneControl("gen", formIndex, null, null, title);
+    var thisControl = new FILLIN.ZOneControl("gen", formIndex, null, null, title);
     thisControl.preconfiguredContainer = preconfiguredControl;
     thisControl.newLine = newLine;
-    fieldIndex = FILLIN.zaddControl(formIndex, thisControl);
+    var fieldIndex = FILLIN.zaddControl(formIndex, thisControl);
     FILLIN.allForms[formIndex].allControls[fieldIndex].helpText = helpText;
 };
 FILLIN.addButton = function (formIndex, dialogResultOrData, id, value, placeLeft, doValidation, doConfirm) {

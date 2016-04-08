@@ -1,9 +1,9 @@
 ﻿/// <reference path="ajaxpost.js" />
-/*jslint browser: true, plusplus: true*/
+/*jslint browser: true, for: true, white: true, this: true*/
 /*global COMMON*/
 /// <reference path="common.js" />
 /*this version will not work with intranettools4.5 version of menu. it is based on pure javascript calling of menus*/
-/*Ver 2.0.1 11/21/2014*/
+/*Ver 2.1 4/8/2016*/
 var MENU = {};
 ///<var>The CSS class of the div the menu will be placed in</var>
 MENU.parentDivClassName = "menuEnvelope";
@@ -28,13 +28,12 @@ MENU.displaySymbol = true;
 MENU.ZOneMenuChoice = function (text, href, onclickFunction, tooltip, target) {
     ///<summary>NOT FOR EXTERNAL USE...holds property for a menu choice</summary>
     "use strict";
-    var that, defaultSymbol;
-    that = this;
-    defaultSymbol = "&#8659;";
+    var that = this;
+    var defaultSymbol = "&#8659;";
     this.id = null; //the id of the control
     this.getObject = function (isSub, hasSubs) {
-        var iHTML, obj1, onclick, attr;
-        iHTML = text;
+        var iHTML = text;
+        var obj1;
         if (!isSub && hasSubs) {
             iHTML = document.createElement("div");
             if (typeof text === "string" || typeof text === "number") {
@@ -46,20 +45,19 @@ MENU.ZOneMenuChoice = function (text, href, onclickFunction, tooltip, target) {
             obj1 = COMMON.getBasicElement("span", null, defaultSymbol);
             if (MENU.displaySymbol) { iHTML.appendChild(obj1); }
         }
-        onclick = onclickFunction;
+        var onclick = onclickFunction;
         if (isSub && onclickFunction) {
             onclick += " MENU.zclearAllMenus();";
         }
         if (!href && !onclickFunction) { href = "#"; }
-        attr = { "onmouseover": (isSub ? "MENU.zstopTimeout();" : "MENU.zhoverBaseMenu(this);"), "onmouseout": "MENU.zstartTimeout();" };
+        var attr = { "onmouseover": (isSub ? "MENU.zstopTimeout();" : "MENU.zhoverBaseMenu(this);"), "onmouseout": "MENU.zstartTimeout();" };
         return COMMON.getLink(that.id, iHTML, href, onclick, tooltip, attr, target);
     };
 };
 MENU.ZOneMenuGrouping = function (topLevelChoice, width) {
     ///<summary>NOT FOR EXTERNAL USE...holds the top level choice and submenus if available</summary>
     "use strict";
-    var that;
-    that = this;
+    var that = this;
     this.topLevelChoice = topLevelChoice;
     this.allSubMenuChoices = null; //holds OneMenuChoice object for sub menus
     this.addSubMenuChoice = function (subMenuChoice) {
@@ -71,56 +69,53 @@ MENU.ZOneMenuGrouping = function (topLevelChoice, width) {
 MENU.ZOneMenuObject = function () {
     ///<summary>NOT FOR EXTERNAL USE...holds properties for a full menu construct</summary>
     "use strict";
-    var that, allMenuGroupings;
-    that = this;
+    var that = this;
     this.menuObjectIndex = 0;
-    allMenuGroupings = [];
+    var allMenuGroupings = [];
     this.addMenuChoice = function (text, href, onclickFunction, tooltip, width, target) {
-        var thisGroup, topLevelChoice;
-        topLevelChoice = new MENU.ZOneMenuChoice(text, href, onclickFunction, tooltip, target);
-        thisGroup = new MENU.ZOneMenuGrouping(topLevelChoice, width);
+        var topLevelChoice = new MENU.ZOneMenuChoice(text, href, onclickFunction, tooltip, target);
+        var thisGroup = new MENU.ZOneMenuGrouping(topLevelChoice, width);
         allMenuGroupings.push(thisGroup);
         return allMenuGroupings.length - 1;
     };
     this.addSubMenuChoice = function (menuGroupIndex, text, href, onclickFunction, tooltip, target) {
-        var thisChoice;
-        thisChoice = new MENU.ZOneMenuChoice(text, href, onclickFunction, tooltip, target);
+        var thisChoice = new MENU.ZOneMenuChoice(text, href, onclickFunction, tooltip, target);
         allMenuGroupings[menuGroupIndex].addSubMenuChoice(thisChoice);
     };
     this.assembleMenu = function (parentDivId) {
-        var i, n, obj1, obj2, obj3, obj4, subObj1, subObj2, thisMenuGrouping, hasSubs;
         document.getElementById(parentDivId).className = MENU.parentDivClassName;
-        obj1 = COMMON.getBasicElement((COMMON.ieVer <= 8 ? "div" : "nav"), parentDivId + "nav", null, MENU.menuEnvelopeClassName);
-        obj2 = document.createElement("ul");
-        for (i = 0; i < allMenuGroupings.length; i++) {
-            thisMenuGrouping = allMenuGroupings[i];
-            hasSubs = (thisMenuGrouping.allSubMenuChoices !== null);
-            obj3 = document.createElement("li");
-            obj4 = thisMenuGrouping.topLevelChoice.getObject(false, hasSubs);
+        var obj1 = COMMON.getBasicElement((COMMON.ieVer <= 8 ? "div" : "nav"), parentDivId + "nav", null, MENU.menuEnvelopeClassName);
+        var obj2 = document.createElement("ul");
+        allMenuGroupings.forEach(function (item, index) {
+            var hasSubs = (item.allSubMenuChoices !== null);
+            var obj3 = document.createElement("li");
+            var obj4 = item.topLevelChoice.getObject(false, hasSubs);
             obj4.setAttribute("menuindex", String(that.menuObjectIndex));
-            obj4.setAttribute("choiceindex", String(i));
-            obj4.setAttribute("setwidth", (thisMenuGrouping.width !== undefined && thisMenuGrouping.width !== null ? thisMenuGrouping.width : "auto"));
+            obj4.setAttribute("choiceindex", String(index));
+            obj4.setAttribute("setwidth", ((item.width !== undefined && item.width !== null) ? item.width : "auto"));
             obj4.className = MENU.menuLinkClassName;
-            if (thisMenuGrouping.width !== undefined && thisMenuGrouping.width !== null) { obj4.style.width = thisMenuGrouping.width; }
+            if (item.width !== undefined && item.width !== null) { obj4.style.width = item.width; }
             obj3.appendChild(obj4);
             obj2.appendChild(obj3);
             if (hasSubs) {
-                subObj1 = COMMON.getBasicElement("div", null, null, MENU.subMenuClassName);
+                var subObj1 = COMMON.getBasicElement("div", null, null, MENU.subMenuClassName);
                 subObj1.style.display = "none";
-                subObj1.id = "menu" + String(that.menuObjectIndex).padLeft("0", 3) + String(i);
-                for (n = 0; n < thisMenuGrouping.allSubMenuChoices.length; n++) {
-                    subObj2 = thisMenuGrouping.allSubMenuChoices[n].getObject(true);
+                subObj1.id = "menu" + String(that.menuObjectIndex).padLeft("0", 3) + String(index);
+                var n;
+                var subObj2;
+                for (n = 0; n < item.allSubMenuChoices.length; n += 1) {
+                    subObj2 = item.allSubMenuChoices[n].getObject(true);
                     subObj2.className = MENU.subMenuLinkClassName;
                     if (MENU.subMenuWidthOverride !== undefined && MENU.subMenuWidthOverride !== null) {
                         subObj2.style.width = MENU.subMenuWidthOverride;
-                    } else if (thisMenuGrouping.width !== undefined && thisMenuGrouping.width !== null) {
-                        subObj2.style.width = thisMenuGrouping.width;
+                    } else if (item.width !== undefined && item.width !== null) {
+                        subObj2.style.width = item.width;
                     }
                     subObj1.appendChild(subObj2);
                 }
                 obj1.appendChild(subObj1);
             }
-        }
+        });
         obj1.appendChild(obj2);
         document.getElementById(parentDivId).appendChild(obj1);
     };
@@ -128,30 +123,28 @@ MENU.ZOneMenuObject = function () {
 MENU.zclearAllMenus = function () {
     "use strict";
     ///<summary>NOT FOR EXTERNAL USER...clears (hides) any menus that may be displayed</summary>
-    var allDivs, i, divId;
-    allDivs = document.getElementsByTagName("div");
-    for (i = 0; i < allDivs.length; i++) {
-        divId = allDivs[i].id;
+    var allDivs = document.getElementsByTagName("div");
+    allDivs.forEach(function (item) {
+        var divId = item.id;
         if (divId.length > 7 && divId.substring(0, 4) === "menu") {
-            allDivs[i].style.display = "none";
+            item.style.display = "none";
         }
-    }
+    });
 };
 MENU.zshowOneMenu = function (obj) {
     "use strict";
     ///<summary>NOT FOR EXTERNAL USE...when hovering over a top level menu item, this will display sub menus if there are any</summary>
-    var thisMenu, menuIndex, choiceIndex, menuWidth, calcLeft, calcWidth, windowWidth;
-    menuIndex = obj.getAttribute("menuindex");
-    choiceIndex = obj.getAttribute("choiceindex");
-    menuWidth = obj.getAttribute("setwidth");
-    thisMenu = document.getElementById("menu" + menuIndex.padLeft("0", 3) + choiceIndex);
+    var menuIndex = obj.getAttribute("menuindex");
+    var choiceIndex = obj.getAttribute("choiceindex");
+    var menuWidth = obj.getAttribute("setwidth");
+    var thisMenu = document.getElementById("menu" + menuIndex.padLeft("0", 3) + choiceIndex);
     if (!thisMenu) { return false; }
     thisMenu.style.display = "inline";
     thisMenu.style.width = MENU.subMenuWidthOverride || menuWidth;
-    calcWidth = thisMenu.offsetWidth;
+    var calcWidth = thisMenu.offsetWidth;
     thisMenu.style.top = String(obj.offsetTop + obj.offsetHeight) + "px";
-    calcLeft = obj.offsetLeft;
-    windowWidth = COMMON.getWindowWidth();
+    var calcLeft = obj.offsetLeft;
+    var windowWidth = COMMON.getWindowWidth();
     if ((calcLeft + calcWidth) > windowWidth) {
         calcLeft = (windowWidth - calcWidth);
         if (calcLeft < 0) { calcLeft = 0; }
