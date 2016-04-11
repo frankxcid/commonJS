@@ -405,11 +405,13 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
         if (that.preconfiguredContainer !== undefined && that.preconfiguredContainer !== null) {
             //make sure all controls have onchange with the fieldChangeScript
             if (that.preconfiguredContainer.childNodes.length > 0) {
-                that.preconfiguredContainer.childNodes.forEach(function (item) {
-                    if (item.hasAttribute("fieldtype")) {
-                        var thisFieldtype = COMMON.fieldTypes[item.getAttribute("fieldtype")];
+                var key = Object.keys(that.preconfiguredContainer.childNodes);
+                key.forEach(function (item) {
+                    var thisNode = that.preconfiguredContainer.childNodes[item];
+                    if (thisNode.hasAttribute("fieldtype")) {
+                        var thisFieldtype = COMMON.fieldTypes[thisNode.getAttribute("fieldtype")];
                         if (thisFieldtype.isField) {
-                            COMMON.addAttribute(item, "onchange", fieldChangeScript, true);
+                            COMMON.addAttribute(thisNode, "onchange", fieldChangeScript, true);
                         }
                     }
                 });
