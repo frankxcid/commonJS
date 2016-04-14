@@ -126,7 +126,7 @@ MENU.zclearAllMenus = function () {
     var allDivs = document.getElementsByTagName("div");
     var keys = Object.keys(allDivs);
     keys.forEach(function (item) {
-        var divId = allDivs[item.id];
+        var divId = allDivs[item].id;
         if (divId.length > 7 && divId.substring(0, 4) === "menu") {
             allDivs[item].style.display = "none";
         }
