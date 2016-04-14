@@ -70,7 +70,7 @@ namespace webTemplate
                     basicExcel();
                     return;
                 default:
-
+                    custom();
                     return;
             }
         }
@@ -444,7 +444,13 @@ namespace webTemplate
         private void gridExcel()
         {
             string[] columnname = (payload.ContainsKey("columnnames") ? (payload["columnnames"] as ArrayList).ToArray(typeof(string)) as string[] : null);
-            List<string[]> data = ((payload["data"] as ArrayList).ToArray(typeof(string[])) as string[][]).ToList();
+            var alData = (payload["data"] as ArrayList);
+            List<string[]> data = new List<string[]>(alData.Count);
+            foreach (ArrayList row in alData)
+            {
+                String[] strRow = (String[])row.ToArray(typeof(string));
+                data.Add(strRow);
+            }
             string title = (payload.ContainsKey("title") ? payload["title"].ToString() : "Grid Export");
             string fn = title + " " + DateTime.Now.ToString("Mdyyyyhhmmss") + ".xlsx";
             HashSet<char> invalid = new HashSet<char>(System.IO.Path.GetInvalidFileNameChars());
