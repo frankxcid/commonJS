@@ -111,7 +111,8 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
             var keys = Object.keys(allDescendants);
             keys.forEach(function (item) {
                 var obj = allDescendants[item];
-                if (obj.hasAttribute("fieldtype")) {
+                var t = typeof (obj);
+                if (COMMON.exits(obj.hasAttribute) && obj.hasAttribute("fieldtype")) {
                     var fieldType = COMMON.fieldTypes[obj.getAttribute("fieldtype")];
                     if (fieldType && fieldType.isField) {
                         hasFields = true;
@@ -133,8 +134,10 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
         var keys = Object.keys(allspans);
         keys.forEach(function (thisKey) {
             var item = allspans[thisKey];
-            if (item.className === "message0" || item.className === "message1") {
-                spanToDelete.push(item);
+            if (COMMON.exists(item.className)) {
+                if (item.className === "message0" || item.className === "message1") {
+                    spanToDelete.push(item);
+                }
             }
         });
         if (spanToDelete.length > 0) {

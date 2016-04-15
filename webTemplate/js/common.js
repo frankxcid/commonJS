@@ -302,20 +302,21 @@ COMMON.errMess = function (strIn, isolatedSpanId) {
     ///<param name="strIn" type="String">the message to display<param>
     ///<param name="isolatedSpanId" type="String">(optional), uses COMMON.defaultMessSpanId if not specified) the span where the message will be displayed. The span will become a child of the COMMON.pageMessageDivId div so that other messages can be displayed and clearing this message will no interfere with other messages</param>
     "use strict";
-    if (strIn === "") { strIn = "&nbsp;"; }
-    if (!COMMON.pageMessageDivId) { return; }
-    var pnMess = COMMON.docObj.getElementById(COMMON.pageMessageDivId);
-    if (!pnMess) { return; }
-    if (!isolatedSpanId) { isolatedSpanId = COMMON.defaultMessSpanId; }
-    pnMess.innerHTML += "&nbsp;";
-    var isolatedSpanObj = COMMON.docObj.getElementById(isolatedSpanId);
-    if (!isolatedSpanObj) {
-        isolatedSpanObj = COMMON.docObj.createElement("span");
-        isolatedSpanObj.id = isolatedSpanId;
-        pnMess.appendChild(isolatedSpanObj);
-    }
-    isolatedSpanObj = COMMON.docObj.getElementById(isolatedSpanId);
-    isolatedSpanObj.innerHTML = strIn;
+    FILLIN.okDialog(COMMON.defaultDisplayDivId, "!", strIn, "300px");
+    //if (strIn === "") { strIn = "&nbsp;"; }
+    //if (!COMMON.pageMessageDivId) { return; }
+    //var pnMess = COMMON.docObj.getElementById(COMMON.pageMessageDivId);
+    //if (!pnMess) { return; }
+    //if (!isolatedSpanId) { isolatedSpanId = COMMON.defaultMessSpanId; }
+    //pnMess.innerHTML += "&nbsp;";
+    //var isolatedSpanObj = COMMON.docObj.getElementById(isolatedSpanId);
+    //if (!isolatedSpanObj) {
+    //    isolatedSpanObj = COMMON.docObj.createElement("span");
+    //    isolatedSpanObj.id = isolatedSpanId;
+    //    pnMess.appendChild(isolatedSpanObj);
+    //}
+    //isolatedSpanObj = COMMON.docObj.getElementById(isolatedSpanId);
+    //isolatedSpanObj.innerHTML = strIn;
 };
 COMMON.focusme = function (objId) {
     "use strict";
@@ -352,29 +353,31 @@ COMMON.zChangeElementAvailability = function (parentObj, tagName, enable) {
         keys.forEach(function (thisKey) {
             var item = allElems[thisKey];
             var currentlyEnabled = !item.disabled;
-            //PDA flag means that the element had been disable previously outside of this function
-            var hasPDA = item.hasAttribute(previouslyDisabledAttr);
-            //DFA flag means that the element has been disabled by this function
-            var hasDFA = item.hasAttribute(disabledByFunctionAttr);
-            if (enable) {
-                //here to enable all elements
-                if (hasDFA && !currentlyEnabled) {
-                    //only enable elements that have the DFA flag
-                    item.disabled = false;
-                }
-                //remove all flags if present
-                item.removeAttribute(previouslyDisabledAttr);
-                item.removeAttribute(disabledByFunctionAttr);
-            } else {
-                //here to disable all elements
-                if (!currentlyEnabled && !hasPDA && !hasDFA) {
-                    //on elements that were previously disabled and have no flags, set the PDA flag so that they will remain disabled
-                    item.setAttribute(previouslyDisabledAttr, previouslyDisabledAttr);
-                }
-                if (currentlyEnabled && !hasDFA && !hasPDA) {
-                    //on enabled elements, flag with DFA so that they will be renabled later
-                    item.setAttribute(disabledByFunctionAttr, disabledByFunctionAttr);
-                    item.disabled = true;
+            if (COMMON.exists(item.hasAttribute)) {
+                //PDA flag means that the element had been disable previously outside of this function
+                var hasPDA = item.hasAttribute(previouslyDisabledAttr);
+                //DFA flag means that the element has been disabled by this function
+                var hasDFA = item.hasAttribute(disabledByFunctionAttr);
+                if (enable) {
+                    //here to enable all elements
+                    if (hasDFA && !currentlyEnabled) {
+                        //only enable elements that have the DFA flag
+                        item.disabled = false;
+                    }
+                    //remove all flags if present
+                    item.removeAttribute(previouslyDisabledAttr);
+                    item.removeAttribute(disabledByFunctionAttr);
+                } else {
+                    //here to disable all elements
+                    if (!currentlyEnabled && !hasPDA && !hasDFA) {
+                        //on elements that were previously disabled and have no flags, set the PDA flag so that they will remain disabled
+                        item.setAttribute(previouslyDisabledAttr, previouslyDisabledAttr);
+                    }
+                    if (currentlyEnabled && !hasDFA && !hasPDA) {
+                        //on enabled elements, flag with DFA so that they will be renabled later
+                        item.setAttribute(disabledByFunctionAttr, disabledByFunctionAttr);
+                        item.disabled = true;
+                    }
                 }
             }
         });
@@ -942,7 +945,7 @@ COMMON.clearToolTip = function () {
     var toRemove = [];
     var keys = Object.keys(objs);
     keys.forEach(function (item) {
-        if (objs[item].getAttribute("ctooltip") === "true") {
+        if (COMMON.exists(objs[item].getAttribute) && objs[item].getAttribute("ctooltip") === "true") {
             toRemove.push(objs[item]);
         }
     });
@@ -972,8 +975,10 @@ COMMON.validateForm = function (parentNodeId) {
         var allChildren = parentNodeObj.getElementsByTagName(thisFT.tag);
         var childkeys = Object.keys(allChildren);
         childkeys.forEach(function (i) {
-            if (thisFT.type === "" || allChildren[i].getAttribute("type") === thisFT.type) {
-                hasError = COMMON.checkFieldHasError(allChildren[i], hasError);
+            if (COMMON.exists(allChildren[i].getAttribute)) {
+                if (thisFT.type === "" || allChildren[i].getAttribute("type") === thisFT.type) {
+                    hasError = COMMON.checkFieldHasError(allChildren[i], hasError);
+                }
             }
         });
     });
