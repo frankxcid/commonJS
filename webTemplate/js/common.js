@@ -302,21 +302,20 @@ COMMON.errMess = function (strIn, isolatedSpanId) {
     ///<param name="strIn" type="String">the message to display<param>
     ///<param name="isolatedSpanId" type="String">(optional), uses COMMON.defaultMessSpanId if not specified) the span where the message will be displayed. The span will become a child of the COMMON.pageMessageDivId div so that other messages can be displayed and clearing this message will no interfere with other messages</param>
     "use strict";
-    FILLIN.okDialog(COMMON.defaultDisplayDivId, "!", strIn, "300px");
-    //if (strIn === "") { strIn = "&nbsp;"; }
-    //if (!COMMON.pageMessageDivId) { return; }
-    //var pnMess = COMMON.docObj.getElementById(COMMON.pageMessageDivId);
-    //if (!pnMess) { return; }
-    //if (!isolatedSpanId) { isolatedSpanId = COMMON.defaultMessSpanId; }
-    //pnMess.innerHTML += "&nbsp;";
-    //var isolatedSpanObj = COMMON.docObj.getElementById(isolatedSpanId);
-    //if (!isolatedSpanObj) {
-    //    isolatedSpanObj = COMMON.docObj.createElement("span");
-    //    isolatedSpanObj.id = isolatedSpanId;
-    //    pnMess.appendChild(isolatedSpanObj);
-    //}
-    //isolatedSpanObj = COMMON.docObj.getElementById(isolatedSpanId);
-    //isolatedSpanObj.innerHTML = strIn;
+    if (strIn === "") { strIn = "&nbsp;"; }
+    if (!COMMON.pageMessageDivId) { return; }
+    var pnMess = COMMON.docObj.getElementById(COMMON.pageMessageDivId);
+    if (!pnMess) { return; }
+    if (!isolatedSpanId) { isolatedSpanId = COMMON.defaultMessSpanId; }
+    pnMess.innerHTML += "&nbsp;";
+    var isolatedSpanObj = COMMON.docObj.getElementById(isolatedSpanId);
+    if (!isolatedSpanObj) {
+        isolatedSpanObj = COMMON.docObj.createElement("span");
+        isolatedSpanObj.id = isolatedSpanId;
+        pnMess.appendChild(isolatedSpanObj);
+    }
+    isolatedSpanObj = COMMON.docObj.getElementById(isolatedSpanId);
+    isolatedSpanObj.innerHTML = strIn;
 };
 COMMON.focusme = function (objId) {
     "use strict";

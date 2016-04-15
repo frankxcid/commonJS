@@ -112,7 +112,7 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
             keys.forEach(function (item) {
                 var obj = allDescendants[item];
                 var t = typeof (obj);
-                if (COMMON.exits(obj.hasAttribute) && obj.hasAttribute("fieldtype")) {
+                if (COMMON.exists(obj.hasAttribute) && obj.hasAttribute("fieldtype")) {
                     var fieldType = COMMON.fieldTypes[obj.getAttribute("fieldtype")];
                     if (fieldType && fieldType.isField) {
                         hasFields = true;
