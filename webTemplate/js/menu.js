@@ -127,7 +127,7 @@ MENU.zclearAllMenus = function () {
     var keys = Object.keys(allDivs);
     keys.forEach(function (item) {
         var divId = allDivs[item].id;
-        if (divId.length > 7 && divId.substring(0, 4) === "menu") {
+        if (COMMON.exists(divId) && divId.length > 7 && divId.substring(0, 4) === "menu") {
             allDivs[item].style.display = "none";
         }
     });
