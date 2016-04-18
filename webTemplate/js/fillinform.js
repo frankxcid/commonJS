@@ -382,6 +382,10 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
     //Parameters:
     //Returns       (Element)
     this.getObject = function () {
+        //fix null id
+        if (!COMMON.exists(id)) {
+            id = "autoIdF" + String(formIndex) + "I" + String(that.fieldIndex);
+        }
         //create envelope and label
         var objOut = document.createElement("div");
         var obj1;
