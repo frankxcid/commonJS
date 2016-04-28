@@ -1193,9 +1193,9 @@ COMMON.getCalendar = function (id, value, isRequired, placeholder, messageDivId,
     obj1.setAttribute("style", "margin:0;padding:0;");
     obj1.appendChild(obj);
     if (onchangeAction !== undefined && onchangeAction !== null) {
-        onchangeAction += "CAL.showDaySelector(COMMON.docObj.getElementById('" + id + "')); return false;";
+        onchangeAction += "CAL.zshowDaySelector(COMMON.docObj.getElementById('" + id + "')); return false;";
     } else {
-        onchangeAction = "CAL.showDaySelector(COMMON.docObj.getElementById('" + id + "')); return false;";
+        onchangeAction = "CAL.zshowDaySelector(COMMON.docObj.getElementById('" + id + "')); return false;";
     }
     var obj2 = COMMON.getLink(id, null, "#", onchangeAction);
     obj2.setAttribute("style", "margin:0;padding:0;float:left;");
