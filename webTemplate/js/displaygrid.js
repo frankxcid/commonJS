@@ -2,7 +2,7 @@
 /// <reference path="common.js" />
 /*jslint browser: true, for: true, white: true, this: true*/
 /*global AJAXPOST, FILLIN, COMMON window*/
-//ver 2.01 5/16/2016
+//ver 2.01 1/15/2016
 var DISPLAYGRID = {};
 ///<var>the array that holds all the grid objects of a single page</var>
 DISPLAYGRID.allGrids = [];
@@ -181,9 +181,14 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         var allValues = [];
         var i;
         var thisValue;
+        var columnDef = allColDefinitions[index];
+        var maxChars = columnDef.maxChars;
         //gather all values
         for (i = 0; i < dataResults.length; i += 1) {
             thisValue = dataResults[i][index].trim();
+            if (COMMON.exists(maxChars)) {
+                thisValue = (thisValue.length > maxChars ? String(thisValue).substring(0, maxChars) : thisValue);
+            }
             allValues.push((thisValue === "" || !COMMON.isNumber(thisValue, null, null, true)) ? thisValue : parseFloat(thisValue));
         }
         //sort them for grouping
@@ -1023,6 +1028,7 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
     //initializes summary, to be run in gridBody() function
     this.styleDefinition = null; //contains the function object with the pattern function(val){return String InLine Style} where val is the value of the determinationColumn. The style returned will be applied to the object in the grid cell
     this.formatNumber = { "format": false, "decimals": 0, "parens": false, "currencysymbol": false };//will format this column is is number. Settings ignored if format == false. Sets decimals to the places set in "decimals" property (default = 4) and negative numbers surrounded by parenthesis if parens == true and currencysymbol will be displayed if provided
+    this.maxChars = null;
     this.initSummary = function () {
         that.summarySum = 0;
         that.summaryRowCount = 0;
@@ -1055,6 +1061,9 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
         var value = dataRow[colIndex];
         if (that.formatNumber && that.formatNumber.format === true) {
             value = COMMON.formatCurrency(value, (that.formatNumber.currencysymbol ? "$" : ""), that.formatNumber.decimals, that.formatNumber.parens);
+        }
+        if (localType.id === "spa" && COMMON.exists(that.maxChars)) {
+            value = (value.length > that.maxChars ? String(value).substring(0, that.maxChars) : value);
         }
         var attrib = { "pkey": primaryKey, "column": String(colIndex), "gridindex": String(gridIndex) };
         //add onchange to keep track of what fields have changed
@@ -1453,6 +1462,15 @@ DISPLAYGRID.setButtonColumnWidth = function (gridIndex, width) {
     ///<param name="width" type="String">Any valid CSS width value</param>
     "use strict";
     DISPLAYGRID.allGrids[gridIndex].buttonColumnWidth = width;
+};
+DISPLAYGRID.setColumnMaxCharacters = function (gridIndex, columnIndex, maxChars) {
+    ///<summary> sets for a particular column the maximum number of character it can have</summary>
+    ///<param name="gridIndex" type="int">The index of the grid</param>
+    ///<param name="columnIndex" type="int">The index of the column to affect</param>
+    ///<param name="maxChars" type="int">The maximum number of characters</param>
+    "use strict";
+    var thisColumnDefinition = DISPLAYGRID.zgetColumnDef(gridIndex, columnIndex);
+    thisColumnDefinition.maxChars = maxChars;
 };
 DISPLAYGRID.overridePrintLinkDisplay = function (gridIndex, alwaysDisplay) {
     ///<summary>Override the automated Print Link display (does not display unless there is more than one page)</summary>
