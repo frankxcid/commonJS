@@ -828,7 +828,7 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         var thisColDefinition;
         allColDefinitions.forEach(function (item, index) {
             thisColDefinition = item;
-            if (thisColDefinition.isVisible) {
+            if (index > 0 && thisColDefinition.isVisible) {
                 iHTML += "<th>" + columnNames[index] + "</th>";
             }
         });
