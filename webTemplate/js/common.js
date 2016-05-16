@@ -143,6 +143,7 @@ COMMON.addAttribute = function (obj, propertyToAdd, value, isElement) {
     ///<param name="value" type="String">(Optional) Ignored if propertyToAdd is not a String.  The value of the property</param>
     ///<param name="isElement" type="Boolean">If True then obj is an element not an Object Literal</param>
     "use strict";
+    if (!COMMON.exists(propertyToAdd)) { return; }
     var lAttr = propertyToAdd;
     if (typeof propertyToAdd === "string") {
         lAttr = {};
