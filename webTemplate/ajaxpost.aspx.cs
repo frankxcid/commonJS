@@ -543,7 +543,10 @@ namespace webTemplate
                 myCookie.Value = mess;
                 Response.Cookies.Add(myCookie);
             }
-            Response.Write(mess);
+            if (!download)
+            {
+                Response.Write(mess);
+            }
         }
 
         private class GenericResponse
