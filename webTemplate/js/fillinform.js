@@ -111,7 +111,6 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
             var keys = Object.keys(allDescendants);
             keys.forEach(function (item) {
                 var obj = allDescendants[item];
-                var t = typeof (obj);
                 if (COMMON.exists(obj.hasAttribute) && obj.hasAttribute("fieldtype")) {
                     var fieldType = COMMON.fieldTypes[obj.getAttribute("fieldtype")];
                     if (fieldType && fieldType.isField) {
@@ -278,7 +277,7 @@ FILLIN.Form = function (headLine, parentDivId, width, message) {
     //  suppressMessage (Boolean)       (Optional) if true will clear error message in the form, otherwise, will display "Data Saved"
     this.saveData = function (queryid, params, hasNoResults, suppressMessage) {
         if (!that.pendingChanges) { return; }
-        XMLQuery.callQuery(queryid, params, hasNoResults);
+        AJAXPOST.callQuery(queryid, params, hasNoResults);
         that.pendingChanges = false;
         that.errorMessage(suppressMessage ? "" : "Data Saved");
     };
@@ -459,7 +458,6 @@ FILLIN.ZOneControl = function (controlType, formIndex, id, value, label, require
                     if (!COMMON.exists(that.width) || that.width === "") { COMMON.addAttribute(attrib, "style", "width:100%;"); }
                 }
                 obj1 = COMMON.getFieldObject(fieldType.id, id, value, required, numberValidation, that.placeholder, maxLen, null, attrib);
-                break;
         }
         if (fieldType === COMMON.fieldTypes.spa && that.width) {
             //fixes width on inline span

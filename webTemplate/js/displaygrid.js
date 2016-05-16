@@ -2,7 +2,7 @@
 /// <reference path="common.js" />
 /*jslint browser: true, for: true, white: true, this: true*/
 /*global AJAXPOST, FILLIN, COMMON window*/
-//ver 2.01 1/15/2016
+//ver 2.01 5/16/2016
 var DISPLAYGRID = {};
 ///<var>the array that holds all the grid objects of a single page</var>
 DISPLAYGRID.allGrids = [];
@@ -111,6 +111,8 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
     this.leftPosition = null;
     ///<var>overrides the automated display of the print link. set to true to always show or false to hide. leave as null to return to automatic</var>
     this.overridePrintLinkDisplay = null;
+    ///<var>function to run against data prior to displaying.  Only for sql statement grids</var>
+    this.dataManagementFunction = null;
     //*****************Public ReadOnlyProperties******************************//
     this.getColumnName = function (colIndex) {
         ///<summary>Gets the column Name of an Index</summary>
@@ -563,6 +565,9 @@ DISPLAYGRID.DisplayGrid = function (gridIndexIn) {
         var res = AJAXPOST.callQuery(that.queryId, that.params);
 
         if (!COMMON.exists(res.payload.rows) || res.payload.rows.length === 0) { return; }
+        if (COMMON.exists(that.dataManagementFunction)) {
+            res = that.dataManagementFunction(res);
+        }
         dataResults = res.payload.rows;
         columnNames = res.payload.columns;
     };
@@ -1392,6 +1397,12 @@ DISPLAYGRID.allignGrid = function (gridIndex, idOrObject) {
     }
     thisGrid.leftPosition = String(obj.offsetLeft) + "px";
 };
+DISPLAYGRID.addDataManagementFunction = function (gridIndex, dataManagementFunction) {
+    ///<summary>Add a datamanagement function that can affect the data prior to display. Function runs right after database is queried</summary>
+    ///<param name="gridIndex" type="int">The index of the grid</param>
+    ///<param name="dataManagementFunction" type="function">function format: function(AJAXPOST_Response_Object) Returns AJAXPOST_Response_Object</param>
+    DISPLAYGRID.allGrids[gridIndex].dataManagementFunction = dataManagementFunction;
+}
 DISPLAYGRID.addGrid = function (displayDivId, baseDivId, queryId, params, rowsPerPage, firstSortIndex, reverseSort, suppressAlert, noResultsMessage, noResultsAction) {
     ///<summary>Adds a new Grid to Array</summary>
     ///<param name="displayDivId" type="String">the container element where the grid will be displayed</param>
