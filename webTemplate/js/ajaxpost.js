@@ -458,6 +458,11 @@ AJAXPOST.customRequest = function (Command, Parameters, Download, OptionalData, 
     ///<param name="Listener" type="String">(Optional)Defaults to AJAXPOST.defaultListener.  The URL the listens to the AJAX post</param> 
     ///<returns type="Object|String">response object as {haserror:bool, errormessage:string, payload:string} unless this action causes a download which will return only the token id</returns>
     "use strict";
+    if (COMMON.exists(Parameters)) {
+        Parameters.forEach(function (item, index) {
+            Parameters[index] = String(item);
+        });
+    }
     var objectToSend = AJAXPOST.protectedFunctions.createObjectToSend(
             Command,
             {
@@ -471,5 +476,5 @@ AJAXPOST.customRequest = function (Command, Parameters, Download, OptionalData, 
     if (Download === true) {
         return objectToSend.tokenid;
     }
-    return AJAXPOST.getResponse(objectToSend.tokenid);
+    return JSON.parse(AJAXPOST.getResponse(objectToSend.tokenid));
 };
