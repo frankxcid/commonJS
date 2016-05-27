@@ -1062,10 +1062,11 @@ DISPLAYGRID.ZOneColumnDefinition = function (cIndex, gridIndex) {
         if (that.formatNumber && that.formatNumber.format === true) {
             value = COMMON.formatCurrency(value, (that.formatNumber.currencysymbol ? "$" : ""), that.formatNumber.decimals, that.formatNumber.parens);
         }
+        var attrib = { "pkey": primaryKey, "column": String(colIndex), "gridindex": String(gridIndex) };
         if (localType.id === "spa" && COMMON.exists(that.maxChars)) {
             value = (value.length > that.maxChars ? String(value).substring(0, that.maxChars) : value);
+            attrib.title = dataRow[colIndex];
         }
-        var attrib = { "pkey": primaryKey, "column": String(colIndex), "gridindex": String(gridIndex) };
         //add onchange to keep track of what fields have changed
         if (localType.isField) {
             attrib.onchange = "DISPLAYGRID.zfieldChanged(" + String(gridIndex) + ", this);";
