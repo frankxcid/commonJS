@@ -41,7 +41,7 @@ AJAXPOST.protectedFunctions = {
             var ajaxForm = AJAXPOST.protectedFunctions.createIFrame(objectToSend, listener);
             ajaxForm.submit();
             if (COMMON.exists(continuingFunction)) {
-                var postCompleteDetector = new AJAXPOST.protectedFunctions.PostCompleteDetector(objectToSend.tokenid, continuingFunction, objectToSend.optionaldata);
+                var postCompleteDetector = new AJAXPOST.protectedFunctions.PostCompleteDetector(objectToSend, continuingFunction, objectToSend.optionaldata);
                 postCompleteDetector.startDetection();//continuing function is called from the postCompleteDetector
             }
             return objectToSend.tokenid;

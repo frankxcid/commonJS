@@ -112,7 +112,6 @@ namespace webTemplate
         {
             int MaxFileSize = 5000000; //5MB is max size of uploaded files
             //place action function here in the format: if (action == [actionname]) { if (!actionfunction()){resp.SetError(); return resp;}}
-            string action = payload["action"].ToString();
 
 
             var postedFile = Request.Files[payload["controlid"].ToString()] as HttpPostedFile;
