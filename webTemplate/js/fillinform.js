@@ -860,3 +860,12 @@ FILLIN.createForm = function (parentDivId, headline, message, continuingfunction
     FILLIN.allForms[formIndex].isForm = true;
     return formIndex;
 };
+FILLIN.truefalseButtons = function (formIndex, trueButtonText, falseButtonText) {
+    ///<summary>Adds a true and false buttons to a form with the false button on the left.  The false button will confirm and the true button will validate the form</summary>
+    ///<param name="formIndex" type="Int">the index of the form in FILLIN.allForms</param>
+    ///<param name="trueButtonText" type="String">The text shown on the true button</param>
+    ///<param name="falseButtonText" type="String">The text shown on the false button</param>
+    "use strict";
+    FILLIN.addButton(formIndex, false, null, falseButtonText, true, false, true);
+    FILLIN.addButton(formIndex, true, null, trueButtonText, false, true);
+};
