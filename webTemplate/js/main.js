@@ -10,21 +10,21 @@ var MAIN = {};
 MAIN.pendingChange = false;
 MAIN.rowsChanges = null;
 MAIN.formName = "amain";
-MAIN.displayDivId = "pnMainTop";
+MAIN.displayDivId = "divMain";
 COMMON.defaultFormName = MAIN.formName;
 COMMON.defaultDisplayDiv = MAIN.displayDivId;
 COMMON.defaultMessSpanId = "spPendingChangeMess";
+MAIN.pageHistVal = null;
 MAIN.getUserData = function () {
     "use strict";
-    
+
 };
 MAIN.displayMenus = function () {
     "use strict";
     var menuIndex, subMenuIndex;
     //Top Menu
-    
+
 };
-M
 MAIN.initPage = function (homePage) {
     "use strict";
     MAIN.getUserData();
@@ -37,32 +37,22 @@ MAIN.setCurrentPage = function (currentPage, Header) {
     ///<param name="Header" type="String">The message to display in the top banner, usually tells the user what page he is in</param>
     "use strict";
     //future code should have a way to do breadcrumbs?
-    var pageHistObj, pageHistVal;
-    document.getElementById(MAIN.currentPageId).value = currentPage;
-    document.getElementById(MAIN.titleHeaderId).innerHTML = Header;
+    var pageHistObj;
     COMMON.clearParent(MAIN.displayDivId);
     COMMON.errMess("");
     DISPLAYGRID.resetGrid();
+    FILLIN.reset();
     MAIN.pendingChange = false;
-    if (MAIN.usingNavigationButtons) {
-        MAIN.usingNavigationButtons = false;
+    if (!COMMON.exists(MAIN.pageHistVal)) {
+        MAIN.pageHistVal = { "hist": [String(currentPage)] }
     } else {
-        pageHistVal = document.getElementById("txtPageHistory").value;
-        if (pageHistVal === "") {
-            pageHistObj = { "hist": [String(currentPage)] };
-        } else {
-            pageHistObj = JSON.parse(pageHistVal);
-            pageHistObj.hist.push(String(currentPage));
-        }
-        document.getElementById("txtPageHistory").value = JSON.stringify(pageHistObj);
+        MAIN.pageHistVal.hist.push(String(currentPage));
     }
 };
 
 //**************************Home Page******************************************//
 MAIN.initHomePage = function () {
     "use strict";
-    var displayDiv;
-    FILLIN.reset();
     MAIN.setCurrentPage(0, "");
 };
 //*********************************HELP*********************************//

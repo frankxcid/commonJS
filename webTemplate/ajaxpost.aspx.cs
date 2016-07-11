@@ -516,7 +516,11 @@ namespace webTemplate
         private void custom()
         {
             string command = commandObj["command"].ToString();
-            string[] parameters = (payload["parameters"] as ArrayList).ToArray(typeof(string)) as string[];
+            string[] parameters = null;
+            if (payload["parameters"] != null)
+            {
+                parameters = (payload["parameters"] as ArrayList).ToArray(typeof(string)) as string[];
+            }
             if (download)//on download, send response prior to download
             {
                 sendResponse();

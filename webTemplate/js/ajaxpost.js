@@ -266,6 +266,7 @@ AJAXPOST.uploadFile = function (FileControlIDorObj, DestinationPath, Action, Des
                 "controlid": AJAXPOST.defaultFileControlId
             },
             Action,
+            OptionalData,
             false,
             true
         );
