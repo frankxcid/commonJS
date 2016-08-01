@@ -31,10 +31,17 @@ COMMON.applyFunctionToTags = function (tagName, functionObj, parentObj) {
     "use strict";
     if (!COMMON.exists(parentObj)) { parentObj = document; }
     var allObj = parentObj.getElementsByTagName(tagName);
-    var allKeys = Object.keys(allObj);
+    COMMON.applyFunctionToKeys(allObj, functionObj);
+};
+COMMON.applyFunctionToKeys = function (obj, functionObj) {
+    ///<summary>Applies a function to all keys within an object</summary>
+    ///<param name="obj" type="Object with keys">The object whose keys will be iterated</param>
+    ///<param name="functionObj" type="Function">The function that will run in the pattern function(item) where item is the individual element</param>
+    "use strict";
+    var allKeys = Object.keys(obj);
     allKeys.forEach(function (item) {
-        var obj = allObj[item];
-        functionObj(obj);
+        var lobj = obj[item];
+        functionObj(lobj);
     });
 };
 COMMON.stripHTML = function (strIn) {
