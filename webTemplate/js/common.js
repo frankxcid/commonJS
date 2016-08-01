@@ -23,6 +23,20 @@ COMMON.defaultFormName = "form1";
 COMMON.defaultDisplayDivId = "pnMainTop";
 
 //***************************************Utility Items: items that manipulate or fix items*************************************************************//
+COMMON.applyFunctionToTags = function (tagName, functionObj, parentObj) {
+    ///<summary>Applies a function to all items with the tagname in a parent object</summary>
+    ///<param name="tagName" type="String">The tag name</param>
+    ///<param name="functionObj" type="Function">The function that will run in the pattern function(item) where item is the individual element</param>
+    ///<param name=parentObj" type="Element">(Optional) If given, this object is the parent instead of document</param>
+    "use strict";
+    if (!COMMON.exists(parentObj)) { parentObj = document; }
+    var allObj = parentObj.getElementsByTagName(tagName);
+    var allKeys = Object.keys(allObj);
+    allKeys.forEach(function (item) {
+        var obj = allObj[item];
+        functionObj(obj);
+    });
+};
 COMMON.stripHTML = function (strIn) {
     ///<summary>Takes the innerHTML of an element and returns only the text without markup tags</summary>
     ///<param name="strIn" type="String">The String that has markup tags that need removed</param>
